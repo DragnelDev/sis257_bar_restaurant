@@ -44,20 +44,20 @@ El modelo de base de datos (`sis257_bar_restaurant`) está diseñado para ser tr
 
 | Entidad (Tabla) | Campos Tentativos | Rol en el Sistema |
 | :--- | :--- | :--- |
-| **Productos** | `id`, `nombre`, `descripcion`, `precio_venta`, **`stock`** (INTEGER), `id_categoria` (FK) | Control de Inventario y Precios. |
-| **Categorías** | `id`, `nombre` | Clasificación de Platos/Bebidas. |
-| **Proveedores** | `id`, `nombre`, `nit`, `telefono` | Gestión de Entradas (Módulo de Compras). |
+| **productos** | `id`, `nombre`, `descripcion`, `precio_venta`, **`stock`** (INTEGER), `id_categoria` (FK) | Control de Inventario y Precios. |
+| **categorias** | `id`, `nombre` | Clasificación de Platos/Bebidas. |
+| **proveedores** | `id`, `nombre`, `nit`, `telefono` | Gestión de Entradas (Módulo de Compras). |
 
 ### B. Entidades de Soporte y Transaccionales
 
 | Entidad (Tabla) | Campos Tentativos | Flujo Asociado |
 | :--- | :--- | :--- |
-| **Usuarios** | `id`, `username`, `password` (encriptada), `rol` | Autenticación (Login/JWT). |
-| **Mesas** | `id`, `numero_mesa`, `capacidad`, **`estado`** (VARCHAR) | Soporte para el flujo de Ventas/Pedidos. |
-| **Ventas** | `id`, `fecha`, `total`, `id_mesa` (FK), `id_usuario` (FK), `estado` | Encabezado de la Venta (Salida de Inventario). |
-| **DetalleVentas** | `id`, `id_venta` (FK), `id_producto` (FK), `cantidad`, `precio_unitario` | Desglose de productos vendidos (Resta de Stock). |
-| **Compras** | `id`, `fecha_compra`, `total`, `id_proveedor` (FK), `id_usuario` (FK) | Encabezado de la Compra (Entrada a Inventario). |
-| **DetalleCompras** | `id`, `id_compra` (FK), `id_producto` (FK), `cantidad`, `precio_unitario_compra` | Desglose de productos comprados (Suma al Stock). |
+| **usuarios** | `id`, `username`, `password` (encriptada), `rol` | Autenticación (Login/JWT). |
+| **mesas** | `id`, `numero_mesa`, `capacidad`, **`estado`** (VARCHAR) | Soporte para el flujo de Ventas/Pedidos. |
+| **ventas** | `id`, `fecha`, `total`, `id_mesa` (FK), `id_usuario` (FK), `estado` | Encabezado de la Venta (Salida de Inventario). |
+| **detalle_ventas** | `id`, `id_venta` (FK), `id_producto` (FK), `cantidad`, `precio_unitario` | Desglose de productos vendidos (Resta de Stock). |
+| **compras** | `id`, `fecha_compra`, `total`, `id_proveedor` (FK), `id_usuario` (FK) | Encabezado de la Compra (Entrada a Inventario). |
+| **detalle_compras** | `id`, `id_compra` (FK), `id_producto` (FK), `cantidad`, `precio_unitario_compra` | Desglose de productos comprados (Suma al Stock). |
 
 ---
 
@@ -68,9 +68,14 @@ Sección para ser actualizada con el progreso de los commits de los miembros del
 | Tarea | Fecha Límite | Estado | Responsable(s) |
 | :--- | :--- | :--- | :--- |
 | Conformación de grupos y creación de repositorio. | 02/10/2025 | **COMPLETADO** | Magin, Alexander, Joel |
-| Creación de `README.md` (Entidades Tentativas). | 05/10/2025 | EN PROCESO | macDev |
-| Creación de proyecto Backend (NestJS). | 09/10/2025 | PENDIENTE | ... |
-| ... | ... | ... | ... |
+| Creación de `README.md` (Entidades Tentativas). | 05/10/2025 |  **COMPLETADO** | macDev |
+| Creación del proyecto backend (NestJS) y consolidación de entidades en el README.md. | 09/10/2025 | **COMPLETADO** | macDev |
+| Generación de la base de datos a partir de las entities. Configuración generales del backend (validaciones, swagger). CRUD de 3 catálogos a nivel de backend. | 16/10/2025 | EN PROSESO | ... |
+| Creación del proyecto frontend (vue.js). Selección y personalización de un template bootstrap. Endpoints necesarios para la compra o venta. | 23/10/2025 | PENDIENTE | ... |
+| CRUD frontend integrado con el backend de 3 catálogos. | 30/10/2025 | PENDIENTE | ... |
+| Incorporación de JWT y login a nivel de backend y frontend. | 6/11/2025 | PENDIENTE | ... |
+| Funcionalidad de la Compra o Venta en frontend. Generación de la documentación inicial. | 13/11/2025 | PENDIENTE | ... |
+| Presentación final de laboratorio. | 20/11/2025 | PENDIENTE | ... |
 
 ---
 
