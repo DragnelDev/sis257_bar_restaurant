@@ -1,19 +1,35 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('productos')
 export class Producto {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('varchar', { length: 50, name: 'nombre' })
+  @Column('varchar', { length: 50 })
   nombre: string;
 
-  @Column('varchar', { length: 100, name: 'descripcion' })
+  @Column('varchar', { length: 100 })
   descripcion: string;
 
-  @Column('varchar', { length: 50, name: 'precio_venta' })
-  precio_venta: number;
+  @Column('decimal', { name: 'precio_venta' })
+  precioVenta: number;
 
-  @Column('varchar', { length: 50, name: 'stock' })
-  stock: string;
+  @Column('integer')
+  stock: number;
+
+  @CreateDateColumn({ name: 'fecha_creacion' })
+  fechaCreacion: Date;
+
+  @UpdateDateColumn({ name: 'fecha_modificacion' })
+  fechaModificacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
 }

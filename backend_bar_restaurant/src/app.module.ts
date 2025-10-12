@@ -19,6 +19,7 @@ import { ProveedoresModule } from './proveedores/proveedores.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [__dirname + '*/**/entities/*.{ts|js}'],
+      autoLoadEntities: true,
       synchronize: true,
     }),
     ProductosModule,
