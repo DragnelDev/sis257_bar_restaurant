@@ -7,25 +7,26 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('productos')
-export class Producto {
-  @PrimaryGeneratedColumn('identity')
+@Entity('detalle_ventas')
+export class DetalleVenta {
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('integer', { name: 'id_categoria' })
-  idCategoria: number;
+  @Column('integer', { name: 'id_venta' })
+  idVenta: number;
 
-  @Column('varchar', { length: 50 })
-  nombre: string;
+  @Column('integer', { name: 'id_producto' })
+  idProducto: number;
 
-  @Column('varchar', { length: 100 })
-  descripcion: string;
+  @Column('int')
+  cantidad: number;
 
-  @Column('decimal', { name: 'precio_venta' })
-  precioVenta: number;
-
-  @Column('integer')
-  stock: number;
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    name: 'precio_unitario_venta',
+  })
+  precioUnitarioVenta: number;
 
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
