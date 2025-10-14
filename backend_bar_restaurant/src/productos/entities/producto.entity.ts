@@ -1,8 +1,13 @@
+import { Categoria } from 'src/categorias/entities/categoria.entity';
+import { DetalleCompra } from 'src/detalle-compras/entities/detalle-compra.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -35,4 +40,11 @@ export class Producto {
 
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
+
+  @ManyToOne(() => Categoria, (categoria) => categoria.productos)
+  @JoinColumn({ name: 'id_categoria', referencedColumnName: 'id' })
+  categoria: Categoria;
+
+  @OneToMany(() => DetalleCompra, (detalleCompra) => detalleCompra.producto)
+  detalleCompras: DetalleCompra[];
 }

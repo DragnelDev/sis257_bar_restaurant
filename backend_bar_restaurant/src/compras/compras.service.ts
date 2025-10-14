@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCompraDto } from './dto/create-compra.dto';
 import { UpdateCompraDto } from './dto/update-compra.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Compra } from './entities/compra.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ComprasService {
-  create(createCompraDto: CreateCompraDto) {
-    return 'This action adds a new compra';
+  constructor(
+    @InjectRepository(Compra) private comprasRepository: Repository<Compra>,
+  ) {}
+
+  async create(createCompraDto: CreateCompraDto): Promise<Compra> {
+    let compra = await this.comprasRepository.findOneBy({});
+    compra = new Compra();
+    Object.assign(compra, createCompraDto);
+    return this.comprasRepository.save(compra);
   }
 
-  findAll() {
-    return `This action returns all compras`;
+  async findAll(): Promise<Compra[]> {
+    return this.comprasRepository.find({ order: { total: 'ASC' } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} compra`;
+  async findOne(id: number): Promise<Compra> {
+    const compra = await this.comprasRepository.findOneBy({ id });
+    if (!compra) throw new NotFoundException('La compra no existe');
+    return compra;
   }
 
-  update(id: number, updateCompraDto: UpdateCompraDto) {
-    return `This action updates a #${id} compra`;
+  async update(id: number, updateCompraDto: UpdateCompraDto): Promise<Compra> {
+    const compra = await this.findOne(id);
+    Object.assign(compra, updateCompraDto);
+    return this.comprasRepository.save(compra);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} compra`;
+  async remove(id: number): Promise<Compra> {
+    const compra = await this.findOne(id);
+    return this.comprasRepository.softRemove(compra);
   }
 }

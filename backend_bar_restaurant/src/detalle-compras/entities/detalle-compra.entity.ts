@@ -1,4 +1,5 @@
 import { Compra } from 'src/compras/entities/compra.entity';
+import { Producto } from 'src/productos/entities/producto.entity';
 import {
   Column,
   CreateDateColumn,
@@ -40,7 +41,11 @@ export class DetalleCompra {
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
 
-  @ManyToOne(() => Compra, (compra) => compra.detalles)
+  @ManyToOne(() => Compra, (compra) => compra.detalleCompras)
   @JoinColumn({ name: 'id_compra', referencedColumnName: 'id' })
   compra: Compra;
+
+  @ManyToOne(() => Producto, (producto) => producto.detalleCompras)
+  @JoinColumn({ name: 'id_producto', referencedColumnName: 'id' })
+  producto: Producto;
 }
