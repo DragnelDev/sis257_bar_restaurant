@@ -3,9 +3,11 @@ import { Venta } from 'src/ventas/entities/venta.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('usuarios')
@@ -15,24 +17,32 @@ export class Usuario {
 
   @Column('varchar', { length: 10, name: 'nombre_usuario ' })
   username: string;
+
   @Column('varchar', { length: 100, name: 'contraseña ' })
   password: string;
-  @Column()
+
+  @Column('varchar')
   rol: string;
+
   @Column('varchar', { length: 100, name: 'correo_electronico ' })
   email: string;
-  @Column('boolean',{ name: 'activo', default: false })
+
+  @Column('boolean', { name: 'activo', default: false })
   active: boolean;
 
+  // Columnas de Auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
-  @CreateDateColumn({ name: 'fecha_modificacion' })
+
+  @UpdateDateColumn({ name: 'fecha_modificacion' })
   fechaModificacion: Date;
-  @CreateDateColumn({ name: 'fecha_eliminacion' })
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
+
   @OneToMany(() => Venta, (venta) => venta.usuario)
   ventas: Venta[];
-  
+
   @OneToMany(() => Compra, (compra) => compra.usuario)
   compras: Compra[];
 }

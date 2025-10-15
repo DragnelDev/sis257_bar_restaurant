@@ -11,6 +11,7 @@ export class ProveedoresService {
     @InjectRepository(Proveedor)
     private proveedoresRepository: Repository<Proveedor>,
   ) {}
+
   async create(CreateProveedorDto: CreateProveedorDto): Promise<Proveedor> {
     let proveedor = await this.proveedoresRepository.findOneBy({
       nit: CreateProveedorDto.nit.trim(),

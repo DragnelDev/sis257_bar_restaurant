@@ -42,11 +42,12 @@ export class Compra {
 
   @OneToMany(() => DetalleCompra, (detalleCompra) => detalleCompra.compra)
   detalleCompras: DetalleCompra[];
+
   @ManyToOne(() => Proveedor, (proveedor) => proveedor.compras)
   @JoinColumn({ name: 'id_proveedor', referencedColumnName: 'id' })
   proveedor: Proveedor;
+
   @ManyToOne(() => Usuario, (usuario) => usuario.compras)
   @JoinColumn({ name: 'id_usuario', referencedColumnName: 'id' })
   usuario: Usuario;
-  detalleVentas: any;
 }

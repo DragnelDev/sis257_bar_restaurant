@@ -31,6 +31,7 @@ export class Proveedor {
 
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
-  @OneToMany(()=> Compra, (compra) => compra.proveedor)
+
+  @OneToMany(() => Compra, (compra) => compra.proveedor)
   compras: Compra[];
 }
