@@ -52,7 +52,7 @@ El modelo de base de datos (`sis257_bar_restaurant`) está diseñado para ser tr
 
 | Entidad (Tabla) | Campos Tentativos | Flujo Asociado |
 | :--- | :--- | :--- |
-| **usuarios** | `id`, `username`, `password` (encriptada), `rol` | Autenticación (Login/JWT). |
+| **usuarios** | `id`, `username`, `password` (encriptada), `rol`,`active`(boolean),`email` | Autenticación (Login/JWT). |
 | **mesas** | `id`, `numero_mesa`, `capacidad`, **`estado`** (VARCHAR) | Soporte para el flujo de Ventas/Pedidos. |
 | **ventas** | `id`, `fecha`, `total`, `id_mesa` (FK), `id_usuario` (FK), `estado` | Encabezado de la Venta (Salida de Inventario). |
 | **detalle_ventas** | `id`, `id_venta` (FK), `id_producto` (FK), `cantidad`, `precio_unitario` | Desglose de productos vendidos (Resta de Stock). |
