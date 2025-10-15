@@ -1,14 +1,19 @@
+import { Compra } from 'src/compras/entities/compra.entity';
+import { Producto } from 'src/productos/entities/producto.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('detalle_ventas')
 export class DetalleVenta {
+  [x: string]: any;
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -36,4 +41,11 @@ export class DetalleVenta {
 
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
+  @ManyToOne(() => Compra, (compra) => compra.detalleVentas)
+  @JoinColumn({ name: 'id_compra', referencedColumnName: 'id' })
+  compra: Compra;
+  
+  @ManyToOne(() => Producto, (producto) => producto.detalleVentas)
+  @JoinColumn({ name: 'id_producto', referencedColumnName: 'id' })
+  producto: Producto;
 }

@@ -1,98 +1,88 @@
+# SIS257 | Proyecto Final de Laboratorio: Sistema de Gestión Ventas para Reset (Bar-Restaurant)
+
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+    <img src="./assets/logo_bar_restaurant.jpg" alt="Logo del negocio" width="300" style="border-radius: 15px;"/>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 1. Información General del Proyecto
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+| Detalle | Valor |
+| :--- | :--- |
+| **Nombre del Repositorio** | `sis257_bar_restaurant` |
+| **Tema/Negocio** | Bar-Restaurant |
+| **Base de Datos** | PostgreSQL (Nombre: `sis257_bar_restaurant`) |
+| **Backend** | NestJS (Directorio: `backend_bar_restaurant`) |
+| **Frontend** | Vue.js + Bootstrap (Directorio: `frontend_bar_restaurant`) |
+| **Funcionalidad Principal**| Gestión de **Ventas/Pedidos** (con control de Mesas e Inventario) |
+| **Versión Inicial** | 0.1.0 -  04/10/2025 |
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 2. Descripción del Negocio y Problema a Resolver
 
-## Project setup
+### Nombre del Negocio
+**Reset (Bar-Restaurant)**
 
-```bash
-$ npm install
-```
+### Descripción
+Sistema de gestión integral diseñado para optimizar las operaciones de un Bar-Restaurant. El objetivo principal es digitalizar el proceso de **toma de pedidos (Ventas)** y el control de **inventario**, asegurando que las entradas (Compras a proveedores) y salidas (Ventas a clientes) se reflejen en tiempo real en el stock.
 
-## Compile and run the project
+### Problemática (Justificación)
+Actualmente, el control de mesas, la toma de pedidos y la gestión de inventario se realizan de forma manual (libretas, pizarras o hojas de cálculo). Esto provoca:
+1.  Errores en las cuentas y cierres de caja.
+2.  Desconocimiento del stock real, generando quiebres o excesos de inventario.
+3.  Lenta rotación de mesas debido a la ineficiencia en el registro de pedidos.
 
-```bash
-# development
-$ npm run start
+Nuestro sistema resuelve estos problemas centralizando la información y automatizando las transacciones de **Compra** y **Venta**.
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## 3. Estructura de la Base de Datos (Entidades Tentativas)
 
-## Run tests
+El modelo de base de datos (`sis257_bar_restaurant`) está diseñado para ser transaccional (Ventas/Compras) y cuenta con **3 Catálogos** para cumplir con el requisito de CRUD.
 
-```bash
-# unit tests
-$ npm run test
+### A. Catálogos Principales (CRUD Requerido)
 
-# e2e tests
-$ npm run test:e2e
+| Entidad (Tabla) | Campos Tentativos | Rol en el Sistema |
+| :--- | :--- | :--- |
+| **productos** | `id`, `nombre`, `descripcion`, `precio_venta`, **`stock`** (INTEGER), `id_categoria` (FK) | Control de Inventario y Precios. |
+| **categorias** | `id`, `nombre` | Clasificación de Platos/Bebidas. |
+| **proveedores** | `id`, `nombre`, `nit`, `telefono` | Gestión de Entradas (Módulo de Compras). |
 
-# test coverage
-$ npm run test:cov
-```
+### B. Entidades de Soporte y Transaccionales
 
-## Deployment
+| Entidad (Tabla) | Campos Tentativos | Flujo Asociado |
+| :--- | :--- | :--- |
+| **usuarios** | `id`, `username`, `password` (encriptada), `rol`,`active`(boolean),`email` | Autenticación (Login/JWT). |
+| **mesas** | `id`, `numero_mesa`, `capacidad`, **`estado`** (VARCHAR) | Soporte para el flujo de Ventas/Pedidos. |
+| **ventas** | `id`, `fecha`, `total`, `id_mesa` (FK), `id_usuario` (FK), `estado` | Encabezado de la Venta (Salida de Inventario). |
+| **detalle_ventas** | `id`, `id_venta` (FK), `id_producto` (FK), `cantidad`, `precio_unitario` | Desglose de productos vendidos (Resta de Stock). |
+| **compras** | `id`, `fecha_compra`, `total`, `id_proveedor` (FK), `id_usuario` (FK) | Encabezado de la Compra (Entrada a Inventario). |
+| **detalle_compras** | `id`, `id_compra` (FK), `id_producto` (FK), `cantidad`, `precio_unitario_compra` | Desglose de productos comprados (Suma al Stock). |
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 4. Cronograma de Trabajo
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+Sección para ser actualizada con el progreso de los commits de los miembros del equipo.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+| Tarea | Fecha Límite | Estado | Responsable(s) |
+| :--- | :--- | :--- | :--- |
+| Conformación de grupos y creación de repositorio. | 02/10/2025 | **COMPLETADO** | Magin, Alexander, Joel |
+| Creación de `README.md` (Entidades Tentativas). | 05/10/2025 |  **COMPLETADO** | macDev |
+| Creación del proyecto backend (NestJS) y consolidación de entidades en el README.md. | 09/10/2025 | **COMPLETADO** | macDev |
+| Generación de la base de datos a partir de las entities. Configuración generales del backend (validaciones, swagger). CRUD de 3 catálogos a nivel de backend. | 16/10/2025 | EN PROSESO | ... |
+| Creación del proyecto frontend (vue.js). Selección y personalización de un template bootstrap. Endpoints necesarios para la compra o venta. | 23/10/2025 | PENDIENTE | ... |
+| CRUD frontend integrado con el backend de 3 catálogos. | 30/10/2025 | PENDIENTE | ... |
+| Incorporación de JWT y login a nivel de backend y frontend. | 6/11/2025 | PENDIENTE | ... |
+| Funcionalidad de la Compra o Venta en frontend. Generación de la documentación inicial. | 13/11/2025 | PENDIENTE | ... |
+| Presentación final de laboratorio. | 20/11/2025 | PENDIENTE | ... |
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 5. Integrantes del Grupo
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Nombre Completo | Nombre de Usuario Git | Contactos |
+| :--- | :--- | :--- |
+| Magin Condori Huanca | macDev | ... |
+| Alexander Antonio Lizondo Fortun | ... | ... |
+| Joel Jhonatan Copa Aiza | ... | ... |

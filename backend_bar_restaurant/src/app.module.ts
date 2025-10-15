@@ -10,6 +10,9 @@ import { ProveedoresModule } from './proveedores/proveedores.module';
 import { ComprasModule } from './compras/compras.module';
 import { DetalleComprasModule } from './detalle-compras/detalle-compras.module';
 import { DetalleVentasModule } from './detalle-ventas/detalle-ventas.module';
+import { MesasModule } from './mesas/mesas.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { VentasModule } from './ventas/ventas.module';
 
 @Module({
   imports: [
@@ -31,6 +34,9 @@ import { DetalleVentasModule } from './detalle-ventas/detalle-ventas.module';
     ComprasModule,
     DetalleComprasModule,
     DetalleVentasModule,
+    MesasModule,
+    UsuariosModule,
+    VentasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

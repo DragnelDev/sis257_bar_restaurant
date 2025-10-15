@@ -1,9 +1,13 @@
 import { DetalleCompra } from 'src/detalle-compras/entities/detalle-compra.entity';
+import { Proveedor } from 'src/proveedores/entities/proveedor.entity';
+import { Usuario } from 'src/usuarios/entities/usuario.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -38,4 +42,11 @@ export class Compra {
 
   @OneToMany(() => DetalleCompra, (detalleCompra) => detalleCompra.compra)
   detalleCompras: DetalleCompra[];
+  @ManyToOne(() => Proveedor, (proveedor) => proveedor.compras)
+  @JoinColumn({ name: 'id_proveedor', referencedColumnName: 'id' })
+  proveedor: Proveedor;
+  @ManyToOne(() => Usuario, (usuario) => usuario.compras)
+  @JoinColumn({ name: 'id_usuario', referencedColumnName: 'id' })
+  usuario: Usuario;
+  detalleVentas: any;
 }
