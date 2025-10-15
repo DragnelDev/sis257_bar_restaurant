@@ -15,7 +15,7 @@ async function bootstrap() {
     .setTitle('API Rest bar_restaurant')
     .setDescription('API Rest del proyecto sis257_bar_restaurant')
     .setVersion('1.0')
-    .addTag('compras, detalleCompras, detalleVentas')
+    .addTag('Entidades de bart_restaurant')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('apidoc', app, documentFactory);

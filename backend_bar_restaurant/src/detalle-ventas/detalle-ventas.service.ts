@@ -1,26 +1,59 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
 import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DetalleVenta } from './entities/detalle-venta.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DetalleVentasService {
-  create(createDetalleVentaDto: CreateDetalleVentaDto) {
-    return 'This action adds a new detalleVenta';
+  constructor(
+    @InjectRepository(DetalleVenta)
+    private detalleVentasRepository: Repository<DetalleVenta>,
+  ) {}
+
+  async create(
+    createDetalleVentaDto: CreateDetalleVentaDto,
+  ): Promise<DetalleVenta> {
+    let detalleVenta = await this.detalleVentasRepository.findOneBy({
+      idVenta: createDetalleVentaDto.idVenta,
+      idProducto: createDetalleVentaDto.idProducto,
+      cantidad: createDetalleVentaDto.cantidad,
+      precioUnitarioVenta: createDetalleVentaDto.precioUnitarioVenta,
+    });
+    if (detalleVenta) throw new ConflictException('El detalle venta ya existe');
+
+    detalleVenta = new DetalleVenta();
+    Object.assign(detalleVenta, createDetalleVentaDto);
+    return this.detalleVentasRepository.save(detalleVenta);
   }
 
-  findAll() {
-    return `This action returns all detalleVentas`;
+  async findAll(): Promise<DetalleVenta[]> {
+    return this.detalleVentasRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} detalleVenta`;
+  async findOne(id: number): Promise<DetalleVenta> {
+    const detalleVenta = await this.detalleVentasRepository.findOneBy({ id });
+    if (!detalleVenta)
+      throw new NotFoundException('El detalle venta no existe');
+    return detalleVenta;
   }
 
-  update(id: number, updateDetalleVentaDto: UpdateDetalleVentaDto) {
-    return `This action updates a #${id} detalleVenta`;
+  async update(
+    id: number,
+    updateDetalleVentaDto: UpdateDetalleVentaDto,
+  ): Promise<DetalleVenta> {
+    const detalleVenta = await this.findOne(id);
+    Object.assign(detalleVenta, updateDetalleVentaDto);
+    return this.detalleVentasRepository.save(detalleVenta);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} detalleVenta`;
+  async remove(id: number): Promise<DetalleVenta> {
+    const detalleVenta = await this.findOne(id);
+    return this.detalleVentasRepository.softRemove(detalleVenta);
   }
 }
