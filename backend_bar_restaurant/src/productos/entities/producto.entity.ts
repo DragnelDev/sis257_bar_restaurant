@@ -48,6 +48,6 @@ export class Producto {
 
   @OneToMany(() => DetalleCompra, (detalleCompra) => detalleCompra.producto)
   detalleCompras: DetalleCompra[];
-  @OneToMany(()=> DetalleVenta, (detalleVenta) => detalleVenta.producto)
+  @OneToMany(() => DetalleVenta, (detalleVenta) => detalleVenta.producto)
   detalleVentas: DetalleVenta[];
 }
