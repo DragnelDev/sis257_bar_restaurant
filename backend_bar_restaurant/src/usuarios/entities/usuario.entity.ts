@@ -16,19 +16,19 @@ export class Usuario {
   id: number;
 
   @Column('varchar', { length: 10, name: 'nombre_usuario ' })
-  username: string;
+  nombreUsuario: string;
 
   @Column('varchar', { length: 100, name: 'contraseña ' })
-  password: string;
+  contraseña: string;
 
-  @Column('varchar')
+  @Column('varchar', { length: 15 })
   rol: string;
 
-  @Column('varchar', { length: 100, name: 'correo_electronico ' })
-  email: string;
+  @Column('varchar', { length: 70, name: 'correo_electronico ' })
+  correoElectronico: string;
 
   @Column('boolean', { name: 'activo', default: false })
-  active: boolean;
+  activo: boolean;
 
   // Columnas de Auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })
