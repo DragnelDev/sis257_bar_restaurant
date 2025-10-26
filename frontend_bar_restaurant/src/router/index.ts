@@ -1,26 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import Dashboard from '@/views/Dashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-    {
-      path: '/productos',
-      name: 'productos',
-      component: () => import('../views/ProductoView.vue'),
+      component: DashboardLayout,
+      children: [
+        {
+          path: '',
+          name: 'dashboard',
+          component: Dashboard,
+        },
+        {
+          path: '/productos',
+          name: 'productos',
+          component: () => import('../views/ProductoView.vue'),
+        },
+        {
+          path: '/ventas',
+          name: 'ventas',
+          component: () => import('../views/VentaView.vue'),
+        },
+        {
+          path: '/compras',
+          name: 'compras',
+          component: () => import('../views/CompraView.vue'),
+        },
+        {
+          path: '/mesas',
+          name: 'mesas',
+          component: () => import('../views/MesaView.vue'),
+        },
+        {
+          path: '/usuarios',
+          name: 'usuarios',
+          component: () => import('../views/UsuarioView.vue'),
+        },
+      ],
     },
   ],
 })

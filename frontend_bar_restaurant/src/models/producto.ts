@@ -1,4 +1,4 @@
-export interface Artista {
+export interface Producto {
   id: number
   idCategoria: number
   nombre: string

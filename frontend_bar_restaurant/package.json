@@ -16,9 +16,14 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@primevue/themes": "^4.4.1",
     "axios": "^1.12.2",
+    "bootstrap": "^4.6.2",
+    "chart.js": "^4.5.1",
+    "jquery": "^3.7.1",
     "pinia": "^3.0.3",
+    "popper.js": "^1.16.1",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
