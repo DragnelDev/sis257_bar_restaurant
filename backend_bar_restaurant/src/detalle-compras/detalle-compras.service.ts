@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDetalleCompraDto } from './dto/create-detalle-compra.dto';
 import { UpdateDetalleCompraDto } from './dto/update-detalle-compra.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,15 +15,7 @@ export class DetalleComprasService {
   async create(
     createDetalleCompraDto: CreateDetalleCompraDto,
   ): Promise<DetalleCompra> {
-    let detalleCompra = await this.detalleComprasRepository.findOneBy({
-      idCompra: createDetalleCompraDto.idCompra,
-      idProducto: createDetalleCompraDto.idProducto,
-      cantidad: createDetalleCompraDto.cantidad,
-      precioUnitarioCompra: createDetalleCompraDto.precioUnitarioCompra,
-    });
-    if (detalleCompra)
-      throw new ConflictException('El detalle compra ya existe');
-
+    let detalleCompra = await this.detalleComprasRepository.findOneBy({});
     detalleCompra = new DetalleCompra();
     Object.assign(detalleCompra, createDetalleCompraDto);
     return this.detalleComprasRepository.save(detalleCompra);

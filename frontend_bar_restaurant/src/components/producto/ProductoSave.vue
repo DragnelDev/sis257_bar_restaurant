@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { Categoria } from '@/models/Categoria'
 import type { Producto } from '@/models/Producto'
 import http from '@/plugins/axios'
-import { Button, Dialog, InputText, InputNumber } from 'primevue'
+import { Button, Dialog, InputText, InputNumber, Dropdown } from 'primevue'
 import { computed, ref, watch } from 'vue'
 
 const ENDPOINT = 'productos'
@@ -15,6 +16,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['guardar', 'close'])
 
+const categorias = ref<Categoria[]>([])
+
 const dialogVisible = computed({
   get: () => props.mostrar,
   set: (value) => {
@@ -22,13 +25,61 @@ const dialogVisible = computed({
   },
 })
 
-const producto = ref<Producto>({ ...props.producto })
+const producto = ref<Producto>({
+  id: 0,
+  idCategoria: 0,
+  nombre: '',
+  descripcion: '',
+  precioVenta: 0,
+  stock: 0,
+  fechaCreacion: new Date(),
+  fechaModificacion: new Date(),
+  fechaEliminacion: null,
+  categoria: {
+    id: 0,
+    idCategoria: 0,
+    nombre: '',
+    descripcion: '',
+    fechaCreacion: new Date(),
+    fechaModificacion: new Date(),
+    fechaEliminacion: null,
+  },
+})
+
 watch(
   () => props.producto,
   (newVal) => {
-    producto.value = { ...newVal }
+    if (newVal) {
+      producto.value = { ...newVal }
+    } else {
+      producto.value = {
+        id: 0,
+        idCategoria: 0,
+        nombre: '',
+        descripcion: '',
+        precioVenta: 0,
+        stock: 0,
+        fechaCreacion: new Date(),
+        fechaModificacion: new Date(),
+        fechaEliminacion: null,
+        categoria: {
+          id: 0,
+          idCategoria: 0,
+          nombre: '',
+          descripcion: '',
+          fechaCreacion: new Date(),
+          fechaModificacion: new Date(),
+          fechaEliminacion: null,
+        },
+      }
+    }
   },
+  { immediate: true },
 )
+
+async function obtenerCategorias() {
+  categorias.value = await http.get('categorias').then((response) => response.data)
+}
 
 async function handleSave() {
   try {
@@ -49,11 +100,20 @@ async function handleSave() {
     emit('guardar')
     producto.value = {} as Producto
     dialogVisible.value = false
-  } catch (error: any) {
-    const msg = error?.response?.data?.message || error?.message || 'Error al guardar el producto'
-    alert(msg)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto'
+    console.error('Error al guardar:', error)
+    alert(errorMessage)
   }
 }
+watch(
+  () => props.mostrar,
+  (nuevoValor) => {
+    if (nuevoValor) {
+      obtenerCategorias()
+    }
+  },
+)
 </script>
 
 <template>
@@ -75,8 +135,16 @@ async function handleSave() {
       </div>
 
       <div class="flex items-center gap-4 mb-4">
-        <label for="idCategoria" class="font-semibold w-3">ID Categoría</label>
-        <InputNumber id="idCategoria" v-model="producto.idCategoria" class="flex-auto" :min="0" />
+        <label for="categoria" class="font-semibold w-3">Categoria</label>
+        <Dropdown
+          id="categoria"
+          v-model="producto.idCategoria"
+          :options="categorias"
+          optionLabel="nombre"
+          optionValue="id"
+          class="flex-auto"
+          placeholder="Seleccione una categoría"
+        />
       </div>
 
       <div class="flex items-center gap-4 mb-4">

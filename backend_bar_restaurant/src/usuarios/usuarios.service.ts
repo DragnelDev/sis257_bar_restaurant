@@ -24,8 +24,6 @@ export class UsuariosService {
     const usuario = new Usuario();
     usuario.usuario = createUsuarioDto.usuario.trim();
     usuario.contraseña = createUsuarioDto.usuario.trim();
-    usuario.correoElectronico = createUsuarioDto.correoElectronico.trim();
-    usuario.rol = createUsuarioDto.rol.trim();
     usuario.activo = createUsuarioDto.activo;
     return this.usuariosRepository.save(usuario);
   }

@@ -32,6 +32,9 @@ export class DetalleCompra {
   })
   precioUnitarioCompra: number;
 
+  @Column('decimal', { name: 'sub_total', precision: 10, scale: 2 })
+  subTotal: number;
+
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 

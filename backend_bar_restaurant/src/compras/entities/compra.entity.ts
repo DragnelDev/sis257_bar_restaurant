@@ -21,9 +21,6 @@ export class Compra {
   @CreateDateColumn({ name: 'fecha_compra' })
   fechaCompra: Date;
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  total: number;
-
   @Column('int', { name: 'id_proveedor' })
   idProveedor: number;
 

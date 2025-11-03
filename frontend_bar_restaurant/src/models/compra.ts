@@ -3,7 +3,6 @@ export interface Compra {
   idProveedor: number // Clave foránea
   idUsuario: number // Clave foránea (quién realizó la compra)
   fechaCompra: Date
-  total: number
   fechaCreacion: Date
   fechaModificacion: Date
   fechaEliminacion: Date | null

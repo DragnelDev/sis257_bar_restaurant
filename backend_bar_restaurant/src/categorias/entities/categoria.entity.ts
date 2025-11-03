@@ -14,8 +14,11 @@ export class Categoria {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('varchar', { length: 50, name: 'nombre' })
+  @Column('varchar', { length: 20 })
   nombre: string;
+
+  @Column('varchar', { length: 120 })
+  descripcion: string;
 
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;

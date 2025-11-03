@@ -1,10 +1,13 @@
 import { Compra } from 'src/compras/entities/compra.entity';
+import { Empleado } from 'src/empleados/entities/empleado.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -15,19 +18,16 @@ export class Usuario {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
+  @Column('integer', { name: 'id_empleado' })
+  idEmpleado: number;
+
   @Column('varchar', { length: 15, nullable: true })
   usuario: string;
 
   @Column('varchar', { length: 100, name: 'contraseña ' })
   contraseña: string;
 
-  @Column('varchar', { length: 15 })
-  rol: string;
-
-  @Column('varchar', { length: 70, name: 'correo_electronico ' })
-  correoElectronico: string;
-
-  @Column('boolean', { name: 'activo', default: false })
+  @Column('boolean', { name: 'activo', default: true })
   activo: boolean;
 
   // Columnas de Auditoria
@@ -45,4 +45,8 @@ export class Usuario {
 
   @OneToMany(() => Compra, (compra) => compra.usuario)
   compras: Compra[];
+
+  @ManyToOne(() => Empleado, (empleado) => empleado.usuarios)
+  @JoinColumn({ name: 'id_empleado', referencedColumnName: 'id' })
+  empleado: Empleado;
 }

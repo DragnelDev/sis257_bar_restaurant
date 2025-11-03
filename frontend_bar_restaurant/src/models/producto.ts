@@ -1,5 +1,4 @@
-// Asume que la ID de categoría es un número
-//import { Categoria } from './Categoria'
+import type { Categoria } from './Categoria'
 
 export interface Producto {
   id: number
@@ -13,5 +12,5 @@ export interface Producto {
   fechaEliminacion: Date | null // Usamos 'null' si no está eliminada
 
   // Puedes incluir la relación si la necesitas en el modelo de datos extendido:
-  //categoria?: Categoria
+  categoria: Categoria
 }

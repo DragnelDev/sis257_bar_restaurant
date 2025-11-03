@@ -1,12 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsDefined, IsInt, IsNumber } from 'class-validator';
+import { IsDateString, IsDefined, IsInt } from 'class-validator';
 
 export class CreateCompraDto {
-  @ApiProperty()
-  @IsDefined({ message: 'El campo total debe estar definido' })
-  @IsNumber({}, { message: 'El campo total debe ser de tipo numérico' })
-  readonly total: number;
-
   @ApiProperty()
   @IsDefined({ message: 'El campo fechaCompra debe estar definido' })
   @IsDateString(

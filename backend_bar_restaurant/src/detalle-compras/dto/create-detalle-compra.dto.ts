@@ -24,4 +24,9 @@ export class CreateDetalleCompraDto {
     { message: 'El campo precioUnitarioCompra debe ser de tipo numérico' },
   )
   readonly precioUnitarioCompra: number;
+
+  @ApiProperty()
+  @IsDefined({ message: 'El campo total debe estar definido' })
+  @IsNumber({}, { message: 'El campo total debe ser de tipo numérico' })
+  readonly subTotal: number;
 }

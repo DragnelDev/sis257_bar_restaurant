@@ -19,7 +19,7 @@ export class ComprasService {
   }
 
   async findAll(): Promise<Compra[]> {
-    return this.comprasRepository.find({ order: { total: 'ASC' } });
+    return this.comprasRepository.find({ where: {}, order: { id: 'ASC' } });
   }
 
   async findOne(id: number): Promise<Compra> {

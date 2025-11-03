@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import ProductoList from '@/components/producto/ProductoList.vue'
 import ProductoSave from '@/components/producto/ProductoSave.vue'
+import type { Producto } from '@/models/Producto'
 import Button from 'primevue/button'
 import { ref } from 'vue'
 
 const mostrarDialog = ref(false)
 const productoListRef = ref<InstanceType<typeof ProductoList> | null>(null)
-const productoEdit = ref<any>(null)
+const productoEdit = ref<Producto | null>(null)
 
 function handleCreate() {
   productoEdit.value = null
   mostrarDialog.value = true
 }
 
-function handleEdit(producto: any) {
+function handleEdit(producto: Producto) {
   productoEdit.value = producto
   mostrarDialog.value = true
 }
