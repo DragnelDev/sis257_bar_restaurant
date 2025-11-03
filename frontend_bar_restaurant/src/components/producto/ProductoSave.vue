@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Producto } from '@/models/producto'
+import type { Producto } from '@/models/Producto'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputText, InputNumber } from 'primevue'
 import { computed, ref, watch } from 'vue'
@@ -50,10 +50,7 @@ async function handleSave() {
     producto.value = {} as Producto
     dialogVisible.value = false
   } catch (error: any) {
-    const msg =
-      error?.response?.data?.message ||
-      error?.message ||
-      'Error al guardar el producto'
+    const msg = error?.response?.data?.message || error?.message || 'Error al guardar el producto'
     alert(msg)
   }
 }
@@ -79,12 +76,7 @@ async function handleSave() {
 
       <div class="flex items-center gap-4 mb-4">
         <label for="idCategoria" class="font-semibold w-3">ID Categoría</label>
-        <InputNumber
-          id="idCategoria"
-          v-model="producto.idCategoria"
-          class="flex-auto"
-          :min="0"
-        />
+        <InputNumber id="idCategoria" v-model="producto.idCategoria" class="flex-auto" :min="0" />
       </div>
 
       <div class="flex items-center gap-4 mb-4">
@@ -128,12 +120,7 @@ async function handleSave() {
           severity="secondary"
           @click="dialogVisible = false"
         />
-        <Button
-          type="button"
-          label="Guardar"
-          icon="pi pi-save"
-          @click="handleSave"
-        />
+        <Button type="button" label="Guardar" icon="pi pi-save" @click="handleSave" />
       </div>
     </Dialog>
   </div>

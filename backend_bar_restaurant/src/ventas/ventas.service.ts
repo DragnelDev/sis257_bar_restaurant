@@ -13,8 +13,10 @@ export class VentasService {
   ) {}
 
   async create(createVentaDto: CreateVentaDto): Promise<Venta> {
-    const venta = this.ventaRepository.create(createVentaDto);
-    return await this.ventaRepository.save(venta);
+    let venta = await this.ventaRepository.findOneBy({});
+    venta = new Venta();
+    Object.assign(venta, createVentaDto);
+    return this.ventaRepository.save(venta);
   }
 
   async findAll(): Promise<Venta[]> {

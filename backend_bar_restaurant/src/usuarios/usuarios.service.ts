@@ -17,12 +17,13 @@ export class UsuariosService {
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
     const existe = await this.usuariosRepository.findOneBy({
-      nombreUsuario: createUsuarioDto.nombreUsuario.trim(),
+      usuario: createUsuarioDto.usuario.trim(),
     });
     if (existe) throw new ConflictException('El usuario ya existe');
 
     const usuario = new Usuario();
-    usuario.nombreUsuario = createUsuarioDto.nombreUsuario.trim();
+    usuario.usuario = createUsuarioDto.usuario.trim();
+    usuario.contraseña = createUsuarioDto.usuario.trim();
     usuario.correoElectronico = createUsuarioDto.correoElectronico.trim();
     usuario.rol = createUsuarioDto.rol.trim();
     usuario.activo = createUsuarioDto.activo;
@@ -34,22 +35,22 @@ export class UsuariosService {
   }
 
   async findOne(id: number): Promise<Usuario> {
-    const nombreUsuario = await this.usuariosRepository.findOneBy({ id });
-    if (!nombreUsuario) throw new NotFoundException('El usuario no existe');
-    return nombreUsuario;
+    const usuario = await this.usuariosRepository.findOneBy({ id });
+    if (!usuario) throw new NotFoundException('El usuario no existe');
+    return usuario;
   }
 
   async update(
     id: number,
     updateUsuarioDto: UpdateUsuarioDto,
   ): Promise<Usuario> {
-    const nombreUsuario = await this.findOne(id);
-    const usuarioUpdate = Object.assign(nombreUsuario, updateUsuarioDto);
+    const usuario = await this.findOne(id);
+    const usuarioUpdate = Object.assign(usuario, updateUsuarioDto);
     return this.usuariosRepository.save(usuarioUpdate);
   }
 
   async remove(id: number): Promise<Usuario> {
-    const nombreUsuario = await this.findOne(id);
-    return this.usuariosRepository.softRemove(nombreUsuario);
+    const usuario = await this.findOne(id);
+    return this.usuariosRepository.softRemove(usuario);
   }
 }

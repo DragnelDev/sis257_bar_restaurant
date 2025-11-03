@@ -1,47 +1,140 @@
+// src/router/index.ts
+
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
-import Dashboard from '@/views/Dashboard.vue'
+import type { RouteRecordRaw } from 'vue-router'
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'home',
+    component: () => import('../views/HomeView.vue'),
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('../views/AboutView.vue'),
+  },
+  {
+    path: '/service',
+    name: 'service',
+    component: () => import('../views/ServiceView.vue'),
+  },
+  {
+    path: '/menu',
+    name: 'menu',
+    component: () => import('../views/MenuView.vue'),
+  },
+  {
+    path: '/booking',
+    name: 'booking',
+    component: () => import('../views/BookingView.vue'),
+  },
+  {
+    path: '/team',
+    name: 'team',
+    component: () => import('../views/TeamView.vue'),
+  },
+  {
+    path: '/testimonial',
+    name: 'testimonial',
+    component: () => import('../views/TestimonialView.vue'),
+  },
+  {
+    path: '/contact',
+    name: 'contact',
+    component: () => import('../views/ContactView.vue'),
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/auth/LoginView.vue'),
+    meta: { requiresGuest: true },
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/admin/AdminLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'admin-dashboard',
+        component: () => import('../views/admin/DashboardView.vue'),
+      },
+      {
+        path: 'bookings',
+        name: 'admin-bookings',
+        component: () => import('../views/admin/BookingsView.vue'),
+      },
+      {
+        path: 'menu',
+        name: 'admin-menu',
+        component: () => import('../views/admin/MenuManagementView.vue'),
+      },
+      {
+        path: 'orders',
+        name: 'admin-orders',
+        component: () => import('../views/admin/OrdersView.vue'),
+      },
+      {
+        path: 'staff',
+        name: 'admin-staff',
+        component: () => import('../views/admin/StaffView.vue'),
+      },
+      {
+        path: 'clients',
+        name: 'admin-clients',
+        component: () => import('../views/admin/ClientsView.vue'),
+      },
+      {
+        path: 'suppliers',
+        name: 'admin-suppliers',
+        component: () => import('../views/admin/SuppliersView.vue'),
+      },
+      {
+        path: 'products',
+        name: 'admin-products',
+        component: () => import('../views/admin/ProductsView.vue'),
+      },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: () => import('../views/admin/UsersView.vue'),
+      },
+      {
+        path: 'purchases',
+        name: 'admin-purchases',
+        component: () => import('../views/admin/PurchasesView.vue'),
+      },
+      {
+        path: 'sales',
+        name: 'admin-sales',
+        component: () => import('../views/admin/SalesView.vue'),
+      },
+    ],
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      component: DashboardLayout,
-      children: [
-        {
-          path: '',
-          name: 'dashboard',
-          component: Dashboard,
-        },
-        {
-          path: '/productos',
-          name: 'productos',
-          component: () => import('../views/ProductoView.vue'),
-        },
-        {
-          path: '/ventas',
-          name: 'ventas',
-          component: () => import('../views/VentaView.vue'),
-        },
-        {
-          path: '/compras',
-          name: 'compras',
-          component: () => import('../views/CompraView.vue'),
-        },
-        {
-          path: '/mesas',
-          name: 'mesas',
-          component: () => import('../views/MesaView.vue'),
-        },
-        {
-          path: '/usuarios',
-          name: 'usuarios',
-          component: () => import('../views/UsuarioView.vue'),
-        },
-      ],
-    },
-  ],
+  routes,
+  scrollBehavior() {
+    return { top: 0 }
+  },
+})
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const authUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user')
+  const isAuthenticated = !!authUser
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresGuest && isAuthenticated) {
+    next({ name: 'admin-dashboard' })
+  } else {
+    next()
+  }
 })
 
 export default router

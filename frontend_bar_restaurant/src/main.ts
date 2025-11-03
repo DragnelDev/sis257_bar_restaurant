@@ -1,26 +1,35 @@
-import './assets/main.css'
-
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-
 import App from './App.vue'
 import router from './router'
 
+// Prime Vue Configuration - class
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
 import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.min.css'
 
-// Importar Bootstrap y FontAwesome
+// Import Bootstrap CSS and JS
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
+// Import Font Awesome
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
-// Importar estilos de SB Admin 2
-import '@/assets/css/sb-admin-2.min.css'
+// Import Bootstrap Icons
+import 'bootstrap-icons/font/bootstrap-icons.css'
+
+// Import Animate.css
+import 'animate.css'
+
+// Import custom global styles
+import './assets/styles/custom.css'
 
 const app = createApp(App)
 
+app.use(router)
+app.mount('#app')
+
+// Prime Vue Configuration - instance
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
@@ -31,7 +40,3 @@ app.use(PrimeVue, {
     },
   },
 })
-
-app.use(createPinia())
-app.use(router)
-app.mount('#app')

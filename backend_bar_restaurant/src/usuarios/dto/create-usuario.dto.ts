@@ -1,20 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsBooleanString,
-  IsDefined,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsDefined, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateUsuarioDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'El campo nombre usuario es obligatorio' })
   @IsString({ message: 'El campo nombre usuario debe ser de tipo cadena' })
-  @MaxLength(10, {
-    message: 'El campo nombre usuario no debe ser mayor a 10 caracteres',
+  @MaxLength(15, {
+    message: 'El campo nombre usuario no debe ser mayor a 15 caracteres',
   })
-  readonly nombreUsuario: string;
+  readonly usuario: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: 'El campo rol es obligatorio' })
@@ -32,6 +26,5 @@ export class CreateUsuarioDto {
 
   @ApiProperty()
   @IsDefined({ message: 'El campo activo debe estar definido' })
-  @IsBooleanString({ message: 'El campo activo debe ser de tipo verdadero' })
   readonly activo: boolean;
 }

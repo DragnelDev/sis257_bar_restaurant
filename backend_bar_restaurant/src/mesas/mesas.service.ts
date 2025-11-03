@@ -14,8 +14,10 @@ export class MesasService {
 
   // 🟢 Crear mesa
   async create(createMesaDto: CreateMesaDto): Promise<Mesa> {
-    const nuevaMesa = this.mesaRepository.create(createMesaDto);
-    return await this.mesaRepository.save(nuevaMesa);
+    let nuevaMesa = await this.mesaRepository.findOneBy({});
+    nuevaMesa = new Mesa();
+    Object.assign(nuevaMesa, createMesaDto);
+    return this.mesaRepository.save(nuevaMesa);
   }
 
   // 🔵 Listar todas las mesas

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Producto } from '@/models/productos'
+import type { Producto } from '@/models/Producto'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputGroup, InputGroupAddon, InputText } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
@@ -20,7 +20,13 @@ const productosFiltrados = computed(() => {
 })
 
 async function obtenerLista() {
-  productos.value = await http.get(ENDPOINT).then((response) => response.data)
+  try {
+    const response = await http.get(ENDPOINT)
+    console.log('Respuesta del servidor:', response.data)
+    productos.value = response.data
+  } catch (error) {
+    console.error('Error al obtener productos:', error)
+  }
 }
 
 function emitirEdicion(producto: Producto) {
@@ -108,4 +114,26 @@ defineExpose({ obtenerLista })
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}
+
+tr:hover {
+  background-color: #f8fafc;
+}
+</style>
