@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Categoria } from '@/models/Categoria'
-import type { Producto } from '@/models/Producto'
+import type { Producto } from '@/models/producto'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputText, InputNumber, Dropdown } from 'primevue'
 import { computed, ref, watch } from 'vue'

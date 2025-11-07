@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import VentaList from '@/components/venta/VentaList.vue'
 import VentaSave from '@/components/venta/VentaSave.vue'
-import type { Venta } from '@/models/Venta'
+import type { Venta } from '@/models/venta'
 import Button from 'primevue/button'
 import { ref, type ComponentPublicInstance } from 'vue'
 

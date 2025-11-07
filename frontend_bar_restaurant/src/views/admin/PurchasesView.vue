@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CompraList from '@/components/compra/CompraList.vue'
 import CompraSave from '@/components/compra/CompraSave.vue'
-import type { Compra } from '@/models/Compra'
+import type { Compra } from '@/models/compra'
 import Button from 'primevue/button'
 import { ref, type ComponentPublicInstance } from 'vue'
 

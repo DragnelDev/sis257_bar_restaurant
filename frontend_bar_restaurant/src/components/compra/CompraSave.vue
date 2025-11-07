@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Compra } from '@/models/Compra'
+import type { Compra } from '@/models/compra'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputText, InputNumber } from 'primevue'
 import { computed, ref, watch } from 'vue'
@@ -22,29 +22,32 @@ const dialogVisible = computed({
   },
 })
 
-const compra = ref<Compra>({ ...props.compra })
+const localCompra = ref<Compra>({ ...(props.compra as Compra) })
 watch(
   () => props.compra,
   (newVal) => {
-    compra.value = { ...newVal }
+    localCompra.value = { ...(newVal as Compra) }
   },
+  { immediate: true },
 )
 
 async function handleSave() {
   try {
+    const fecha = localCompra.value.fechaCompra
+    const fechaToSend = fecha instanceof Date ? fecha.toISOString().slice(0, 10) : fecha
     const body = {
-      fechaCompra: compra.value.fechaCompra,
-      total: compra.value.total,
-      idProveedor: compra.value.idProveedor,
-      idUsuario: compra.value.idUsuario,
+      fechaCompra: fechaToSend,
+      total: localCompra.value.total,
+      idProveedor: localCompra.value.idProveedor,
+      idUsuario: localCompra.value.idUsuario,
     }
     if (props.modoEdicion) {
-      await http.patch(`${ENDPOINT}/${compra.value.id}`, body)
+      await http.patch(`${ENDPOINT}/${localCompra.value.id}`, body)
     } else {
       await http.post(ENDPOINT, body)
     }
     emit('guardar')
-    compra.value = {} as Compra
+    localCompra.value = {} as Compra
     dialogVisible.value = false
   } catch (error) {
     let msg = 'Ocurrió un error'
@@ -81,7 +84,7 @@ async function handleSave() {
         <label for="fechaCompra" class="font-semibold w-3">Fecha</label>
         <InputText
           id="fechaCompra"
-          v-model="compra.fechaCompra"
+          v-model="localCompra.fechaCompra"
           class="flex-auto"
           placeholder="YYYY-MM-DD"
         />
@@ -90,7 +93,7 @@ async function handleSave() {
         <label for="total" class="font-semibold w-3">Total</label>
         <InputNumber
           id="total"
-          v-model="compra.total"
+          v-model="localCompra.total"
           mode="currency"
           currency="BOB"
           locale="es-BO"
@@ -99,11 +102,11 @@ async function handleSave() {
       </div>
       <div class="flex items-center gap-4 mb-4">
         <label for="idProveedor" class="font-semibold w-3">Id Proveedor</label>
-        <InputNumber id="idProveedor" v-model="compra.idProveedor" class="flex-auto" :min="0" />
+  <InputNumber id="idProveedor" v-model="localCompra.idProveedor" class="flex-auto" :min="0" />
       </div>
       <div class="flex items-center gap-4 mb-4">
         <label for="idUsuario" class="font-semibold w-3">Id Usuario</label>
-        <InputNumber id="idUsuario" v-model="compra.idUsuario" class="flex-auto" :min="0" />
+  <InputNumber id="idUsuario" v-model="localCompra.idUsuario" class="flex-auto" :min="0" />
       </div>
       <div class="flex justify-end gap-2">
         <Button

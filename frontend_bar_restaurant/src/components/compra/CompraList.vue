@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Compra } from '@/models/Compra'
+import type { Compra } from '@/models/compra'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputGroup, InputGroupAddon, InputText } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
@@ -11,11 +11,19 @@ const mostrarConfirmDialog = ref<boolean>(false)
 const busqueda = ref<string>('')
 const emit = defineEmits(['edit'])
 
+function fechaToString(f: string | Date | null | undefined) {
+  if (!f) return ''
+  if (typeof f === 'string') return f
+  if (f instanceof Date) return f.toISOString().slice(0, 10)
+  return String(f)
+}
+
 const comprasFiltradas = computed(() => {
   return compras.value.filter((compra) => {
     const q = busqueda.value.toLowerCase()
+    const fechaStr = fechaToString(compra.fechaCompra).toLowerCase()
     return (
-      (compra.fechaCompra ?? '').toLowerCase().includes(q) ||
+      fechaStr.includes(q) ||
       String(compra.idProveedor ?? '').includes(q) ||
       String(compra.idUsuario ?? '').includes(q) ||
       String(compra.total ?? '').includes(q)
@@ -75,7 +83,7 @@ defineExpose({ obtenerLista })
       <tbody>
         <tr v-for="(compra, index) in comprasFiltradas" :key="compra.id">
           <td>{{ index + 1 }}</td>
-          <td>{{ compra.fechaCompra }}</td>
+          <td>{{ fechaToString(compra.fechaCompra) }}</td>
           <td>{{ compra.total }}</td>
           <td>{{ compra.idProveedor }}</td>
           <td>{{ compra.idUsuario }}</td>

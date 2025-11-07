@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Venta } from '@/models/Venta'
+import type { Venta } from '@/models/venta'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputText, InputNumber } from 'primevue'
 import { computed, ref, watch } from 'vue'
