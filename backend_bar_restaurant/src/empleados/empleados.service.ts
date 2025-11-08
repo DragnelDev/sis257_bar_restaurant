@@ -32,7 +32,7 @@ export class EmpleadosService {
 
   async findOne(id: number): Promise<Empleado> {
     const empleado = await this.empleadosRepository.findOneBy({ id });
-    if (!empleado) throw new NotFoundException('El usuario no existe');
+    if (!empleado) throw new NotFoundException('El empleado no existe');
     return empleado;
   }
 

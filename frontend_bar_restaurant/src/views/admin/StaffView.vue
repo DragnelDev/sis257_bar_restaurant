@@ -1,90 +1,88 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Employee } from '../../types'
+import { ref, onMounted, computed } from 'vue'
+import type { Empleado } from '@/models/Empleado'
+import EmpleadoList from '@/components/empleado/EmpleadoList.vue'
+import EmpleadoSave from '@/components/empleado/EmpleadoSave.vue'
+import Dialog from 'primevue/dialog'
+import http from '@/plugins/axios'
 
-const employees = ref<Employee[]>([
-  {
-    id: 1,
-    name: 'Carlos Rodriguez',
-    email: 'carlos@restoran.com',
-    phone: '+1234567890',
-    position: 'Head Chef',
-    salary: 5000,
-    hireDate: '2020-01-15',
-    status: 'active',
-    avatar: '/img/team-1.jpg',
-    address: '123 Main St, New York',
-    emergencyContact: '+1234567899',
-  },
-  {
-    id: 2,
-    name: 'Maria Garcia',
-    email: 'maria@restoran.com',
-    phone: '+1234567891',
-    position: 'Sous Chef',
-    salary: 3500,
-    hireDate: '2021-03-20',
-    status: 'active',
-    avatar: '/img/team-2.jpg',
-    address: '456 Park Ave, New York',
-    emergencyContact: '+1234567898',
-  },
-  {
-    id: 3,
-    name: 'David Lee',
-    email: 'david@restoran.com',
-    phone: '+1234567892',
-    position: 'Waiter',
-    salary: 2500,
-    hireDate: '2022-06-10',
-    status: 'active',
-    avatar: '/img/team-3.jpg',
-    address: '789 Broadway, New York',
-    emergencyContact: '+1234567897',
-  },
-  {
-    id: 4,
-    name: 'Emma Wilson',
-    email: 'emma@restoran.com',
-    phone: '+1234567893',
-    position: 'Kitchen Assistant',
-    salary: 2000,
-    hireDate: '2023-02-15',
-    status: 'on-leave',
-    avatar: '/img/team-4.jpg',
-    address: '321 5th Ave, New York',
-    emergencyContact: '+1234567896',
-  },
-])
+const empleados = ref<Empleado[]>([])
+const cargando = ref(false)
+const mostrarDialog = ref(false)
+const mostrarDetalles = ref(false)
+const empleadoSeleccionado = ref<Empleado | null>(null)
+const error = ref('')
+const busqueda = ref('')
+const EmpleadoListRef = ref<InstanceType<typeof EmpleadoList> | null>(null)
 
-const showAddModal = ref(false)
-const selectedEmployee = ref<Employee | null>(null)
+// Computed
+const empleadosActivos = computed(() =>
+  empleados.value.filter(e => e.activo).length
+)
 
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = {
-    active: 'success',
-    inactive: 'danger',
-    'on-leave': 'warning',
-  }
-  return colors[status] || 'secondary'
-}
+const empleadosInactivos = computed(() =>
+  empleados.value.filter(e => !e.activo).length
+)
 
-const viewEmployee = (employee: Employee) => {
-  selectedEmployee.value = employee
-}
+// Methods
+const cargarEmpleados = async () => {
+  cargando.value = true
+  error.value = ''
 
-const deleteEmployee = (id: number) => {
-  if (confirm('Are you sure you want to delete this employee?')) {
-    employees.value = employees.value.filter((e) => e.id !== id)
+  try {
+    const response = await http.get('empleados')
+    empleados.value = response.data
+  } catch (err) {
+    error.value = 'Error al cargar empleados. Verifique la conexión con el servidor.'
+    console.error('Error loading employees:', err)
+  } finally {
+    cargando.value = false
   }
 }
+
+const handleCreate = () => {
+  empleadoSeleccionado.value = null
+  mostrarDialog.value = true
+}
+
+const handleEdit = (empleado: Empleado) => {
+  empleadoSeleccionado.value = empleado
+  mostrarDialog.value = true
+}
+
+const handleCloseDialog = () => {
+  mostrarDialog.value = false
+}
+
+const handleGuardar = () => {
+  EmpleadoListRef.value?.obtenerLista()
+  cargarEmpleados()
+}
+
+const mostrarDetallesEmpleado = (empleado: Empleado) => {
+  empleadoSeleccionado.value = empleado
+  mostrarDetalles.value = true
+}
+
+const getNombreCompleto = (empleado: Empleado) => {
+  return `${empleado.nombre} ${empleado.apellidoPaterno} ${empleado.apellidoMaterno}`
+}
+
+const formatDate = (date: Date | string) => {
+  return new Date(date).toLocaleDateString('es-ES')
+}
+
+// Lifecycle
+onMounted(() => {
+  cargarEmpleados()
+})
 </script>
 
 <template>
-  <div class="employees-view">
+  <div class="staff-view">
     <div class="page-header mb-4">
-      <h2 class="mb-1">Employees Management</h2>
-      <p class="text-muted">Manage restaurant employees and staff</p>
+      <h2 class="mb-1">Gestión de Personal</h2>
+      <p class="text-muted">Administrar empleados del restaurante</p>
     </div>
 
     <!-- Stats -->
@@ -92,191 +90,104 @@ const deleteEmployee = (id: number) => {
       <div class="col-md-3">
         <div class="stat-card border-success">
           <div class="stat-icon bg-success">
-            <i class="fa fa-users"></i>
+            <i class="pi pi-users"></i>
           </div>
           <div class="stat-content">
-            <h6>Total Employees</h6>
-            <h3>{{ employees.length }}</h3>
+            <h6>Total Empleados</h6>
+            <h3>{{ empleados.length }}</h3>
           </div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="stat-card border-primary">
           <div class="stat-icon bg-primary">
-            <i class="fa fa-user-check"></i>
+            <i class="pi pi-check-circle"></i>
           </div>
           <div class="stat-content">
-            <h6>Active</h6>
-            <h3>{{ employees.filter((e) => e.status === 'active').length }}</h3>
+            <h6>Activos</h6>
+            <h3>{{ empleadosActivos }}</h3>
           </div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="stat-card border-warning">
-          <div class="stat-icon bg-warning">
-            <i class="fa fa-user-clock"></i>
+        <div class="stat-card border-danger">
+          <div class="stat-icon bg-danger">
+            <i class="pi pi-times-circle"></i>
           </div>
           <div class="stat-content">
-            <h6>On Leave</h6>
-            <h3>{{ employees.filter((e) => e.status === 'on-leave').length }}</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card border-info">
-          <div class="stat-icon bg-info">
-            <i class="fa fa-dollar-sign"></i>
-          </div>
-          <div class="stat-content">
-            <h6>Total Payroll</h6>
-            <h3>${{ employees.reduce((sum, e) => sum + e.salary, 0).toLocaleString() }}</h3>
+            <h6>Inactivos</h6>
+            <h3>{{ empleadosInactivos }}</h3>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-          <i class="fa fa-user-tie text-primary me-2"></i>
-          Employee Directory
-        </h5>
-        <button class="btn btn-primary" @click="showAddModal = true">
-          <i class="fa fa-plus me-2"></i>Add Employee
-        </button>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Contact</th>
-                <th>Position</th>
-                <th>Salary</th>
-                <th>Hire Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="employee in employees" :key="employee.id">
-                <td>
-                  <div class="d-flex align-items-center">
-                    <img
-                      :src="employee.avatar"
-                      :alt="employee.name"
-                      class="rounded-circle me-2"
-                      style="width: 40px; height: 40px; object-fit: cover"
-                    />
-                    <strong>{{ employee.name }}</strong>
-                  </div>
-                </td>
-                <td>
-                  <small class="d-block">{{ employee.email }}</small>
-                  <small class="text-muted">{{ employee.phone }}</small>
-                </td>
-                <td>{{ employee.position }}</td>
-                <td>${{ employee.salary.toLocaleString() }}</td>
-                <td>{{ employee.hireDate }}</td>
-                <td>
-                  <span class="badge" :class="`bg-${getStatusColor(employee.status)}`">
-                    {{ employee.status }}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    class="btn btn-sm btn-outline-info me-1"
-                    @click="viewEmployee(employee)"
-                    data-bs-toggle="modal"
-                    data-bs-target="#employeeModal"
-                  >
-                    <i class="fa fa-eye"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-primary me-1">
-                    <i class="fa fa-edit"></i>
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    @click="deleteEmployee(employee.id)"
-                  >
-                    <i class="fa fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <!-- Lista y formulario de empleados -->
+    <EmpleadoList
+      ref="EmpleadoListRef"
+      @edit="handleEdit"
+      @view="mostrarDetallesEmpleado"
+      @create="handleCreate"
+    />
 
-    <!-- Employee Detail Modal -->
-    <div class="modal fade" id="employeeModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" v-if="selectedEmployee">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title">Employee Details</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
+    <EmpleadoSave
+      :mostrar="mostrarDialog"
+      :empleado="empleadoSeleccionado"
+      :modoEdicion="!!empleadoSeleccionado"
+      @guardar="handleGuardar"
+      @close="handleCloseDialog"
+    />
+
+    <!-- Modal de Detalles del Empleado -->
+    <Dialog
+      v-model:visible="mostrarDetalles"
+      :header="'Detalles del Empleado'"
+      :modal="true"
+      :style="{ width: '50rem' }"
+      class="p-fluid"
+    >
+      <div v-if="empleadoSeleccionado" class="empleado-details">
+        <div class="profile-header">
+          <div class="profile-info" style="width:100%">
+            <h3>{{ getNombreCompleto(empleadoSeleccionado) }}</h3>
+            <p class="cargo">{{ empleadoSeleccionado.cargo }}</p>
+            <span :class="['estado-badge', empleadoSeleccionado.activo ? 'activo' : 'inactivo']">
+              {{ empleadoSeleccionado.activo ? 'Activo' : 'Inactivo' }}
+            </span>
           </div>
-          <div class="modal-body">
-            <div class="text-center mb-3">
-              <img
-                :src="selectedEmployee.avatar"
-                :alt="selectedEmployee.name"
-                class="rounded-circle mb-2"
-                style="width: 100px; height: 100px; object-fit: cover"
-              />
-              <h4>{{ selectedEmployee.name }}</h4>
-              <span class="badge" :class="`bg-${getStatusColor(selectedEmployee.status)}`">
-                {{ selectedEmployee.status }}
-              </span>
-            </div>
-            <table class="table">
-              <tr>
-                <th>Position:</th>
-                <td>{{ selectedEmployee.position }}</td>
-              </tr>
-              <tr>
-                <th>Email:</th>
-                <td>{{ selectedEmployee.email }}</td>
-              </tr>
-              <tr>
-                <th>Phone:</th>
-                <td>{{ selectedEmployee.phone }}</td>
-              </tr>
-              <tr>
-                <th>Address:</th>
-                <td>{{ selectedEmployee.address }}</td>
-              </tr>
-              <tr>
-                <th>Salary:</th>
-                <td>${{ selectedEmployee.salary.toLocaleString() }}</td>
-              </tr>
-              <tr>
-                <th>Hire Date:</th>
-                <td>{{ selectedEmployee.hireDate }}</td>
-              </tr>
-              <tr>
-                <th>Emergency Contact:</th>
-                <td>{{ selectedEmployee.emergencyContact }}</td>
-              </tr>
-            </table>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <label><i class="pi pi-id-card"></i> CI:</label>
+            <span>{{ empleadoSeleccionado.cedulaIdentidad }}</span>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <div class="info-item">
+            <label><i class="pi pi-calendar"></i> Fecha de Nacimiento:</label>
+            <span>{{ formatDate(empleadoSeleccionado.fechaNacimiento) }}</span>
+          </div>
+          <div class="info-item">
+            <label><i class="pi pi-phone"></i> Celular:</label>
+            <span>{{ empleadoSeleccionado.celular }}</span>
+          </div>
+          <div class="info-item">
+            <label><i class="pi pi-envelope"></i> Email:</label>
+            <span>{{ empleadoSeleccionado.email }}</span>
+          </div>
+          <div class="info-item full-width">
+            <label><i class="pi pi-map-marker"></i> Dirección:</label>
+            <span>{{ empleadoSeleccionado.direccion }}</span>
           </div>
         </div>
       </div>
-    </div>
+    </Dialog>
   </div>
-</template>
+</template><style scoped>
+.staff-view {
+  max-width: 1600px;
+  width: 100%;
+}
 
-<style scoped>
 .stat-card {
   background: white;
   border-radius: 10px;
@@ -285,6 +196,11 @@ const deleteEmployee = (id: number) => {
   display: flex;
   gap: 20px;
   border-left: 4px solid;
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
 }
 
 .stat-icon {
@@ -311,16 +227,93 @@ const deleteEmployee = (id: number) => {
   margin: 0;
 }
 
-.card {
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+/* Estilos para el modal de detalles */
+.empleado-details {
+  padding: 1rem;
 }
 
-.table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 12px;
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.profile-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-color);
+}
+
+.cargo {
+  font-size: 1.1rem;
   color: #6c757d;
+  margin: 0.5rem 0;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.estado-badge.activo {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.estado-badge.inactivo {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-item label i {
+  color: var(--primary-color);
+}
+
+.info-item span {
+  color: #212529;
+  font-size: 1rem;
 }
 </style>

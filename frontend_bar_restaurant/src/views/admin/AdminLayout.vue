@@ -88,7 +88,7 @@ const menuItems = [
               <span class="badge">3</span>
             </button>
             <div class="dropdown-menu dropdown-menu-end">
-              <h6 class="dropdown-header">Notifications</h6>
+              <h6 class="dropdown-header">Notificaciones</h6>
               <a class="dropdown-item" href="#">New booking received</a>
               <a class="dropdown-item" href="#">Menu item low stock</a>
               <a class="dropdown-item" href="#">New staff member added</a>
@@ -108,8 +108,8 @@ const menuItems = [
                 <small class="d-block text-muted">{{ user?.email }}</small>
               </div>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#"> <i class="fa fa-user me-2"></i>Profile </a>
-              <a class="dropdown-item" href="#"> <i class="fa fa-cog me-2"></i>Settings </a>
+              <a class="dropdown-item" href="#"> <i class="fa fa-user me-2"></i>Perfil </a>
+              <a class="dropdown-item" href="#"> <i class="fa fa-cog me-2"></i>Configuracion </a>
               <div class="dropdown-divider"></div>
               <RouterLink to="/" class="dropdown-item">
                 <i class="fa fa-home me-2"></i>View Website

@@ -10,7 +10,4 @@ export interface Empleado {
   email: string
   cargo: string
   activo: boolean
-  fechaCreacion: Date
-  fechaModificacion: Date
-  fechaEliminacion: Date | null
 }

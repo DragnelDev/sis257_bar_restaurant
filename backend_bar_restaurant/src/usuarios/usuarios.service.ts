@@ -22,6 +22,7 @@ export class UsuariosService {
     if (existe) throw new ConflictException('El usuario ya existe');
 
     const usuario = new Usuario();
+    usuario.idEmpleado = createUsuarioDto.idEmpleado;
     usuario.usuario = createUsuarioDto.usuario.trim();
     usuario.contraseña = createUsuarioDto.usuario.trim();
     usuario.activo = createUsuarioDto.activo;
@@ -29,7 +30,20 @@ export class UsuariosService {
   }
 
   async findAll(): Promise<Usuario[]> {
-    return this.usuariosRepository.find();
+    return this.usuariosRepository.find({
+      relations: { empleado: true },
+      select: {
+        id: true,
+        usuario: true,
+        activo: true,
+        empleado: {
+          id: true,
+          nombre: true,
+          apellidoMaterno: true,
+          apellidoPaterno: true,
+        },
+      },
+    });
   }
 
   async findOne(id: number): Promise<Usuario> {
