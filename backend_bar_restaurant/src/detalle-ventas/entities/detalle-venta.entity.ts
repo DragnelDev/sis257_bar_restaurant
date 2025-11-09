@@ -1,4 +1,4 @@
-import { Producto } from 'src/productos/entities/producto.entity';
+import { Receta } from 'src/recetas/entities/receta.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import {
   Column,
@@ -20,8 +20,8 @@ export class DetalleVenta {
   @Column('integer', { name: 'id_venta' })
   idVenta: number;
 
-  @Column('integer', { name: 'id_producto' })
-  idProducto: number;
+  @Column('integer', { name: 'id_receta' })
+  idReceta: number;
 
   @Column('int')
   cantidad: number;
@@ -46,7 +46,8 @@ export class DetalleVenta {
   @JoinColumn({ name: 'id_venta', referencedColumnName: 'id' })
   venta: Venta;
 
-  @ManyToOne(() => Producto, (producto) => producto.detalleVentas)
-  @JoinColumn({ name: 'id_producto', referencedColumnName: 'id' })
-  producto: Producto;
+  // Relación N:1 (El detalle de venta hace referencia a la Receta/Plato vendido)
+  @ManyToOne(() => Receta, (receta) => receta.detallesVenta)
+  @JoinColumn({ name: 'id_receta', referencedColumnName: 'id' })
+  receta: Receta;
 }

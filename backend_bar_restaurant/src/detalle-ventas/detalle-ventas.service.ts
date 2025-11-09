@@ -21,7 +21,7 @@ export class DetalleVentasService {
   ): Promise<DetalleVenta> {
     let detalleVenta = await this.detalleVentasRepository.findOneBy({
       idVenta: createDetalleVentaDto.idVenta,
-      idProducto: createDetalleVentaDto.idProducto,
+      idReceta: createDetalleVentaDto.idReceta,
       cantidad: createDetalleVentaDto.cantidad,
       precioUnitarioVenta: createDetalleVentaDto.precioUnitarioVenta,
     });

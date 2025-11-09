@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
@@ -26,10 +27,14 @@ import './assets/styles/custom.css'
 
 const app = createApp(App)
 
-app.use(router)
-app.mount('#app')
+// Pinia
+const pinia = createPinia()
+app.use(pinia)
 
-// Prime Vue Configuration - instance
+// Router
+app.use(router)
+
+// Prime Vue Configuration - instance (antes de montar)
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
@@ -40,3 +45,5 @@ app.use(PrimeVue, {
     },
   },
 })
+
+app.mount('#app')

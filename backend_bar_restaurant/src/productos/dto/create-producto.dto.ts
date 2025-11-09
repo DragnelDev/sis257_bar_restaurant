@@ -38,11 +38,24 @@ export class CreateProductoDto {
   readonly descripcion: string;
 
   @ApiProperty()
-  @IsDefined({ message: 'El campo precioVenta debe estar definido' })
-  readonly precioVenta: number;
+  @IsDefined({ message: 'El campo unidadMedida debe estar definido' })
+  @IsString({ message: 'El campo unidadMedida debe ser de tipo cadena' })
+  @MaxLength(30, {
+    message: 'El campo unidadMedida no debe exceder los 30 caracteres',
+  })
+  readonly unidadMedida: string;
 
   @ApiProperty()
-  @IsDefined({ message: 'El campo stock debe estar definido' })
-  @IsNumber({}, { message: 'El campo stock debe ser de tipo numérico' })
-  readonly stock: number;
+  @IsDefined({ message: 'El campo stockActual debe estar definido' })
+  @IsNumber({}, { message: 'El campo stockActual debe ser de tipo numérico' })
+  readonly stockActual: number;
+
+  @ApiProperty()
+  @IsDefined({ message: 'El campo stockMinimo debe estar definido' })
+  @IsNumber({}, { message: 'El campo stockMinimo debe ser de tipo numérico' })
+  readonly stockMinimo: number;
+
+  @ApiProperty()
+  @IsDefined({ message: 'El campo costoPromedio debe estar definido' })
+  readonly costoPromedio: number;
 }

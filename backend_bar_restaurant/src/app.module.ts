@@ -14,6 +14,9 @@ import { MesasModule } from './mesas/mesas.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { VentasModule } from './ventas/ventas.module';
 import { EmpleadosModule } from './empleados/empleados.module';
+import { RecetasModule } from './recetas/recetas.module';
+import { DetalleRecetasModule } from './detalle-recetas/detalle-recetas.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { EmpleadosModule } from './empleados/empleados.module';
     UsuariosModule,
     VentasModule,
     EmpleadosModule,
+    RecetasModule,
+    DetalleRecetasModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

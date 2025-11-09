@@ -8,9 +8,9 @@ export class CreateDetalleVentaDto {
   idVenta: number;
 
   @ApiProperty()
-  @IsDefined({ message: 'El campo idProducto debe estar definido' })
-  @IsInt({ message: 'El campo idProducto debe ser de tipo numérico' })
-  idProducto: number;
+  @IsDefined({ message: 'El campo idReceta debe estar definido' })
+  @IsInt({ message: 'El campo idReceta debe ser de tipo numérico' })
+  idReceta: number;
 
   @ApiProperty()
   @IsDefined({ message: 'El campo cantidad debe estar definido' })

@@ -1,0 +1,41 @@
+import { DetalleReceta } from 'src/detalle-recetas/entities/detalle-receta.entity';
+import { DetalleVenta } from 'src/detalle-ventas/entities/detalle-venta.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity('recetas')
+export class Receta {
+  @PrimaryGeneratedColumn('identity')
+  id: number;
+
+  @Column('varchar', { length: 100, unique: true, name: 'nombre_plato' })
+  nombrePlato: string; // Ej: "Hamburguesa Clásica"
+
+  @Column('varchar', { length: 255, nullable: true })
+  descripcion: string;
+
+  // Columnas de auditoria
+  @CreateDateColumn({ name: 'fecha_creacion' })
+  fechaCreacion: Date;
+
+  @UpdateDateColumn({ name: 'fecha_modificacion' })
+  fechaModificacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
+
+  // Relación: Una Receta tiene muchos ingredientes (detalles)
+  @OneToMany(() => DetalleReceta, (detalle) => detalle.receta)
+  ingredientes: DetalleReceta[];
+
+  // Relación: Una Receta puede estar en muchos detalles de venta
+  @OneToMany(() => DetalleVenta, (detalle) => detalle.receta)
+  detallesVenta: DetalleVenta[];
+}

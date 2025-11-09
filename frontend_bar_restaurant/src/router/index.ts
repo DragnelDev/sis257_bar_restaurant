@@ -1,5 +1,6 @@
 // src/router/index.ts
 
+import { getTokenFromLocalStorage } from '@/helpers'
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
@@ -124,17 +125,28 @@ const router = createRouter({
 })
 
 // Navigation Guard
-router.beforeEach((to, from, next) => {
-  const authUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user')
-  const isAuthenticated = !!authUser
+// Navigation Guard: usar meta.requiresAuth / meta.requiresGuest
+router.beforeEach((to) => {
+  const token = getTokenFromLocalStorage()
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
-  } else if (to.meta.requiresGuest && isAuthenticated) {
-    next({ name: 'admin-dashboard' })
-  } else {
-    next()
+  // Ruta protegida -> requiere token
+  if (to.matched.some((record) => record.meta?.requiresAuth) && !token) {
+    // guardar la URL destino en localStorage para redirigir después del login
+    try {
+      localStorage.setItem('returnUrl', to.fullPath)
+    } catch {
+      /* ignore localStorage errors (private mode, etc.) */
+    }
+    return { name: 'login' }
   }
+
+  // Ruta para invitados -> si ya está autenticado, redirigir al panel
+  if (to.matched.some((record) => record.meta?.requiresGuest) && token) {
+    return { name: 'admin-dashboard' }
+  }
+
+  // Permitir navegación por defecto
+  return true
 })
 
 export default router

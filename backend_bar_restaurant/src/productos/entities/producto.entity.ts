@@ -1,6 +1,6 @@
 import { Categoria } from 'src/categorias/entities/categoria.entity';
 import { DetalleCompra } from 'src/detalle-compras/entities/detalle-compra.entity';
-import { DetalleVenta } from 'src/detalle-ventas/entities/detalle-venta.entity';
+import { DetalleReceta } from 'src/detalle-recetas/entities/detalle-receta.entity';
 import {
   Column,
   CreateDateColumn,
@@ -27,12 +27,32 @@ export class Producto {
   @Column('varchar', { length: 100 })
   descripcion: string;
 
-  @Column('decimal', { name: 'precio_venta' })
-  precioVenta: number;
+  @Column('varchar', { length: 30, name: 'unidad_medida' })
+  unidadMedida: string;
 
-  @Column('integer')
-  stock: number;
+  // El stock actual. Se usa 'numeric' para precisión con decimales.
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    default: 0,
+    name: 'stock_actual',
+  })
+  stockActual: number;
 
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    default: 0,
+    name: 'stock_minimo',
+  })
+  stockMinimo: number;
+
+  @Column('decimal', { name: 'costo_promedio' })
+  costoPromedio: number;
+
+  // Columnas de auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 
@@ -48,6 +68,8 @@ export class Producto {
 
   @OneToMany(() => DetalleCompra, (detalleCompra) => detalleCompra.producto)
   detalleCompras: DetalleCompra[];
-  @OneToMany(() => DetalleVenta, (detalleVenta) => detalleVenta.producto)
-  detalleVentas: DetalleVenta[];
+
+  // Relación inversa con RecetaDetalle
+  @OneToMany(() => DetalleReceta, (detalle) => detalle.producto)
+  detallesReceta: DetalleReceta[];
 }

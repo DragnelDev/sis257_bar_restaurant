@@ -1,45 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../../composables/useAuth'
-import type { LoginForm } from '../../types'
+import { useAuthStore } from '@/stores/index'
 
-const router = useRouter()
-const route = useRoute()
-const { login } = useAuth()
-
-const form = ref<LoginForm>({
-  email: '',
-  password: '',
-  rememberMe: false,
-})
-
-const loading = ref(false)
+const usuario = ref('')
+const clave = ref('')
 const error = ref('')
-const showPassword = ref(false)
+const loading = ref(false)
 
-const handleSubmit = async () => {
+async function onSubmit() {
+  const authStore = useAuthStore()
   error.value = ''
   loading.value = true
-
   try {
-    const success = await login(form.value)
-
-    if (success) {
-      const redirect = (route.query.redirect as string) || '/admin'
-      router.push(redirect)
-    } else {
-      error.value = 'Invalid email or password'
-    }
-  } catch (err) {
-    error.value = 'An error occurred. Please try again.'
+    await authStore.login(usuario.value, clave.value)
+    // navegación la maneja el store (router.push)
+  } catch (err: unknown) {
+    // Intentar extraer mensaje del error de la API
+    const apiErr = err as { response?: { data?: { message?: string } } }
+    const msg =
+      apiErr?.response?.data?.message ||
+      (err instanceof Error ? err.message : 'Credenciales incorrectas')
+    error.value = String(msg)
   } finally {
     loading.value = false
   }
-}
-
-const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value
 }
 </script>
 
@@ -66,82 +50,52 @@ const togglePasswordVisibility = () => {
               ></button>
             </div>
 
-            <!-- Credenciales de prueba -->
-            <div class="alert alert-info" role="alert">
-              <strong>Demo Credentials:</strong><br />
-              Email: admin@restoran.com<br />
-              Password: admin123
-            </div>
-
-            <form @submit.prevent="handleSubmit">
-              <!-- Email -->
+            <form @submit.prevent="onSubmit">
+              <!-- Usuario -->
               <div class="mb-4">
-                <label for="email" class="form-label">
-                  <i class="fa fa-envelope me-2"></i>Email Address
+                <label for="usuario" class="form-label">
+                  <i class="fa fa-user me-2"></i>Usuario
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   class="form-control form-control-lg"
-                  id="email"
-                  v-model="form.email"
-                  placeholder="Enter your email"
+                  id="usuario"
+                  v-model="usuario"
+                  placeholder="Ingrese su usuario"
                   required
                   :disabled="loading"
                 />
               </div>
 
-              <!-- Password -->
+              <!-- Contraseña -->
               <div class="mb-4">
-                <label for="password" class="form-label">
-                  <i class="fa fa-lock me-2"></i>Password
+                <label for="clave" class="form-label">
+                  <i class="fa fa-lock me-2"></i>Contraseña
                 </label>
-                <div class="input-group">
-                  <input
-                    :type="showPassword ? 'text' : 'password'"
-                    class="form-control form-control-lg"
-                    id="password"
-                    v-model="form.password"
-                    placeholder="Enter your password"
-                    required
-                    :disabled="loading"
-                  />
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="togglePasswordVisibility"
-                    :disabled="loading"
-                  >
-                    <i :class="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Remember Me & Forgot Password -->
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="rememberMe"
-                    v-model="form.rememberMe"
-                    :disabled="loading"
-                  />
-                  <label class="form-check-label" for="rememberMe"> Remember Me </label>
-                </div>
-                <a href="#" class="text-primary text-decoration-none"> Forgot Password? </a>
+                <input
+                  type="password"
+                  class="form-control form-control-lg"
+                  id="clave"
+                  v-model="clave"
+                  placeholder="Ingrese su contraseña"
+                  required
+                  :disabled="loading"
+                />
               </div>
 
               <!-- Submit Button -->
               <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loading">
                 <span v-if="loading">
-                  <span class="spinner-border spinner-border-sm me-2" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </span>
-                  Signing In...
+                  <span
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Iniciando...
                 </span>
                 <span v-else>
                   <i class="fa fa-sign-in-alt me-2"></i>
-                  Sign In
+                  Iniciar Sesión
                 </span>
               </button>
             </form>
@@ -150,7 +104,7 @@ const togglePasswordVisibility = () => {
           <div class="card-footer text-center py-3 bg-light">
             <RouterLink to="/" class="text-decoration-none text-primary">
               <i class="fa fa-arrow-left me-2"></i>
-              Back to Website
+              Volver al Sitio Web
             </RouterLink>
           </div>
         </div>
@@ -166,16 +120,16 @@ const togglePasswordVisibility = () => {
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--primary) 0%, #d98a0b 100%);
+  background: linear-gradient(135deg, #fea116 0%, #d98a0b 100%);
 }
 
 .form-control:focus {
-  border-color: var(--primary);
+  border-color: #fea116;
   box-shadow: 0 0 0 0.2rem rgba(254, 161, 22, 0.25);
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: #fea116;
   border: none;
   transition: all 0.3s;
 }
@@ -186,18 +140,13 @@ const togglePasswordVisibility = () => {
   box-shadow: 0 5px 15px rgba(254, 161, 22, 0.3);
 }
 
-.btn-primary:disabled {
-  opacity: 0.6;
-  transform: none;
+.alert-danger {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
 
-.input-group .btn-outline-secondary {
-  border-color: #ced4da;
-}
-
-.input-group .btn-outline-secondary:hover {
-  background-color: #e9ecef;
-  border-color: #ced4da;
-  color: #495057;
+.bg-dark {
+  background-color: #1f2937 !important;
 }
 </style>

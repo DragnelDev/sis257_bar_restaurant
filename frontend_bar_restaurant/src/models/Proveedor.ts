@@ -3,7 +3,4 @@ export interface Proveedor {
   nombre: string
   nit: string
   telefono: string
-  fechaCreacion: Date
-  fechaModificacion: Date
-  fechaEliminacion: Date | null
 }

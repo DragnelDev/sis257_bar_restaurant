@@ -18,11 +18,13 @@ export class ProductosService {
 
   async create(createProductoDto: CreateProductoDto): Promise<Producto> {
     let producto = await this.productosRepository.findOneBy({
+      idCategoria: createProductoDto.idCategoria,
       nombre: createProductoDto.nombre.trim(),
       descripcion: createProductoDto.descripcion.trim(),
-      precioVenta: createProductoDto.precioVenta,
-      stock: createProductoDto.stock,
-      idCategoria: createProductoDto.idCategoria,
+      unidadMedida: createProductoDto.unidadMedida,
+      stockActual: createProductoDto.stockActual,
+      stockMinimo: createProductoDto.stockMinimo,
+      costoPromedio: createProductoDto.costoPromedio,
     });
     if (producto) throw new ConflictException('El Producto ya existe');
 
@@ -38,8 +40,10 @@ export class ProductosService {
         id: true,
         nombre: true,
         descripcion: true,
-        precioVenta: true,
-        stock: true,
+        unidadMedida: true,
+        stockActual: true,
+        stockMinimo: true,
+        costoPromedio: true,
         categoria: {
           id: true,
           nombre: true,

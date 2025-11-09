@@ -13,11 +13,11 @@ export function useAuth() {
       // await api.post('/auth/login', credentials)
 
       // Credenciales de prueba
-      if (credentials.email === 'admin@restoran.com' && credentials.password === 'admin123') {
+      if (credentials.usuario === 'admin@restoran.com' && credentials.clave === 'admin123') {
         const userData: User = {
           id: 1,
           name: 'Admin User',
-          email: credentials.email,
+          email: credentials.usuario,
           role: 'admin',
           avatar: '/img/team-1.jpg',
         }

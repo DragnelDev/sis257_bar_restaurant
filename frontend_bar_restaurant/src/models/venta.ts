@@ -5,9 +5,6 @@ export interface Venta {
   total: number
   estado: 'PENDIENTE' | 'PAGADA' | 'CANCELADA' | string // Ejemplo de estados
   fecha: Date
-  fechaCreacion: Date
-  fechaModificacion: Date
-  fechaEliminacion: Date | null
 
   // No incluimos el detalle_ventas aquí para evitar un objeto demasiado grande,
   // pero lo definimos por separado (ver abajo).

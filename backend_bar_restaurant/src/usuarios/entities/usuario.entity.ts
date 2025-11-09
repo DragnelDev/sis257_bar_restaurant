@@ -2,6 +2,8 @@ import { Compra } from 'src/compras/entities/compra.entity';
 import { Empleado } from 'src/empleados/entities/empleado.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -12,6 +14,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { compare, genSalt, hash } from 'bcrypt';
 
 @Entity('usuarios')
 export class Usuario {
@@ -24,8 +27,8 @@ export class Usuario {
   @Column('varchar', { length: 15, nullable: true })
   usuario: string;
 
-  @Column('varchar', { length: 100, name: 'contraseña ' })
-  contraseña: string;
+  @Column('varchar', { length: 100 })
+  clave: string;
 
   @Column('boolean', { name: 'activo', default: true })
   activo: boolean;
@@ -49,4 +52,16 @@ export class Usuario {
   @ManyToOne(() => Empleado, (empleado) => empleado.usuarios)
   @JoinColumn({ name: 'id_empleado', referencedColumnName: 'id' })
   empleado: Empleado;
+
+  //Hash contraseña antes de guardar en la base de datos
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword() {
+    const salt = await genSalt();
+    this.clave = await hash(this.clave, salt);
+  }
+
+  async validatePassword(plainPassword: string): Promise<boolean> {
+    return compare(plainPassword, this.clave);
+  }
 }

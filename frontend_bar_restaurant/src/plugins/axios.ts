@@ -6,12 +6,15 @@ const axios = Axios.create({
 })
 
 // Interceptor para manejar errores globalmente
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('Error en la petición:', error.response?.data || error.message)
-    return Promise.reject(error)
-  },
-)
+axios.interceptors.request.use((config) => {
+  // No importar el store para evitar dependencias circulares durante la inicialización.
+  // Leer token directamente desde localStorage.
+  const token = localStorage.getItem('token')
+  if (config.headers) {
+    config.headers['Content-type'] = 'application/json'
+    if (token) config.headers['Authorization'] = 'Bearer ' + token
+  }
+  return config
+})
 
 export default axios

@@ -6,7 +6,4 @@ export interface Usuario {
   usuario: string
   idEmpleado: number
   activo: boolean
-  fechaCreacion: Date
-  fechaModificacion: Date
-  fechaEliminacion: Date | null
 }

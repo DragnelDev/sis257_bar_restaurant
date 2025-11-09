@@ -16,6 +16,12 @@ async function bootstrap() {
     .setDescription('API Rest del proyecto sis257_bar_restaurant')
     .setVersion('1.0')
     .addTag('Entidades de bart_restaurant')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      in: 'header',
+    })
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('apidoc', app, documentFactory);
