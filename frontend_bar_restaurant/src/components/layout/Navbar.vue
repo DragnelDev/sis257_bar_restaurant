@@ -17,7 +17,7 @@ const isActive = (routeName: string) => {
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
     <RouterLink to="/" class="navbar-brand p-0">
-      <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>Restoran</h1>
+      <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>Restaurante</h1>
     </RouterLink>
 
     <button class="navbar-toggler" type="button" @click="toggleMenu" :aria-expanded="isMenuOpen">
@@ -27,11 +27,11 @@ const isActive = (routeName: string) => {
     <div class="collapse navbar-collapse" :class="{ show: isMenuOpen }" id="navbarCollapse">
       <div class="navbar-nav ms-auto py-0 pe-4">
         <RouterLink to="/" class="nav-item nav-link" :class="{ active: isActive('home') }">
-          Home
+          Inicio
         </RouterLink>
 
         <RouterLink to="/about" class="nav-item nav-link" :class="{ active: isActive('about') }">
-          About
+          Acerca de
         </RouterLink>
 
         <RouterLink
@@ -39,7 +39,7 @@ const isActive = (routeName: string) => {
           class="nav-item nav-link"
           :class="{ active: isActive('service') }"
         >
-          Service
+          Servicio
         </RouterLink>
 
         <RouterLink to="/menu" class="nav-item nav-link" :class="{ active: isActive('menu') }">
@@ -47,11 +47,11 @@ const isActive = (routeName: string) => {
         </RouterLink>
 
         <div class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"> Pages </a>
+          <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"> Paginas </a>
           <div class="dropdown-menu m-0">
-            <RouterLink to="/booking" class="dropdown-item">Booking</RouterLink>
-            <RouterLink to="/team" class="dropdown-item">Our Team</RouterLink>
-            <RouterLink to="/testimonial" class="dropdown-item">Testimonial</RouterLink>
+            <RouterLink to="/booking" class="dropdown-item">Reseva</RouterLink>
+            <RouterLink to="/team" class="dropdown-item">Nuestro equipo</RouterLink>
+            <RouterLink to="/testimonial" class="dropdown-item">Testimonio</RouterLink>
           </div>
         </div>
 
@@ -60,19 +60,19 @@ const isActive = (routeName: string) => {
           class="nav-item nav-link"
           :class="{ active: isActive('contact') }"
         >
-          Contact
+          Contacto
         </RouterLink>
       </div>
 
       <RouterLink to="/booking" class="btn btn-primary py-2 px-4 me-2">
-        <i class="fa fa-calendar-check me-2"></i>Book A Table
+        <i class="fa fa-calendar-check me-2"></i>Recerva una mesa
       </RouterLink>
       <RouterLink
         to="/login"
         class="btn btn-outline-light py-2 px-4"
         style="border-color: var(--primary); color: var(--primary)"
       >
-        <i class="fa fa-lock me-2"></i>Admin Login
+        <i class="fa fa-lock me-2"></i>Inicio de sesión
       </RouterLink>
     </div>
   </nav>

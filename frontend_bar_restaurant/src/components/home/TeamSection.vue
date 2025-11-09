@@ -8,7 +8,7 @@ const teamMembers = ref<TeamMember[]>([
   {
     id: 1,
     name: 'John Doe',
-    designation: 'Head Chef',
+    designation: 'Chef Principal',
     image: '/img/team-1.jpg',
     facebook: '#',
     twitter: '#',
@@ -17,7 +17,7 @@ const teamMembers = ref<TeamMember[]>([
   {
     id: 2,
     name: 'Jane Smith',
-    designation: 'Sous Chef',
+    designation: 'Segundo Chef',
     image: '/img/team-2.jpg',
     facebook: '#',
     twitter: '#',
@@ -26,7 +26,7 @@ const teamMembers = ref<TeamMember[]>([
   {
     id: 3,
     name: 'Mike Johnson',
-    designation: 'Pastry Chef',
+    designation: 'Chef Pastelero',
     image: '/img/team-3.jpg',
     facebook: '#',
     twitter: '#',
@@ -35,7 +35,7 @@ const teamMembers = ref<TeamMember[]>([
   {
     id: 4,
     name: 'Sarah Williams',
-    designation: 'Executive Chef',
+    designation: 'Chef Ejecutivo',
     image: '/img/team-4.jpg',
     facebook: '#',
     twitter: '#',
@@ -47,7 +47,7 @@ const teamMembers = ref<TeamMember[]>([
 <template>
   <div class="container-xxl pt-5 pb-3">
     <div class="container">
-      <SectionTitle subtitle="Team Members" title="Our Master Chefs" />
+      <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs Maestros" />
 
       <div class="row g-4">
         <div

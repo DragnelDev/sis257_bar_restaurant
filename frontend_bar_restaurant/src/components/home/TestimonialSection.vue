@@ -9,35 +9,35 @@ const autoplayInterval = ref<number | null>(null)
 const testimonials = ref<Testimonial[]>([
   {
     id: 1,
-    name: 'Client Name',
-    profession: 'Profession',
+    name: 'Ana Galarza',
+    profession: 'Diseñadora Gráfica',
     image: '/img/testimonial-1.jpg',
     quote:
-      'Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam',
+      'La comida superó mis expectativas. El sabor y la presentación son inigualables. ¡Volveré pronto!',
   },
   {
     id: 2,
-    name: 'Client Name',
-    profession: 'Profession',
+    name: 'Ricardo Soto',
+    profession: 'Ingeniero de Sistemas',
     image: '/img/testimonial-2.jpg',
     quote:
-      'Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam',
+      'Excelente servicio 24/7 y la facilidad del pedido en línea es genial. ¡Mi lugar favorito para pedir a domicilio!',
   },
   {
     id: 3,
-    name: 'Client Name',
-    profession: 'Profession',
+    name: 'Julian Alvarez',
+    profession: 'Arquitecto',
     image: '/img/testimonial-3.jpg',
     quote:
-      'Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam',
+      'Felicidades a los Chefs. El plato de salmón estaba perfectamente cocinado. Una experiencia culinaria memorable.',
   },
   {
     id: 4,
-    name: 'Client Name',
-    profession: 'Profession',
+    name: 'Lucia Fernandez',
+    profession: 'Fotógrafa',
     image: '/img/testimonial-4.jpg',
     quote:
-      'Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam',
+      'Ingredientes frescos y un ambiente increíble. Recomendaré este restaurante a todos mis amigos.',
   },
 ])
 
@@ -85,8 +85,8 @@ onUnmounted(() => {
   >
     <div class="container">
       <div class="text-center">
-        <h5 class="section-title ff-secondary text-center text-primary fw-normal">Testimonial</h5>
-        <h1 class="mb-5">Our Clients Say!!!</h1>
+        <h5 class="section-title ff-secondary text-center text-primary fw-normal">Testimonios</h5>
+        <h1 class="mb-5">¡Nuestros clientes dicen!</h1>
       </div>
 
       <div class="testimonial-carousel position-relative">

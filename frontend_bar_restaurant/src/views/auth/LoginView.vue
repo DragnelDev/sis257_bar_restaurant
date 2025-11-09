@@ -33,8 +33,8 @@ async function onSubmit() {
       <div class="col-lg-4 col-md-6 col-sm-8 mx-auto">
         <div class="card shadow-lg border-0 rounded-lg">
           <div class="card-header bg-primary text-white text-center py-4">
-            <h1 class="mb-0"><i class="fa fa-utensils me-2"></i>Restoran</h1>
-            <p class="mb-0 mt-2">Admin Panel Login</p>
+            <h1 class="mb-0"><i class="fa fa-utensils me-2"></i>Restaurante</h1>
+            <p class="mb-0 mt-2">Acceso al panel de administración</p>
           </div>
 
           <div class="card-body p-5">

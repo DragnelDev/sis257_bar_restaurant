@@ -7,26 +7,30 @@ const services = ref<Service[]>([
   {
     id: 1,
     icon: 'fa-user-tie',
-    title: 'Master Chefs',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Maestros Chefs',
+    description:
+      'Nuestro equipo está formado por chefs galardonados con pasión por la gastronomía. Cada plato es una obra de arte creada con técnicas culinarias de vanguardia y el máximo cuidado en los detalles.',
   },
   {
     id: 2,
     icon: 'fa-utensils',
-    title: 'Quality Food',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Comida de Calidad',
+    description:
+      'Nos comprometemos a usar solo ingredientes frescos, locales y de la más alta calidad. Garantizamos que cada bocado que pruebes esté lleno de sabor, frescura y nutritivos beneficios.',
   },
   {
     id: 3,
     icon: 'fa-cart-plus',
-    title: 'Online Order',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Pedido en Línea',
+    description:
+      'Disfruta de tus platos favoritos desde la comodidad de tu hogar u oficina. Nuestro sistema de pedidos es rápido, intuitivo y seguro, con seguimiento en tiempo real hasta tu puerta.',
   },
   {
     id: 4,
     icon: 'fa-headset',
-    title: '24/7 Service',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Servicio 24/7',
+    description:
+      'Nuestra dedicación por el cliente no tiene horario. Estamos disponibles para atender tus pedidos y consultas a cualquier hora del día, los 7 días de la semana, garantizando una experiencia sin interrupciones.',
   },
 ])
 </script>

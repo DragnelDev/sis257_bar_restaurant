@@ -30,7 +30,7 @@ function handleGuardar() {
 
 <template>
   <div class="mx-2 mt-6 md:m-7">
-    <h2>Productos</h2>
+    <h2>Gestión de Productos(Materia prima)</h2>
     <Button label="Crear Nuevo" icon="pi pi-plus" @click="handleCreate" />
     <ProductoList ref="productoListRef" @edit="handleEdit" />
     <ProductoSave

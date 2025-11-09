@@ -51,8 +51,10 @@ const closeVideoModal = () => {
 
       <div class="col-md-6 bg-dark d-flex align-items-center">
         <div class="p-5 wow fadeInUp" data-wow-delay="0.2s" style="width: 100%">
-          <h5 class="section-title ff-secondary text-start text-primary fw-normal">Reservation</h5>
-          <h1 class="text-white mb-4">Book A Table Online</h1>
+          <h5 class="section-title ff-secondary text-start text-primary fw-normal">
+            Reservaciones
+          </h5>
+          <h1 class="text-white mb-4">Reserva tu mesa en linea</h1>
 
           <form @submit.prevent="handleSubmit">
             <div class="row g-3">
@@ -66,7 +68,7 @@ const closeVideoModal = () => {
                     v-model="form.name"
                     required
                   />
-                  <label for="name">Your Name</label>
+                  <label for="name">Tu Nombre</label>
                 </div>
               </div>
 
@@ -80,7 +82,7 @@ const closeVideoModal = () => {
                     v-model="form.email"
                     required
                   />
-                  <label for="email">Your Email</label>
+                  <label for="email">Tu Correo Electronico</label>
                 </div>
               </div>
 
@@ -94,20 +96,20 @@ const closeVideoModal = () => {
                     v-model="form.datetime"
                     required
                   />
-                  <label for="datetime">Date & Time</label>
+                  <label for="datetime">Fecha y Hora</label>
                 </div>
               </div>
 
               <div class="col-md-6">
                 <div class="form-floating">
                   <select class="form-select" id="people" v-model.number="form.people">
-                    <option value="1">People 1</option>
-                    <option value="2">People 2</option>
-                    <option value="3">People 3</option>
-                    <option value="4">People 4</option>
-                    <option value="5">People 5</option>
+                    <option value="1">1 Persona</option>
+                    <option value="2">2 Persona</option>
+                    <option value="3">3 Persona</option>
+                    <option value="4">4 Persona</option>
+                    <option value="5">5 Persona</option>
                   </select>
-                  <label for="people">No Of People</label>
+                  <label for="people">Numero de Personas</label>
                 </div>
               </div>
 
@@ -120,12 +122,12 @@ const closeVideoModal = () => {
                     style="height: 100px"
                     v-model="form.specialRequest"
                   ></textarea>
-                  <label for="message">Special Request</label>
+                  <label for="message">Solicitud Especial</label>
                 </div>
               </div>
 
               <div class="col-12">
-                <button class="btn btn-primary w-100 py-3" type="submit">Book Now</button>
+                <button class="btn btn-primary w-100 py-3" type="submit">Recerva Ahora</button>
               </div>
             </div>
           </form>
@@ -144,13 +146,13 @@ const closeVideoModal = () => {
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content rounded-0">
         <div class="modal-header">
-          <h5 class="modal-title">Youtube Video</h5>
+          <h5 class="modal-title">Video de Youtube</h5>
           <button type="button" class="btn-close" @click="closeVideoModal"></button>
         </div>
         <div class="modal-body">
           <div class="ratio ratio-16x9">
             <iframe
-              src="https://www.youtube.com/embed/DWRcNpR6Kdc"
+              src="https://www.youtube.com/embed/Ki9AGLZYpmU"
               allowfullscreen
               allow="autoplay"
             ></iframe>

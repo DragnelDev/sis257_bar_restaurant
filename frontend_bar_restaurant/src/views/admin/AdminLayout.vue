@@ -34,7 +34,7 @@ const menuItems = [
   { icon: 'fa-users', text: 'Personal', route: 'admin-staff' },
   { icon: 'fa-user-tag', text: 'Clientes', route: 'admin-clients' },
   { icon: 'fa-box-open', text: 'Proveedores', route: 'admin-suppliers' },
-  { icon: 'fa-utensils', text: 'Productos', route: 'admin-products' },
+  { icon: 'fa-boxes-stacked', text: 'Inventarios', route: 'admin-products' },
   { icon: 'fa-user-friends', text: 'Usuarios', route: 'admin-users' },
   { icon: 'fa-shopping-bag', text: 'Compras', route: 'admin-purchases' },
   { icon: 'fa-cash-register', text: 'Ventas', route: 'admin-sales' },

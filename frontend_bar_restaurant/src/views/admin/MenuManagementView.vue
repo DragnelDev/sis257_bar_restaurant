@@ -82,8 +82,8 @@ const getCategoryColor = (category: string) => {
 <template>
   <div class="menu-management">
     <div class="page-header mb-4">
-      <h2 class="mb-1">Menu Management</h2>
-      <p class="text-muted">Manage restaurant menu items</p>
+      <h2 class="mb-1">Gestión de menús</h2>
+      <p class="text-muted">Gestionar los elementos del menú del restaurante</p>
     </div>
 
     <!-- Stats -->
@@ -94,7 +94,7 @@ const getCategoryColor = (category: string) => {
             <i class="fa fa-utensils"></i>
           </div>
           <div class="stat-content">
-            <h6>Total Items</h6>
+            <h6>Total de artículos</h6>
             <h3>{{ menuItems.length }}</h3>
           </div>
         </div>
@@ -105,7 +105,7 @@ const getCategoryColor = (category: string) => {
             <i class="fa fa-coffee"></i>
           </div>
           <div class="stat-content">
-            <h6>Breakfast</h6>
+            <h6>Desayuno</h6>
             <h3>{{ menuItems.filter((i) => i.category === 'breakfast').length }}</h3>
           </div>
         </div>
@@ -116,7 +116,7 @@ const getCategoryColor = (category: string) => {
             <i class="fa fa-hamburger"></i>
           </div>
           <div class="stat-content">
-            <h6>Lunch</h6>
+            <h6>Almuerzo</h6>
             <h3>{{ menuItems.filter((i) => i.category === 'lunch').length }}</h3>
           </div>
         </div>
@@ -127,7 +127,7 @@ const getCategoryColor = (category: string) => {
             <i class="fa fa-moon"></i>
           </div>
           <div class="stat-content">
-            <h6>Dinner</h6>
+            <h6>Cena</h6>
             <h3>{{ menuItems.filter((i) => i.category === 'dinner').length }}</h3>
           </div>
         </div>
@@ -146,22 +146,23 @@ const getCategoryColor = (category: string) => {
               <input
                 type="text"
                 class="form-control"
-                placeholder="Search menu items..."
+                placeholder="Buscar elementos del menú..."
                 v-model="searchQuery"
               />
             </div>
           </div>
           <div class="col-md-4">
             <select class="form-select" v-model="selectedCategory">
-              <option value="all">All Categories</option>
-              <option value="breakfast">Breakfast</option>
-              <option value="lunch">Lunch</option>
-              <option value="dinner">Dinner</option>
+              <option value="all">Todas las Categorias</option>
+              <option value="breakfast">Desayuno</option>
+              <option value="lunch">Almuerzo</option>
+              <option value="dinner">Cena</option>
+              <option value="beverages">Bebidas</option>
             </select>
           </div>
           <div class="col-md-4">
             <button class="btn btn-primary w-100" @click="showAddModal = true">
-              <i class="fa fa-plus me-2"></i>Add Menu Item
+              <i class="fa fa-plus me-2"></i>Agregar elemento al menú
             </button>
           </div>
         </div>
@@ -232,7 +233,7 @@ const getCategoryColor = (category: string) => {
             />
             <table class="table">
               <tr>
-                <th>Category:</th>
+                <th>Categoria:</th>
                 <td>
                   <span class="badge" :class="`bg-${getCategoryColor(selectedItem.category)}`">
                     {{ selectedItem.category }}
@@ -240,7 +241,7 @@ const getCategoryColor = (category: string) => {
                 </td>
               </tr>
               <tr>
-                <th>Price:</th>
+                <th>Pricio:</th>
                 <td>${{ selectedItem.price }}</td>
               </tr>
               <tr>
@@ -248,11 +249,11 @@ const getCategoryColor = (category: string) => {
                 <td>{{ selectedItem.stock }} units</td>
               </tr>
               <tr>
-                <th>Description:</th>
+                <th>Descripcion:</th>
                 <td>{{ selectedItem.description }}</td>
               </tr>
               <tr v-if="selectedItem.ingredients">
-                <th>Ingredients:</th>
+                <th>Ingredientes:</th>
                 <td>
                   <span
                     v-for="(ingredient, index) in selectedItem.ingredients"

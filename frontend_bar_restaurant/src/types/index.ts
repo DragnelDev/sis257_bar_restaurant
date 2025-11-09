@@ -6,7 +6,7 @@ export interface MenuItem {
   price: number
   description: string
   image: string
-  category: 'breakfast' | 'lunch' | 'dinner'
+  category: 'breakfast' | 'lunch' | 'dinner' | 'beverager'
   stock?: number
   ingredients?: string[]
 }
