@@ -30,6 +30,9 @@ export class Venta {
   @Column({ type: 'varchar', length: 20, default: 'PENDIENTE' })
   estado: string;
 
+  @Column({ type: 'varchar', length: 255, name: 'tipo_pago', nullable: true })
+  tipoPago: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha: Date;
 

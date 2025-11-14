@@ -2,10 +2,14 @@ import type { Categoria } from './Categoria'
 
 export interface Producto {
   id: number
-  idCategoria: number // Clave foránea
+  idCategoria: number
   nombre: string
   descripcion: string
-  stock: number
+  unidadMedida: string
+  stockActual: number
+  stockMinimo: number
+  costoPromedio_unitario: number
+  perecedero: boolean
 
   // Puedes incluir la relación si la necesitas en el modelo de datos extendido:
   categoria: Categoria

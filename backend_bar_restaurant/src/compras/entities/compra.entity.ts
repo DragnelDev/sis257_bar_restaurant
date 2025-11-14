@@ -18,14 +18,20 @@ export class Compra {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn({ name: 'fecha_compra' })
-  fechaCompra: Date;
-
   @Column('int', { name: 'id_proveedor' })
   idProveedor: number;
 
   @Column('int', { name: 'id_usuario' })
   idUsuario: number;
+
+  @Column('date', { name: 'fecha_compra' })
+  fechaCompra: Date;
+
+  @Column('varchar', { name: 'numero_factura', length: 8 })
+  numeroFactura: string;
+
+  @Column('date', { name: 'fecha_recepcion' })
+  fechaRecepcion: Date;
 
   //Columnas de Auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })

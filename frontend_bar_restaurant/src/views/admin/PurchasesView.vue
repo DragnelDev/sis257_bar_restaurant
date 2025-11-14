@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CompraList from '@/components/compra/CompraList.vue'
 import CompraSave from '@/components/compra/CompraSave.vue'
-import type { Compra } from '@/models/compra'
+import type { Compra } from '@/models/Compra'
 import Button from 'primevue/button'
 import { ref, type ComponentPublicInstance } from 'vue'
 
@@ -33,7 +33,7 @@ function handleGuardar() {
 <template>
   <div>
     <h2>Compras</h2>
-    <Button label="Crear Nueva" icon="pi pi-plus" @click="handleCreate" />
+    <Button label="Registrar un nueva compra" icon="pi pi-plus" @click="handleCreate" />
     <CompraList ref="compraListRef" @edit="handleEdit" />
     <CompraSave
       :mostrar="mostrarDialog"

@@ -1,6 +1,10 @@
 export interface Proveedor {
   id: number
-  nombre: string
+  nombreEmpresa: string
   nit: string
-  telefono: string
+  responsable: string
+  direccion: string
+  celular: string
+  email: string
+  condicionPago: string
 }

@@ -1,45 +1,22 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DetalleComprasService } from './detalle-compras.service';
-import { CreateDetalleCompraDto } from './dto/create-detalle-compra.dto';
-import { UpdateDetalleCompraDto } from './dto/update-detalle-compra.dto';
 
 @Controller('detalle-compras')
 export class DetalleComprasController {
   constructor(private readonly detalleComprasService: DetalleComprasService) {}
-
-  @Post()
-  create(@Body() createDetalleCompraDto: CreateDetalleCompraDto) {
-    return this.detalleComprasService.create(createDetalleCompraDto);
-  }
 
   @Get()
   findAll() {
     return this.detalleComprasService.findAll();
   }
 
+  @Get('detailed-list')
+  findAllDetailed() {
+    return this.detalleComprasService.findAllDetailed();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.detalleComprasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateDetalleCompraDto: UpdateDetalleCompraDto,
-  ) {
-    return this.detalleComprasService.update(+id, updateDetalleCompraDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.detalleComprasService.remove(+id);
   }
 }

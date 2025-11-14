@@ -33,6 +33,9 @@ export class DetalleVenta {
   })
   precioUnitarioVenta: number;
 
+  @Column('decimal', { precision: 10, scale: 2, name: 'costo_unitario' })
+  costo_unitario: number;
+
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 

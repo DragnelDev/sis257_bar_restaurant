@@ -1,24 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DetalleVentasService } from './detalle-ventas.service';
-import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
-import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
 
 @Controller('detalle-ventas')
 export class DetalleVentasController {
   constructor(private readonly detalleVentasService: DetalleVentasService) {}
-
-  @Post()
-  create(@Body() createDetalleVentaDto: CreateDetalleVentaDto) {
-    return this.detalleVentasService.create(createDetalleVentaDto);
-  }
 
   @Get()
   findAll() {
@@ -28,18 +13,5 @@ export class DetalleVentasController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.detalleVentasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateDetalleVentaDto: UpdateDetalleVentaDto,
-  ) {
-    return this.detalleVentasService.update(+id, updateDetalleVentaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.detalleVentasService.remove(+id);
   }
 }

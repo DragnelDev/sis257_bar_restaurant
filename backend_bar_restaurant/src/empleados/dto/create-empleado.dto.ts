@@ -81,6 +81,14 @@ export class CreateEmpleadoDto {
   readonly cargo: string;
 
   @ApiProperty()
+  @IsNotEmpty({ message: 'El campo salario es obligatorio' })
+  readonly salario: number;
+
+  @ApiProperty()
+  @IsNotEmpty({ message: 'El campo fecha ingreso es obligatorio' })
+  readonly fechaIngreso: Date;
+
+  @ApiProperty()
   @IsNotEmpty({ message: 'El campo activo es obligatorio' })
   readonly activo: boolean;
 }

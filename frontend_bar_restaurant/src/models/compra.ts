@@ -3,16 +3,40 @@ import type { Usuario } from './Usuario'
 
 export interface Compra {
   id: number
-  idProveedor: number // Clave foránea
-  idUsuario: number // Clave foránea (quién realizó la compra)
-  // fechaCompra puede venir como string desde la API o como Date
-  fechaCompra: string | Date | null
+  idProveedor: number
+  idUsuario: number
+  fechaCompra: Date | string // Tipo fecha
+  numeroFactura: string
+  fechaRecepcion: Date | string
+  total: number
 
-  // Opcionalmente puedes agregar las relaciones para modelos de datos más completos:
-  // Campos usados en UI
-  total?: number
+  // Detalles de la compra
+  detalles: [
+    {
+      idProducto: number
+      cantidad: number
+      precioUnitarioCompra: number
+    },
+  ]
 
   // Relaciones opcionales
   proveedor?: Proveedor
   usuario?: Usuario
+}
+
+// Para el cuerpo de cada item de la compra
+export interface CreateDetalleCompraDto {
+  idProducto: number
+  cantidad: number
+  precioUnitarioCompra: number
+}
+
+// Para el cuerpo principal de la compra (POST /compras)
+export interface CreateCompraDto {
+  idProveedor: number
+  idUsuario: number
+  fechaCompra: string | Date
+  numeroFactura: string
+  fechaRecepcion: string | Date
+  detalles: CreateDetalleCompraDto[]
 }

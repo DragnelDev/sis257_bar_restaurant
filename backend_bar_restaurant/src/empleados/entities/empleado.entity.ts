@@ -32,14 +32,20 @@ export class Empleado {
   @Column('varchar', { length: 80 })
   direccion: string;
 
-  @Column('varchar', { length: 15 })
+  @Column('varchar', { length: 12 })
   celular: string;
 
-  @Column('varchar', { length: 70 })
+  @Column('varchar', { length: 40 })
   email: string;
+
+  @Column('date', { name: 'fecha_ingreso ' })
+  fechaIngreso: Date;
 
   @Column('varchar', { length: 15 })
   cargo: string;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  salario: number;
 
   @Column('boolean', { name: 'activo', default: true })
   activo: boolean;

@@ -1,7 +1,7 @@
 export interface Receta {
   id: number
-  nombre: string
+  nombreReceta: string
   descripcion: string
-  precio: number
-  tiempoPreparacion: number // en minutos
+  precioVentaActual: number
+  costoActual: number
 }

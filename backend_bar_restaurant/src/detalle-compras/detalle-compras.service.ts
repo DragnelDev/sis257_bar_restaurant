@@ -1,6 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateDetalleCompraDto } from './dto/create-detalle-compra.dto';
-import { UpdateDetalleCompraDto } from './dto/update-detalle-compra.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DetalleCompra } from './entities/detalle-compra.entity';
 import { Repository } from 'typeorm';
@@ -12,37 +10,36 @@ export class DetalleComprasService {
     private detalleComprasRepository: Repository<DetalleCompra>,
   ) {}
 
-  async create(
-    createDetalleCompraDto: CreateDetalleCompraDto,
-  ): Promise<DetalleCompra> {
-    let detalleCompra = await this.detalleComprasRepository.findOneBy({});
-    detalleCompra = new DetalleCompra();
-    Object.assign(detalleCompra, createDetalleCompraDto);
-    return this.detalleComprasRepository.save(detalleCompra);
+  async findAll(): Promise<DetalleCompra[]> {
+    return this.detalleComprasRepository.find({
+      relations: ['compra', 'producto'],
+    });
   }
 
-  async findAll(): Promise<DetalleCompra[]> {
-    return this.detalleComprasRepository.find();
+  async findAllDetailed(): Promise<DetalleCompra[]> {
+    // Nota: Asume que las entidades DetalleCompra, Compra, Producto, Proveedor y Usuario están relacionadas.
+    return this.detalleComprasRepository.find({
+      // Carga recursiva de relaciones
+      relations: [
+        'producto', // Para el nombre y unidad del producto
+        'compra', // Para acceder a la cabecera
+        'compra.proveedor', // Para el nombre del proveedor
+        'compra.usuario', // Para el nombre del usuario
+      ],
+      order: {
+        compra: { fechaCreacion: 'DESC' }, // Ordenar por fecha de la compra
+        id: 'ASC',
+      },
+    });
   }
 
   async findOne(id: number): Promise<DetalleCompra> {
-    const detalleCompra = await this.detalleComprasRepository.findOneBy({ id });
+    const detalleCompra = await this.detalleComprasRepository.findOne({
+      where: { id },
+      relations: ['compra', 'producto'],
+    });
     if (!detalleCompra)
       throw new NotFoundException('El detalle compra no existe');
     return detalleCompra;
-  }
-
-  async update(
-    id: number,
-    updateDetalleCompraDto: UpdateDetalleCompraDto,
-  ): Promise<DetalleCompra> {
-    const detalleCompra = await this.findOne(id);
-    Object.assign(detalleCompra, updateDetalleCompraDto);
-    return this.detalleComprasRepository.save(detalleCompra);
-  }
-
-  async remove(id: number): Promise<DetalleCompra> {
-    const detalleCompra = await this.findOne(id);
-    return this.detalleComprasRepository.softRemove(detalleCompra);
   }
 }

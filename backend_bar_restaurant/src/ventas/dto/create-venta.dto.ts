@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { ItemVentaDto } from './item-venta.dto';
+import { Type } from 'class-transformer';
 
 export class CreateVentaDto {
   @ApiProperty()
@@ -12,7 +20,9 @@ export class CreateVentaDto {
   @IsNumber({}, { message: 'El campo idUsuario debe ser un número' })
   readonly idUsuario: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Total de la Venta. Puede ser calculado en el backend.',
+  })
   @IsNotEmpty({ message: 'El campo total no debe estar vacío' })
   @IsNumber({}, { message: 'El campo total debe ser un número' })
   readonly total: number;
@@ -21,4 +31,22 @@ export class CreateVentaDto {
   @IsNotEmpty({ message: 'El campo estado no debe estar vacío' })
   @IsString({ message: 'El campo estado debe ser una cadena' })
   readonly estado: string;
+
+  @ApiProperty({
+    description: 'Tipo de pago de la venta (e.g., "EFECTIVO", "TARJETA").',
+  })
+  @IsNotEmpty({ message: 'El campo tipoPago no debe estar vacío' })
+  @IsString({ message: 'El campo tipoPago debe ser una cadena' })
+  readonly tipoPago: string;
+
+  // --- Detalles de la Venta (CRÍTICO: El array anidado) ---
+
+  @ApiProperty({
+    type: [ItemVentaDto],
+    description: 'Lista de ítems (Recetas) incluidos en la venta.',
+  })
+  @IsArray({ message: 'El detalle de venta debe ser un array.' })
+  @ValidateNested({ each: true })
+  @Type(() => ItemVentaDto) // Importante para la validación de objetos anidados
+  readonly detalles: ItemVentaDto[];
 }

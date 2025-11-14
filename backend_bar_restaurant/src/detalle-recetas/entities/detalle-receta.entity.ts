@@ -31,6 +31,9 @@ export class DetalleReceta {
   })
   cantidadConsumida: number;
 
+  @Column('varchar', { length: 30, name: 'unidad_consumo' })
+  unidadConsumo: string;
+
   // Columnas de auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;

@@ -15,11 +15,22 @@ export class Receta {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('varchar', { length: 100, unique: true, name: 'nombre_plato' })
-  nombrePlato: string; // Ej: "Hamburguesa Clásica"
+  @Column('varchar', { length: 100, unique: true, name: 'nombre_receta' })
+  nombreReceta: string; // Ej: "Hamburguesa Clásica"
 
   @Column('varchar', { length: 255, nullable: true })
   descripcion: string;
+
+  @Column('numeric', { precision: 10, scale: 2, name: 'precio_venta_actual' })
+  precioVentaActual: number;
+
+  @Column('numeric', {
+    precision: 10,
+    scale: 2,
+    name: 'costo_actual',
+    default: 0,
+  })
+  costoActual: number;
 
   // Columnas de auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })

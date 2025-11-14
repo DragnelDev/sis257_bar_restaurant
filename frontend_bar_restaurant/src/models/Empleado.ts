@@ -4,10 +4,12 @@ export interface Empleado {
   nombre: string
   apellidoPaterno: string
   apellidoMaterno: string
-  fechaNacimiento: Date
+  fechaNacimiento: string // Tipo fecha
   direccion: string
   celular: string
   email: string
+  fechaIngreso: string // Tipo fecha
   cargo: string
+  salario: number // Suponiendo que el campo 123 es salario
   activo: boolean
 }

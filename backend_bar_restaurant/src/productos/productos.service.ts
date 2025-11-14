@@ -17,19 +17,23 @@ export class ProductosService {
   ) {}
 
   async create(createProductoDto: CreateProductoDto): Promise<Producto> {
-    let producto = await this.productosRepository.findOneBy({
-      idCategoria: createProductoDto.idCategoria,
-      nombre: createProductoDto.nombre.trim(),
-      descripcion: createProductoDto.descripcion.trim(),
-      unidadMedida: createProductoDto.unidadMedida,
-      stockActual: createProductoDto.stockActual,
-      stockMinimo: createProductoDto.stockMinimo,
-      costoPromedio: createProductoDto.costoPromedio,
-    });
-    if (producto) throw new ConflictException('El Producto ya existe');
+    // 1. Validar unicidad (basada en atributos que definen el producto, no en el stock)
+    const { nombre, descripcion, unidadMedida, idCategoria } =
+      createProductoDto;
 
-    producto = new Producto();
-    Object.assign(producto, createProductoDto);
+    const productoExistente = await this.productosRepository.findOne({
+      where: {
+        nombre: nombre.trim(),
+        descripcion: descripcion.trim(),
+        unidadMedida,
+        idCategoria,
+      },
+    });
+
+    if (productoExistente) throw new ConflictException('El Producto ya existe');
+
+    // 2. Crear y guardar
+    const producto = this.productosRepository.create(createProductoDto);
     return this.productosRepository.save(producto);
   }
 
@@ -43,7 +47,7 @@ export class ProductosService {
         unidadMedida: true,
         stockActual: true,
         stockMinimo: true,
-        costoPromedio: true,
+        costoUnitarioPromedio: true,
         categoria: {
           id: true,
           nombre: true,

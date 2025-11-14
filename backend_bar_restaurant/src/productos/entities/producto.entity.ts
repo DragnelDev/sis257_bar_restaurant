@@ -49,8 +49,15 @@ export class Producto {
   })
   stockMinimo: number;
 
-  @Column('decimal', { name: 'costo_promedio' })
-  costoPromedio: number;
+  @Column('numeric', {
+    precision: 10,
+    scale: 2,
+    name: 'costo_promedio_unitario',
+  })
+  costoUnitarioPromedio: number;
+
+  @Column('boolean', { default: true })
+  perecedero: boolean;
 
   // Columnas de auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })

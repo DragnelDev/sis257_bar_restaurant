@@ -1,10 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
-import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DetalleVenta } from './entities/detalle-venta.entity';
 import { Repository } from 'typeorm';
@@ -16,22 +10,6 @@ export class DetalleVentasService {
     private detalleVentasRepository: Repository<DetalleVenta>,
   ) {}
 
-  async create(
-    createDetalleVentaDto: CreateDetalleVentaDto,
-  ): Promise<DetalleVenta> {
-    let detalleVenta = await this.detalleVentasRepository.findOneBy({
-      idVenta: createDetalleVentaDto.idVenta,
-      idReceta: createDetalleVentaDto.idReceta,
-      cantidad: createDetalleVentaDto.cantidad,
-      precioUnitarioVenta: createDetalleVentaDto.precioUnitarioVenta,
-    });
-    if (detalleVenta) throw new ConflictException('El detalle venta ya existe');
-
-    detalleVenta = new DetalleVenta();
-    Object.assign(detalleVenta, createDetalleVentaDto);
-    return this.detalleVentasRepository.save(detalleVenta);
-  }
-
   async findAll(): Promise<DetalleVenta[]> {
     return this.detalleVentasRepository.find();
   }
@@ -41,19 +19,5 @@ export class DetalleVentasService {
     if (!detalleVenta)
       throw new NotFoundException('El detalle venta no existe');
     return detalleVenta;
-  }
-
-  async update(
-    id: number,
-    updateDetalleVentaDto: UpdateDetalleVentaDto,
-  ): Promise<DetalleVenta> {
-    const detalleVenta = await this.findOne(id);
-    Object.assign(detalleVenta, updateDetalleVentaDto);
-    return this.detalleVentasRepository.save(detalleVenta);
-  }
-
-  async remove(id: number): Promise<DetalleVenta> {
-    const detalleVenta = await this.findOne(id);
-    return this.detalleVentasRepository.softRemove(detalleVenta);
   }
 }

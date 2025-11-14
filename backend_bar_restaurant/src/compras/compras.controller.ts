@@ -6,6 +6,10 @@ import {
   Patch,
   Param,
   Delete,
+  UsePipes,
+  ValidationPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ComprasService } from './compras.service';
 import { CreateCompraDto } from './dto/create-compra.dto';
@@ -16,7 +20,12 @@ export class ComprasController {
   constructor(private readonly comprasService: ComprasService) {}
 
   @Post()
-  create(@Body() createCompraDto: CreateCompraDto) {
+  // Aplica la validación a nivel de controlador.
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  // Usa HttpCode para devolver 201 Created
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createCompraDto: CreateCompraDto) {
+    // La transacción completa (guardar compra + actualizar stock) ocurre aquí.
     return this.comprasService.create(createCompraDto);
   }
 

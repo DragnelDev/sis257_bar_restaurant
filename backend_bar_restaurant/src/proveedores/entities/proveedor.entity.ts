@@ -14,14 +14,26 @@ export class Proveedor {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('varchar', { length: 50 })
-  nombre: string;
+  @Column('varchar', { name: 'nombre_empresa', length: 50 })
+  nombreEmpresa: string;
 
   @Column('varchar', { length: 14 })
   nit: string;
 
-  @Column('integer')
-  telefono: number;
+  @Column('varchar', { length: 50 })
+  responsable: string;
+
+  @Column('varchar', { length: 60 })
+  direccion: string;
+
+  @Column('varchar', { length: 12 })
+  celular: string;
+
+  @Column('varchar', { length: 50 })
+  email: string;
+
+  @Column('varchar', { name: 'condicion_pago', length: 80 })
+  condicionPago: string;
 
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
