@@ -25,53 +25,31 @@ const dialogVisible = computed({
   },
 })
 
-const producto = ref<Producto>({
+const defaultProducto = (): Producto => ({
   id: 0,
   idCategoria: 0,
   nombre: '',
   descripcion: '',
-  precioVenta: 0,
-  stock: 0,
-  fechaCreacion: new Date(),
-  fechaModificacion: new Date(),
-  fechaEliminacion: null,
+  unidadMedida: '',
+  stockActual: 0,
+  costoUnitarioPromedio: 0,
+  perecedero: false,
   categoria: {
     id: 0,
-    idCategoria: 0,
     nombre: '',
     descripcion: '',
-    fechaCreacion: new Date(),
-    fechaModificacion: new Date(),
-    fechaEliminacion: null,
   },
 })
+
+const productos = ref<Producto>(defaultProducto())
 
 watch(
   () => props.producto,
   (newVal) => {
     if (newVal) {
-      producto.value = { ...newVal }
+      productos.value = { ...defaultProducto(), ...(newVal as Producto) }
     } else {
-      producto.value = {
-        id: 0,
-        idCategoria: 0,
-        nombre: '',
-        descripcion: '',
-        precioVenta: 0,
-        stock: 0,
-        fechaCreacion: new Date(),
-        fechaModificacion: new Date(),
-        fechaEliminacion: null,
-        categoria: {
-          id: 0,
-          idCategoria: 0,
-          nombre: '',
-          descripcion: '',
-          fechaCreacion: new Date(),
-          fechaModificacion: new Date(),
-          fechaEliminacion: null,
-        },
-      }
+      productos.value = defaultProducto()
     }
   },
   { immediate: true },
@@ -84,21 +62,22 @@ async function obtenerCategorias() {
 async function handleSave() {
   try {
     const body = {
-      idCategoria: producto.value.idCategoria,
-      nombre: producto.value.nombre,
-      descripcion: producto.value.descripcion,
-      precioVenta: producto.value.precioVenta,
-      stock: producto.value.stock,
+      idCategoria: productos.value.idCategoria,
+      nombre: productos.value.nombre,
+      descripcion: productos.value.descripcion,
+      unidadMedida: productos.value.unidadMedida,
+      costoUnitarioPromedio: productos.value.costoUnitarioPromedio,
+      perecedero: productos.value.perecedero,
     }
 
     if (props.modoEdicion) {
-      await http.patch(`${ENDPOINT}/${producto.value.id}`, body)
+      await http.patch(`${ENDPOINT}/${productos.value.id}`, body)
     } else {
       await http.post(ENDPOINT, body)
     }
 
     emit('guardar')
-    producto.value = {} as Producto
+    productos.value = defaultProducto()
     dialogVisible.value = false
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto'
@@ -127,7 +106,7 @@ watch(
         <label for="nombre" class="font-semibold w-3">Nombre</label>
         <InputText
           id="nombre"
-          v-model="producto.nombre"
+          v-model="productos.nombre"
           class="flex-auto"
           autocomplete="off"
           autofocus
@@ -138,7 +117,7 @@ watch(
         <label for="categoria" class="font-semibold w-3">Categoria</label>
         <Dropdown
           id="categoria"
-          v-model="producto.idCategoria"
+          v-model="productos.idCategoria"
           :options="categorias"
           optionLabel="nombre"
           optionValue="id"
@@ -151,17 +130,17 @@ watch(
         <label for="descripcion" class="font-semibold w-3">Descripción</label>
         <InputText
           id="descripcion"
-          v-model="producto.descripcion"
+          v-model="productos.descripcion"
           class="flex-auto"
           autocomplete="off"
         />
       </div>
 
       <div class="flex items-center gap-4 mb-4">
-        <label for="precioVenta" class="font-semibold w-3">Precio Venta</label>
+        <label for="costoPromedio" class="font-semibold w-3">Costo Promedio</label>
         <InputNumber
-          id="precioVenta"
-          v-model="producto.precioVenta"
+          id="costoPromedio"
+          v-model="productos.costoUnitarioPromedio"
           mode="currency"
           currency="BOB"
           locale="es-BO"
@@ -170,16 +149,19 @@ watch(
       </div>
 
       <div class="flex items-center gap-4 mb-4">
-        <label for="stock" class="font-semibold w-3">Stock</label>
-        <InputNumber
-          id="stock"
-          v-model="producto.stock"
+        <label for="unidadMedida" class="font-semibold w-3">Unidad Medida</label>
+        <InputText
+          id="unidadMedida"
+          v-model="productos.unidadMedida"
           class="flex-auto"
-          :min="0"
-          :showButtons="true"
+          autocomplete="off"
         />
       </div>
 
+      <div class="flex items-center gap-4 mb-4">
+        <label for="perecedero" class="font-semibold w-3">Perecedero</label>
+        <input id="perecedero" type="checkbox" v-model="productos.perecedero" />
+      </div>
       <div class="flex justify-end gap-2">
         <Button
           type="button"

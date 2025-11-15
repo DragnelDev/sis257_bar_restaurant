@@ -44,7 +44,7 @@ export class Producto {
     type: 'numeric',
     precision: 10,
     scale: 3,
-    default: 0,
+    default: 10,
     name: 'stock_minimo',
   })
   stockMinimo: number;
@@ -56,7 +56,7 @@ export class Producto {
   })
   costoUnitarioPromedio: number;
 
-  @Column('boolean', { default: true })
+  @Column('boolean', { default: false})
   perecedero: boolean;
 
   // Columnas de auditoria

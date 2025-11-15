@@ -132,8 +132,10 @@ defineExpose({ obtenerLista })
           <th>Nombre</th>
           <th>Categoria</th>
           <th>Descripcion</th>
-          <th>Precio Venta</th>
-          <th>Stock</th>
+          <th>Unidad Medida</th>
+          <th>Stock Actual</th>
+          <th>Costo Promedio</th>
+          <th>Perecedero</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -143,8 +145,10 @@ defineExpose({ obtenerLista })
           <td>{{ producto.nombre }}</td>
           <td>{{ producto.categoria?.nombre || 'Categoría no disponible' }}</td>
           <td>{{ producto.descripcion }}</td>
-          <td>{{ producto.precioVenta }}</td>
-          <td>{{ producto.stock }}</td>
+          <td>{{ producto.unidadMedida }}</td>
+          <td>{{ producto.stockActual }}</td>
+          <td>{{ producto.costoUnitarioPromedio }}</td>
+          <td>{{ producto.perecedero }}</td>
           <td>
             <Button icon="pi pi-pencil" aria-label="Editar" text @click="emitirEdicion(producto)" />
             <Button
@@ -156,7 +160,7 @@ defineExpose({ obtenerLista })
           </td>
         </tr>
         <tr v-if="productosFiltrados.length === 0">
-          <td colspan="7">No se encontraron resultados.</td>
+          <td colspan="9">No se encontraron resultados.</td>
         </tr>
       </tbody>
     </table>

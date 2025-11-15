@@ -32,7 +32,7 @@ const menuItems = [
   { icon: 'fa-utensils', text: 'Gestión de Menus', route: 'admin-menu' },
   { icon: 'fa-shopping-cart', text: 'Ordenes', route: 'admin-orders' },
   { icon: 'fa-users', text: 'Personal', route: 'admin-staff' },
-  { icon: 'fa-user-tag', text: 'Clientes', route: 'admin-clients' },
+  { icon: 'fa-receipt', text: 'Recetas', route: 'admin-recipes' },
   { icon: 'fa-box-open', text: 'Proveedores', route: 'admin-suppliers' },
   { icon: 'fa-boxes-stacked', text: 'Inventarios', route: 'admin-products' },
   { icon: 'fa-user-friends', text: 'Usuarios', route: 'admin-users' },

@@ -48,6 +48,7 @@ export class ProductosService {
         stockActual: true,
         stockMinimo: true,
         costoUnitarioPromedio: true,
+        perecedero: true,
         categoria: {
           id: true,
           nombre: true,

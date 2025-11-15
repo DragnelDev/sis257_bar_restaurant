@@ -155,7 +155,7 @@ export class RecetasService {
 
   async findAll(): Promise<Receta[]> {
     return this.recetasRepository.find({
-      relations: ['ingredientes'], // Cargar la fórmula
+      relations: ['ingredientes', 'ingredientes.producto'], // Cargar la fórmula
       order: { nombreReceta: 'ASC' },
     });
   }
