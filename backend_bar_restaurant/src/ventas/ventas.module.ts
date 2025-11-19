@@ -7,6 +7,7 @@ import { Receta } from 'src/recetas/entities/receta.entity';
 import { Venta } from './entities/venta.entity';
 import { VentasController } from './ventas.controller';
 import { VentasService } from './ventas.service';
+import { ClientesModule } from 'src/clientes/clientes.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { VentasService } from './ventas.service';
       Receta, // Receta (Consulta)
       DetalleReceta,
     ]),
+    ClientesModule,
   ],
   controllers: [VentasController],
   providers: [VentasService],

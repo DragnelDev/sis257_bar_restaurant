@@ -32,6 +32,9 @@ export class Receta {
   })
   costoActual: number;
 
+  @Column('varchar', { length: 255, nullable: true, name: 'url_imagen' })
+  urlImagen: string;
+
   // Columnas de auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;

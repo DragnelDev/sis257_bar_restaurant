@@ -1,3 +1,4 @@
+import { Cliente } from 'src/clientes/entities/cliente.entity';
 import { DetalleVenta } from 'src/detalle-ventas/entities/detalle-venta.entity';
 import { Mesa } from 'src/mesas/entities/mesa.entity';
 import { Usuario } from 'src/usuarios/entities/usuario.entity';
@@ -23,6 +24,9 @@ export class Venta {
 
   @Column('integer', { name: 'id_usuario' })
   idUsuario: number;
+
+  @Column({ type: 'int', nullable: true, name: 'id_cliente' })
+  idCliente: number | null;
 
   @Column('decimal', { precision: 10, scale: 2 })
   total: number;
@@ -57,4 +61,8 @@ export class Venta {
 
   @OneToMany(() => DetalleVenta, (detalleVenta) => detalleVenta.venta)
   detalleVentas: DetalleVenta[];
+
+  @ManyToOne(() => Cliente, (cliente) => cliente.ventas)
+  @JoinColumn({ name: 'idCliente' })
+  cliente: Cliente;
 }

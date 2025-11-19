@@ -56,7 +56,7 @@ export class Producto {
   })
   costoUnitarioPromedio: number;
 
-  @Column('boolean', { default: false})
+  @Column('boolean', { default: false })
   perecedero: boolean;
 
   // Columnas de auditoria

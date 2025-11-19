@@ -17,6 +17,7 @@ import { DetalleRecetasModule } from './detalle-recetas/detalle-recetas.module';
 import { MesasModule } from './mesas/mesas.module';
 import { VentasModule } from './ventas/ventas.module';
 import { DetalleVentasModule } from './detalle-ventas/detalle-ventas.module';
+import { ClientesModule } from './clientes/clientes.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -44,6 +45,7 @@ import { DetalleVentasModule } from './detalle-ventas/detalle-ventas.module';
     MesasModule,
     VentasModule,
     DetalleVentasModule,
+    ClientesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

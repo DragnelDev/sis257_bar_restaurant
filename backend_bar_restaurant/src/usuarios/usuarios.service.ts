@@ -24,6 +24,7 @@ export class UsuariosService {
 
     usuario = new Usuario();
     usuario.clave = process.env.DEFAULT_PASSWORD ?? '';
+    usuario.rol = createUsuarioDto.rol;
     Object.assign(usuario, createUsuarioDto);
     return this.usuariosRepository.save(usuario);
   }
@@ -34,6 +35,7 @@ export class UsuariosService {
       select: {
         id: true,
         usuario: true,
+        rol: true,
         activo: true,
         empleado: {
           id: true,
@@ -68,7 +70,7 @@ export class UsuariosService {
   async validate(usuario: string, clave: string): Promise<Usuario> {
     const usuarioOk = await this.usuariosRepository.findOne({
       where: { usuario },
-      select: ['id', 'usuario', 'clave', 'activo'],
+      select: ['id', 'usuario', 'clave', 'rol', 'activo'],
     });
 
     if (!usuarioOk) throw new NotFoundException('Usuario inexistente');

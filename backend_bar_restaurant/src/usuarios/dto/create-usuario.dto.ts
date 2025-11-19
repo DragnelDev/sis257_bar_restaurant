@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDefined,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -20,6 +21,13 @@ export class CreateUsuarioDto {
     message: 'El campo nombre usuario no debe ser mayor a 15 caracteres',
   })
   readonly usuario: string;
+
+  @ApiProperty()
+  @IsString({ message: 'El campo rol debe ser tipo cadena' })
+  @IsEnum(['CAJERO', 'ADMINISTRADOR', 'CONTADOR', 'CHEF', 'MESERO'], {
+    message: 'El rol debe ser: CAJERO, ADMINISTRADOR, CONTADOR, CHEF, MESERO',
+  })
+  readonly rol: string;
 
   @ApiProperty()
   @IsDefined({ message: 'El campo activo debe estar definido' })

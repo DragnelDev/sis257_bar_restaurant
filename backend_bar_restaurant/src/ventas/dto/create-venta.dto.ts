@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsString,
   ValidateNested,
+  IsOptional,
 } from 'class-validator';
 import { ItemVentaDto } from './item-venta.dto';
 import { Type } from 'class-transformer';
@@ -19,6 +20,13 @@ export class CreateVentaDto {
   @IsNotEmpty({ message: 'El campo idUsuario no debe estar vacío' })
   @IsNumber({}, { message: 'El campo idUsuario debe ser un número' })
   readonly idUsuario: number;
+
+  /*@ApiProperty({
+    description:
+      'ID del Cliente asociado a la venta. Puede ser null si es un cliente ocasional.',
+    nullable: true,
+  })*/
+  readonly idCliente: number | null;
 
   @ApiProperty({
     description: 'Total de la Venta. Puede ser calculado en el backend.',
@@ -49,4 +57,14 @@ export class CreateVentaDto {
   @ValidateNested({ each: true })
   @Type(() => ItemVentaDto) // Importante para la validación de objetos anidados
   readonly detalles: ItemVentaDto[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({ message: 'El campo nitCI debe ser una cadena' })
+  readonly nitCI?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({ message: 'El campo nombreFiscal debe ser una cadena' })
+  readonly nombreFiscal?: string;
 }

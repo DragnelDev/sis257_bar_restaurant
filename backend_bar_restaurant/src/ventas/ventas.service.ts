@@ -11,12 +11,14 @@ import { Venta } from './entities/venta.entity';
 import { DetalleVenta } from 'src/detalle-ventas/entities/detalle-venta.entity';
 import { Receta } from 'src/recetas/entities/receta.entity';
 import { Producto } from 'src/productos/entities/producto.entity';
+import { ClientesService } from 'src/clientes/clientes.service';
 
 @Injectable()
 export class VentasService {
   constructor(
     @InjectRepository(Venta) private ventaRepository: Repository<Venta>,
-    private readonly dataSource: DataSource, // 👈 Inyectar DataSource
+    private readonly dataSource: DataSource,
+    private readonly clientesService: ClientesService,
   ) {}
 
   async create(createVentaDto: CreateVentaDto): Promise<Venta> {
@@ -25,14 +27,38 @@ export class VentasService {
     await queryRunner.startTransaction(); // 1. INICIAR TRANSACCIÓN
 
     try {
-      const { detalles, ...cabeceraData } = createVentaDto;
+      //  Desestructurar los nuevos campos opcionales del DTO
+      const { detalles, idCliente, nitCI, nombreFiscal, ...cabeceraData } =
+        createVentaDto;
 
-      // 2. CREAR LA VENTA (CABECERA)
+      // --- 2. LÓGICA DE CLIENTE / FACTURACIÓN ---
+      let clienteIdFinal: number | null = null;
+
+      if (idCliente) {
+        // Opción 1: El DTO ya trae el ID de un cliente registrado.
+        clienteIdFinal = idCliente;
+      } else if (nitCI && nombreFiscal) {
+        // Opción 2: Se pide factura (se envía NIT y Nombre). Se busca o crea.
+
+        // Nota: El método findOrCreateByNit debe ser implementado en ClientesService
+        // Se encarga de buscar por NIT y, si no existe, crea el nuevo cliente fiscal.
+        const cliente = await this.clientesService.findOrCreateByNit({
+          nitCI,
+          nombreFiscal,
+        });
+        clienteIdFinal = cliente.id;
+      }
+      // Si nit_ci no existe y id_cliente no existe, clienteIdFinal se mantiene NULL (venta anónima).
+
+      // 3. CREAR LA VENTA (CABECERA)
       // Usamos el manager del queryRunner para que esté dentro de la transacción
-      let nuevaVenta = queryRunner.manager.create(Venta, cabeceraData);
+      let nuevaVenta = queryRunner.manager.create(Venta, {
+        ...cabeceraData,
+        id_cliente: clienteIdFinal, //  ASIGNACIÓN FINAL: Será NULL o el ID del cliente
+      });
       nuevaVenta = await queryRunner.manager.save(Venta, nuevaVenta);
 
-      // 3. PROCESAR DETALLES Y CONSUMO DE INVENTARIO
+      // 4. PROCESAR DETALLES Y CONSUMO DE INVENTARIO
       for (const itemVendido of detalles) {
         // b. Cargar la Receta y su fórmula (Detalles de Receta)
         const receta = await queryRunner.manager.findOne(Receta, {
@@ -46,21 +72,20 @@ export class VentasService {
           );
         }
 
-        // 🚨 CAMBIO 1: CAPTURAR EL COSTO DE LA RECETA AL MOMENTO DE LA VENTA
-        const costoUnitarioReceta = receta.costoActual; // Asumimos que el costo ya fue calculado.
+        // Capturar el costo de la receta al momento de la venta
+        const costoUnitarioReceta = receta.costoActual;
 
         // a. Registrar el Detalle de Venta
         const detalleVenta = queryRunner.manager.create(DetalleVenta, {
           ...itemVendido,
           idVenta: nuevaVenta.id,
-          // 🚨 CAMBIO 2: REGISTRAR EL COSTO EN LA TABLA DETALLE_VENTAS
+          // Registrar el costo en la tabla detalle_ventas
           costo_unitario: costoUnitarioReceta,
         });
         await queryRunner.manager.save(DetalleVenta, detalleVenta);
 
         // c. Disminuir el Stock de los Productos base
         for (const detalleConsumo of receta.ingredientes) {
-          // 🚨 CÓDIGO FALTANTE QUE CAUSA EL ERROR
           const producto = await queryRunner.manager.findOneBy(Producto, {
             id: detalleConsumo.idProducto,
           });
@@ -76,7 +101,6 @@ export class VentasService {
             Number(detalleConsumo.cantidadConsumida) *
             Number(itemVendido.cantidad);
 
-          // El resto del código que usa 'producto' ahora es válido:
           if (Number(producto.stockActual) < consumoTotal) {
             throw new Error(
               `Stock insuficiente para ${producto.nombre}. Se requiere ${consumoTotal}, solo hay ${producto.stockActual}.`,
@@ -89,14 +113,13 @@ export class VentasService {
         }
       }
 
-      await queryRunner.commitTransaction(); // 4. CONFIRMAR
+      await queryRunner.commitTransaction(); // 5. CONFIRMAR
       return nuevaVenta;
-    } catch (error) {
-      await queryRunner.rollbackTransaction(); // 5. REVERTIR
-      // Si es un error de negocio (ej. Stock insuficiente), lo lanzamos. Si es un error interno, lo registramos.
-      throw new InternalServerErrorException(
-        error.message || 'Error desconocido en la transacción de venta.',
-      );
+    } catch (error: any) {
+      await queryRunner.rollbackTransaction(); // 6. REVERTIR
+      let msg = 'Error desconocido en la transacción de venta.';
+      if (error instanceof Error && error.message) msg = error.message;
+      throw new InternalServerErrorException(msg);
     } finally {
       await queryRunner.release();
     }
@@ -104,14 +127,14 @@ export class VentasService {
 
   async findAll(): Promise<Venta[]> {
     return await this.ventaRepository.find({
-      relations: ['mesa', 'usuario', 'detalleVentas'],
+      relations: ['mesa', 'usuario', 'cliente', 'detalleVentas'],
     });
   }
 
   async findOne(id: number): Promise<Venta> {
     const venta = await this.ventaRepository.findOne({
       where: { id },
-      relations: ['mesa', 'usuario', 'detalleVentas'],
+      relations: ['mesa', 'usuario', 'cliente', 'detalleVentas'],
     });
 
     if (!venta) {

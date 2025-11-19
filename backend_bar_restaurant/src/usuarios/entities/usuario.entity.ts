@@ -30,6 +30,13 @@ export class Usuario {
   @Column('varchar', { length: 100 })
   clave: string;
 
+  @Column({
+    type: 'varchar',
+    length: 20,
+    enum: ['CAJERO', 'ADMINISTRADOR', 'CONTADOR', 'CHEF', 'MESERO'],
+  })
+  rol: string;
+
   @Column('boolean', { name: 'activo', default: true })
   activo: boolean;
 

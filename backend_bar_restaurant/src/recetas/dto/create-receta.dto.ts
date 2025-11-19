@@ -40,6 +40,19 @@ export class CreateRecetaDto {
   @Min(0, { message: 'El precio no puede ser negativo' })
   readonly precioVentaActual: number;
 
+  @ApiProperty({ description: 'URL de la imagen representativa de la receta.' })
+  @IsNotEmpty({ message: 'La URL de la imagen es obligatoria' })
+  @IsString({ message: 'La URL de la imagen debe ser de tipo cadena' })
+  @MaxLength(255, {
+    message: 'La URL de la imagen no debe ser mayor a 255 caracteres',
+  })
+  @Transform(({ value }): string | undefined =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  readonly urlImagen: string;
+
+  // --- Detalles de la Receta (ingredientes y cantidades) ---
+
   @ApiProperty({
     type: [ItemRecetaDto],
     description: 'Lista de ingredientes y sus cantidades consumidas.',
