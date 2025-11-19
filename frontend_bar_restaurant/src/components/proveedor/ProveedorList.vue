@@ -13,19 +13,31 @@
     <table v-if="!cargando && !error">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Nombre</th>
+          <th>Nro</th>
+          <th>Nombre de Empresa</th>
           <th>NIT</th>
-          <th>Teléfono</th>
+          <th>Responsable</th>
+          <th>Direccion</th>
+          <th>Celular</th>
+          <th>Email</th>
+          <th>Condicion de Pago</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="prov in proveedoresFiltrados" :key="prov.id">
-          <td>{{ prov.id }}</td>
-          <td>{{ prov.nombre }}</td>
+        <tr
+          v-for="(prov, index) in proveedoresFiltrados"
+          :key="prov.id"
+          :class="{ 'row-alternate': index % 2 === 1 }"
+        >
+          <td>{{ (pagina - 1) * paginaSize + index + 1 }}</td>
+          <td>{{ prov.nombreEmpresa }}</td>
           <td>{{ prov.nit }}</td>
-          <td>{{ prov.telefono }}</td>
+          <td>{{ prov.responsable }}</td>
+          <td>{{ prov.direccion }}</td>
+          <td>{{ prov.celular }}</td>
+          <td>{{ prov.email }}</td>
+          <td>{{ prov.condicionPago }}</td>
           <td>
             <Button icon="pi pi-pencil" aria-label="Editar" text @click="emitEdit(prov)" />
             <Button icon="pi pi-trash" aria-label="Eliminar" text @click="confirmDelete(prov)" />
@@ -37,10 +49,21 @@
       </tbody>
     </table>
 
-    <Dialog v-model:visible="mostrarConfirmDialog" header="Confirmar Eliminación" :style="{ width: '25rem' }">
-      <p>¿Eliminar proveedor {{ proveedorDelete?.nombre }}?</p>
+    <Dialog
+      v-model:visible="mostrarConfirmDialog"
+      header="Confirmar Eliminación"
+      :style="{ width: '25rem' }"
+    >
+      <p>
+        ¿Eliminar proveedor {{ proveedorDelete?.nombreEmpresa || proveedorDelete?.responsable }}?
+      </p>
       <div class="flex justify-end gap-2">
-        <Button type="button" label="Cancelar" severity="secondary" @click="mostrarConfirmDialog = false" />
+        <Button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          @click="mostrarConfirmDialog = false"
+        />
         <Button type="button" label="Eliminar" @click="eliminar" />
       </div>
     </Dialog>
@@ -65,7 +88,8 @@ const emit = defineEmits(['edit'])
 const proveedoresFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
   return proveedores.value.filter(
-    (p) => (p.nombre || '').toLowerCase().includes(q) || (p.nit || '').toLowerCase().includes(q),
+    (p) =>
+      (p.nombreEmpresa || '').toLowerCase().includes(q) || (p.nit || '').toLowerCase().includes(q),
   )
 })
 
@@ -105,6 +129,10 @@ async function eliminar() {
   obtenerLista()
   mostrarConfirmDialog.value = false
 }
+
+// Paginación
+const pagina = ref<number>(1)
+const paginaSize = ref<number>(10)
 </script>
 
 <style scoped></style>

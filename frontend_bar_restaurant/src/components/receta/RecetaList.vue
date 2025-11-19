@@ -128,6 +128,7 @@ defineExpose({ obtenerLista })
         <tr>
           <th>Nro.</th>
           <th>Nombre Receta</th>
+          <th>Imagen Receta</th>
           <th>Descripcion</th>
           <th>Precio de Venta</th>
           <th>Costo Actual</th>
@@ -135,7 +136,6 @@ defineExpose({ obtenerLista })
           <th>Unidad Consumida</th>
           <th>Nombre Producto</th>
           <th>Stock Producto</th>
-          <th>Perecedero</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -144,6 +144,13 @@ defineExpose({ obtenerLista })
           <td>{{ index + 1 }}</td>
 
           <td>{{ detalle?.receta?.nombreReceta ?? 'N/A' }}</td>
+          <td>
+            <img
+              :src="detalle?.receta?.urlImagen"
+              :alt="`Imagen de ${detalle?.receta?.urlImagen || 'receta'}`"
+              class="imagen-receta-tabla"
+            />
+          </td>
           <td>{{ detalle?.receta?.descripcion ?? 'N/A' }}</td>
           <td>{{ detalle?.receta?.precioVentaActual ?? 'N/A' }}</td>
           <td>{{ detalle?.receta?.costoActual ?? 'N/A' }}</td>
@@ -152,7 +159,6 @@ defineExpose({ obtenerLista })
 
           <td>{{ detalle.producto?.nombre ?? 'N/A' }}</td>
           <td>{{ detalle.producto?.stockActual ?? 'N/A' }}</td>
-          <td>{{ detalle.producto?.perecedero ?? 'N/A' }}</td>
 
           <td>
             <Button
@@ -197,6 +203,19 @@ defineExpose({ obtenerLista })
 </template>
 
 <style scoped>
+.imagen-receta-tabla {
+  width: 80px; /* Mantener el ancho original o ajustarlo */
+  height: 80px; /* Asegurar que sea cuadrada para un redondeado perfecto */
+  object-fit: cover; /* Recortar la imagen para que cubra el área sin distorsionarse */
+  border-radius: 10px; /* Redondear las esquinas (puedes usar 50% para hacerla circular) */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave para darle profundidad */
+  transition: transform 0.2s ease-in-out; /* Transición suave para efectos hover */
+}
+
+.imagen-receta-tabla:hover {
+  transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+}
+
 .table-responsive {
   overflow-x: auto; /* Permite el desplazamiento horizontal */
 }

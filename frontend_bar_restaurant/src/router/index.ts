@@ -68,6 +68,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/admin/BookingsView.vue'),
       },
       {
+        path: 'mesas',
+        name: 'admin-mesas',
+        component: () => import('../views/admin/MesasView.vue'),
+      },
+      {
+        path: 'registrar',
+        name: 'admin-registrar',
+        component: () => import('../views/admin/RegistrarView.vue'),
+      },
+      {
         path: 'menu',
         name: 'admin-menu',
         component: () => import('../views/admin/MenuManagementView.vue'),

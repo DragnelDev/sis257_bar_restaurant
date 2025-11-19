@@ -1,91 +1,125 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { User, RegisterForm } from '../../types'
+import type { Usuario } from '@/models/Usuario'
+import type { Empleado } from '@/models/Empleado'
+import { ref, computed, onMounted } from 'vue'
+import http from '@/plugins/axios'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Dropdown from 'primevue/dropdown'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
-const users = ref<User[]>([
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'customer',
-    phone: '+1234567890',
-    avatar: '/img/team-1.jpg',
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'admin',
-    phone: '+1234567891',
-    avatar: '/img/team-2.jpg',
-    status: 'active',
-    createdAt: '2024-02-20',
-  },
-  {
-    id: 3,
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    role: 'chef',
-    phone: '+1234567892',
-    avatar: '/img/team-3.jpg',
-    status: 'active',
-    createdAt: '2024-03-10',
-  },
-  {
-    id: 4,
-    name: 'Sarah Williams',
-    email: 'sarah@example.com',
-    role: 'waiter',
-    phone: '+1234567893',
-    avatar: '/img/team-4.jpg',
-    status: 'inactive',
-    createdAt: '2024-04-05',
-  },
-])
+const ENDPOINT = 'usuarios'
+const users = ref<Usuario[]>([])
 
 const searchQuery = ref('')
 const selectedRole = ref('all')
 const showAddModal = ref(false)
 
-const newUserForm = ref<RegisterForm>({
-  name: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  phone: '',
-  role: 'customer',
+const defaultUsuario = (): Partial<Usuario> => ({
+  id: 0,
+  idEmpleado: 0,
+  empleado: {
+    id: 0,
+    nombre: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+  },
+  usuario: '',
+  clave: '',
+  rol: '',
+  activo: true,
 })
+
+const newUserForm = ref<Partial<Usuario> & { confirmPassword?: string }>(defaultUsuario())
 
 const formError = ref('')
 const loading = ref(false)
+const modoEdicion = ref(false)
 
-const filteredUsers = ref(users.value)
-
-const passwordMatch = computed(() => {
-  if (!newUserForm.value.confirmPassword) return true
-  return newUserForm.value.password === newUserForm.value.confirmPassword
-})
-
-const filterUsers = () => {
-  filteredUsers.value = users.value.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesRole = selectedRole.value === 'all' || user.role === selectedRole.value
+const filteredUsers = computed(() => {
+  return users.value.filter((usuario) => {
+    const matchesSearch = usuario.usuario.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesRole = selectedRole.value === 'all' || usuario.rol === selectedRole.value
     return matchesSearch && matchesRole
   })
+})
+
+const rolesOptions = [
+  { label: 'ADMINISTRADOR', value: 'ADMINISTRADOR' },
+  { label: 'CAJERO', value: 'CAJERO' },
+  { label: 'CHEF', value: 'CHEF' },
+  { label: 'MESERO', value: 'MESERO' },
+  { label: 'CONTADOR', value: 'CONTADOR' },
+]
+
+const passwordMatch = computed(() => {
+  const confirmPassword =
+    (newUserForm.value as Partial<Usuario> & { confirmPassword?: string })?.confirmPassword || ''
+  if (!confirmPassword) return true
+  return newUserForm.value.clave === confirmPassword
+})
+
+const obtenerLista = async () => {
+  try {
+    const response = await http.get(ENDPOINT)
+    users.value = response.data.data || response.data
+  } catch (err) {
+    console.error('Error al cargar usuarios:', err)
+  }
 }
 
-const getRoleColor = (role: string) => {
+const filterUsers = (): void => {
+  // Este método ahora solo es para compatibilidad; el filtrado es reactivo via computed
+}
+
+const getRoleColor = (rol: string) => {
   const colors: Record<string, string> = {
-    admin: 'danger',
-    chef: 'primary',
-    waiter: 'info',
-    customer: 'secondary',
+    ADMINISTRADOR: 'danger',
+    CHEF: 'primary',
+    MESERO: 'info',
+    CAJERO: 'warning',
+    CONTADOR: 'secondary',
   }
-  return colors[role] || 'secondary'
+  return colors[rol] || 'secondary'
+}
+
+const getEmpleadoNombreCompleto = (empleado: Usuario['empleado'] | undefined): string => {
+  if (!empleado) return '-'
+  return `${empleado.nombre || ''} ${empleado.apellidoPaterno || ''} ${empleado.apellidoMaterno || ''}`.trim()
+}
+
+const empleados = ref<Empleado[]>([])
+const empleadosFiltrados = ref<Empleado[]>([])
+
+const obtenerEmpleados = async () => {
+  try {
+    const response = await http.get('empleados')
+    empleados.value = response.data.data || response.data
+    empleadosFiltrados.value = empleados.value
+  } catch (err) {
+    console.error('Error al cargar empleados:', err)
+  }
+}
+
+const filterEmpleados = (event: { query: string }) => {
+  const filtered = empleados.value.filter((emp: Empleado) =>
+    getEmpleadoNombreCompleto(emp).toLowerCase().includes(event.query.toLowerCase()),
+  )
+  empleadosFiltrados.value = filtered
+}
+
+const empleadosOptions = computed(() => {
+  return empleadosFiltrados.value.map((emp: Empleado) => ({
+    label: getEmpleadoNombreCompleto(emp),
+    value: emp.id,
+    empleado: emp,
+  }))
+})
+
+const getEmpleadoById = (id: number): Empleado | undefined => {
+  return empleados.value.find((emp) => emp.id === id)
 }
 
 const closeAddModal = () => {
@@ -94,304 +128,285 @@ const closeAddModal = () => {
 }
 
 const resetForm = () => {
-  newUserForm.value = {
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
-    role: 'customer',
-  }
+  newUserForm.value = defaultUsuario() as Partial<Usuario> & { confirmPassword?: string }
   formError.value = ''
+  modoEdicion.value = false
 }
 
 const handleAddUser = async () => {
   formError.value = ''
 
-  if (!passwordMatch.value) {
-    formError.value = 'Passwords do not match'
+  // Validaciones
+  if (!newUserForm.value.usuario || newUserForm.value.usuario.trim() === '') {
+    formError.value = 'El usuario es obligatorio'
     return
   }
 
-  if (newUserForm.value.password.length < 6) {
-    formError.value = 'Password must be at least 6 characters'
+  if (!newUserForm.value.clave || newUserForm.value.clave.length < 6) {
+    formError.value = 'La clave debe tener al menos 6 caracteres'
+    return
+  }
+
+  if (!passwordMatch.value) {
+    formError.value = 'Las contraseñas no coinciden'
+    return
+  }
+
+  if (!newUserForm.value.rol) {
+    formError.value = 'El rol es obligatorio'
     return
   }
 
   loading.value = true
 
   try {
-    // Simulación de API - Reemplazar con tu API real
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const newUser: User = {
-      id: users.value.length + 1,
-      name: newUserForm.value.name,
-      email: newUserForm.value.email,
-      role: newUserForm.value.role,
-      phone: newUserForm.value.phone,
-      avatar: '/img/team-1.jpg',
-      status: 'active',
-      createdAt: new Date().toISOString().split('T')[0],
+    const body = {
+      idEmpleado: newUserForm.value.idEmpleado || 0,
+      usuario: newUserForm.value.usuario,
+      clave: newUserForm.value.clave,
+      rol: (newUserForm.value.rol as string).toUpperCase(),
+      activo: newUserForm.value.activo,
     }
 
-    users.value.push(newUser)
-    filterUsers()
+    if (modoEdicion.value && newUserForm.value.id) {
+      await http.patch(`${ENDPOINT}/${newUserForm.value.id}`, body)
+    } else {
+      await http.post(ENDPOINT, body)
+    }
+
+    await obtenerLista()
     closeAddModal()
-    alert('User registered successfully!')
-  } catch (err) {
-    formError.value = 'An error occurred. Please try again.'
+    alert(modoEdicion.value ? 'Usuario actualizado' : 'Usuario registrado exitosamente')
+  } catch (err: unknown) {
+    let msg = 'Error al guardar el usuario'
+    if (err && typeof err === 'object' && 'response' in err) {
+      // @ts-expect-error accessing response on error object
+      msg = err.response?.data?.message || msg
+    } else if (err instanceof Error) {
+      msg = err.message
+    }
+    formError.value = msg
   } finally {
     loading.value = false
   }
 }
 
-const deleteUser = (id: number) => {
-  if (confirm('Are you sure you want to delete this user?')) {
-    users.value = users.value.filter((u) => u.id !== id)
-    filterUsers()
+const editUser = (user: Usuario) => {
+  const empleado = getEmpleadoById(user.idEmpleado)
+  newUserForm.value = {
+    ...user,
+    empleado: empleado || user.empleado,
+  } as Partial<Usuario> & { confirmPassword?: string }
+  modoEdicion.value = true
+  showAddModal.value = true
+}
+
+const deleteUser = async (id: number) => {
+  if (confirm('¿Está seguro de que desea eliminar este usuario?')) {
+    try {
+      await http.delete(`${ENDPOINT}/${id}`)
+      await obtenerLista()
+      alert('Usuario eliminado')
+    } catch (err) {
+      console.error('Error al eliminar:', err)
+      alert('Error al eliminar el usuario')
+    }
   }
 }
+
+onMounted(async () => {
+  await obtenerEmpleados()
+  await obtenerLista()
+})
 </script>
 
 <template>
   <div class="users-view">
     <div class="page-header mb-4">
-      <h2 class="mb-1">Users Management</h2>
-      <p class="text-muted">Manage all system users</p>
+      <h2 class="mb-1">Gestión de Usuarios</h2>
+      <p class="text-muted">Administra los usuarios del sistema</p>
     </div>
 
     <!-- Filters -->
     <div class="card mb-4">
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="fa fa-search"></i>
-              </span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Search by name or email..."
-                v-model="searchQuery"
-                @input="filterUsers"
-              />
-            </div>
-          </div>
-          <div class="col-md-4">
-            <select class="form-select" v-model="selectedRole" @change="filterUsers">
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="chef">Chef</option>
-              <option value="waiter">Waiter</option>
-              <option value="customer">Customer</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <button class="btn btn-primary w-100" @click="showAddModal = true">
-              <i class="fa fa-plus me-2"></i>Add User
-            </button>
-          </div>
-        </div>
+      <div class="flex gap-3 p-4">
+        <span class="p-input-icon-left flex-1">
+          <i class="pi pi-search"></i>
+          <InputText v-model="searchQuery" placeholder="Buscar por usuario..." class="w-full" />
+        </span>
+
+        <Dropdown
+          v-model="selectedRole"
+          :options="[{ label: 'Todos los Roles', value: 'all' }, ...rolesOptions]"
+          optionLabel="label"
+          optionValue="value"
+          class="w-32"
+        />
+
+        <Button
+          label="Agregar Usuario"
+          icon="pi pi-plus"
+          @click="
+            () => {
+              resetForm()
+              showAddModal = true
+            }
+          "
+        />
       </div>
     </div>
 
-    <!-- Users Grid -->
-    <div class="row g-4">
-      <div v-for="user in filteredUsers" :key="user.id" class="col-lg-3 col-md-4 col-sm-6">
-        <div class="user-card">
-          <div class="user-avatar">
-            <img :src="user.avatar" :alt="user.name" />
-            <span
-              class="status-badge"
-              :class="user.status === 'active' ? 'bg-success' : 'bg-danger'"
-            >
-              {{ user.status }}
-            </span>
-          </div>
-          <div class="user-info">
-            <h5>{{ user.name }}</h5>
-            <p class="text-muted mb-2">{{ user.email }}</p>
-            <span class="badge mb-2" :class="`bg-${getRoleColor(user.role)}`">
-              {{ user.role }}
-            </span>
-            <p class="small text-muted mb-0">
-              <i class="fa fa-calendar me-1"></i>
-              Joined {{ user.createdAt }}
-            </p>
-          </div>
-          <div class="user-actions">
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="fa fa-edit"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-info">
-              <i class="fa fa-eye"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger" @click="deleteUser(user.id)">
-              <i class="fa fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+    <!-- Users Table -->
+    <div class="card">
+      <DataTable :value="filteredUsers" responsiveLayout="scroll" stripedRows>
+        <Column field="usuario" header="Usuario" />
+        <Column field="rol" header="Rol">
+          <template #body="slotProps">
+            <span class="pi pi-check" :style="{ color: getRoleColor(slotProps.data.rol) }" />
+            {{ slotProps.data.rol }}
+          </template>
+        </Column>
+        <Column header="Empleado">
+          <template #body="slotProps">
+            {{ getEmpleadoNombreCompleto(slotProps.data.empleado) }}
+          </template>
+        </Column>
+        <Column field="activo" header="Estado">
+          <template #body="slotProps">
+            <span v-if="slotProps.data.activo" class="badge bg-success">Activo</span>
+            <span v-else class="badge bg-danger">Inactivo</span>
+          </template>
+        </Column>
+        <Column header="Acciones" style="width: 10%">
+          <template #body="slotProps">
+            <Button
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-warning me-2"
+              @click="editUser(slotProps.data)"
+            />
+            <Button
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-danger"
+              @click="deleteUser(slotProps.data.id)"
+            />
+          </template>
+        </Column>
+      </DataTable>
     </div>
 
     <!-- Empty State -->
     <div v-if="filteredUsers.length === 0" class="text-center py-5">
-      <i class="fa fa-users fa-4x text-muted mb-3"></i>
-      <h5 class="text-muted">No users found</h5>
-      <p class="text-muted">Try adjusting your search or filters</p>
+      <i class="pi pi-users pi-4x text-muted mb-3"></i>
+      <h5 class="text-muted">No hay usuarios</h5>
+      <p class="text-muted">Intenta ajustar tu búsqueda o filtros</p>
     </div>
 
-    <!-- Modal para Agregar Usuario -->
-    <div v-if="showAddModal" class="modal fade show" tabindex="-1" style="display: block">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Add New User</h5>
-            <button type="button" class="btn-close" @click="closeAddModal"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="handleAddUser">
-              <!-- Alert de error -->
-              <div
-                v-if="formError"
-                class="alert alert-danger alert-dismissible fade show"
-                role="alert"
-              >
-                <i class="fa fa-exclamation-triangle me-2"></i>
-                {{ formError }}
-                <button type="button" class="btn-close" @click="formError = ''"></button>
-              </div>
-
-              <!-- Campos del formulario -->
-              <div class="mb-3">
-                <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" v-model="newUserForm.name" required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" v-model="newUserForm.email" required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Phone</label>
-                <input type="tel" class="form-control" v-model="newUserForm.phone" required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Role</label>
-                <select class="form-select" v-model="newUserForm.role" required>
-                  <option value="customer">Customer</option>
-                  <option value="admin">Admin</option>
-                  <option value="chef">Chef</option>
-                  <option value="waiter">Waiter</option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  v-model="newUserForm.password"
-                  required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  :class="{ 'is-invalid': !passwordMatch }"
-                  v-model="newUserForm.confirmPassword"
-                  required
-                />
-                <div class="invalid-feedback">Passwords do not match</div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeAddModal">Cancel</button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="handleAddUser"
-              :disabled="loading || !passwordMatch"
-            >
-              <span v-if="loading">
-                <span class="spinner-border spinner-border-sm me-2"></span>
-                Adding...
-              </span>
-              <span v-else>Add User</span>
-            </button>
-          </div>
-        </div>
+    <!-- Modal para Agregar/Editar Usuario -->
+    <Dialog
+      v-model:visible="showAddModal"
+      :header="modoEdicion ? 'Editar Usuario' : 'Agregar Nuevo Usuario'"
+      :modal="true"
+      style="width: 40rem"
+    >
+      <!-- Alert de error -->
+      <div v-if="formError" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="pi pi-exclamation-triangle me-2"></i>
+        {{ formError }}
+        <button type="button" class="btn-close" @click="formError = ''"></button>
       </div>
-    </div>
-    <div v-if="showAddModal" class="modal-backdrop fade show"></div>
+
+      <!-- Campos del formulario -->
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Usuario</label>
+        <InputText v-model="newUserForm.usuario" class="w-full" placeholder="Nombre de usuario" />
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Clave</label>
+        <InputText
+          v-model="newUserForm.clave"
+          type="password"
+          class="w-full"
+          placeholder="Contraseña (mín. 6 caracteres)"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Confirmar Clave</label>
+        <InputText
+          v-model="(newUserForm as any).confirmPassword"
+          type="password"
+          class="w-full"
+          :class="{ 'ng-invalid': !passwordMatch }"
+          placeholder="Confirmar contraseña"
+        />
+        <small v-if="!passwordMatch" class="error-text">Las contraseñas no coinciden</small>
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Rol</label>
+        <Dropdown
+          v-model="newUserForm.rol"
+          :options="rolesOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          placeholder="Selecciona un rol"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Empleado</label>
+        <Dropdown
+          v-model="newUserForm.idEmpleado"
+          :options="empleadosOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          placeholder="Selecciona un empleado"
+          :filter="true"
+          @filter="filterEmpleados"
+          filterPlaceholder="Buscar empleado..."
+        />
+        <small v-if="newUserForm.idEmpleado" class="text-muted d-block mt-2">
+          Empleado: {{ getEmpleadoNombreCompleto(newUserForm.empleado) }}
+        </small>
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Activo</label>
+        <Dropdown
+          v-model="newUserForm.activo"
+          :options="[
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ]"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+        />
+      </div>
+
+      <template #footer>
+        <Button label="Cancelar" icon="pi pi-times" @click="closeAddModal" severity="secondary" />
+        <Button
+          :label="modoEdicion ? 'Actualizar' : 'Crear'"
+          icon="pi pi-save"
+          @click="handleAddUser"
+          :loading="loading"
+          :disabled="loading || !passwordMatch || !newUserForm.usuario"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <style scoped>
-.user-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  transition:
-    transform 0.3s,
-    box-shadow 0.3s;
-}
-
-.user-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-}
-
-.user-avatar {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
-.user-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.status-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: white;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.user-info {
-  padding: 20px;
-  text-align: center;
-}
-
-.user-info h5 {
-  margin-bottom: 5px;
-  color: var(--dark);
-  font-weight: 600;
-}
-
-.user-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 15px;
-  border-top: 1px solid #e9ecef;
+.error-text {
+  color: #dc2626;
+  font-size: 0.875rem;
+  display: block;
+  margin-top: 0.25rem;
 }
 
 .card {
@@ -400,25 +415,60 @@ const deleteUser = (id: number) => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* Estilos del modal */
-.modal {
-  background-color: rgba(0, 0, 0, 0.5);
+:deep(.p-input-icon-left > i) {
+  left: 1rem;
 }
 
-.modal-content {
-  border-radius: 10px;
-  border: none;
+:deep(.p-input-icon-left > .p-inputtext) {
+  padding-left: 2.5rem;
 }
 
-.modal-header {
-  background-color: var(--primary);
-  color: white;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+.flex {
+  display: flex;
 }
 
-.modal-header .btn-close {
-  color: white;
-  opacity: 1;
+.gap-3 {
+  gap: 1rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.w-32 {
+  width: 8rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.block {
+  display: block;
+}
+
+.alert {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+}
+
+.alert-danger {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
 }
 </style>

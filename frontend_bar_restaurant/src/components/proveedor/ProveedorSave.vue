@@ -24,12 +24,13 @@ const dialogVisible = computed({
 
 const proveedorLocal = ref<Proveedor>({
   id: 0,
-  nombre: '',
+  nombreEmpresa: '',
   nit: '',
-  telefono: '',
-  fechaCreacion: new Date(),
-  fechaModificacion: new Date(),
-  fechaEliminacion: null,
+  responsable: '',
+  direccion: '',
+  celular: '',
+  email: '',
+  condicionPago: '',
 })
 
 watch(
@@ -39,12 +40,13 @@ watch(
     else
       proveedorLocal.value = {
         id: 0,
-        nombre: '',
+        nombreEmpresa: '',
         nit: '',
-        telefono: '',
-        fechaCreacion: new Date(),
-        fechaModificacion: new Date(),
-        fechaEliminacion: null,
+        responsable: '',
+        direccion: '',
+        celular: '',
+        email: '',
+        condicionPago: '',
       }
   },
   { immediate: true },
@@ -53,9 +55,13 @@ watch(
 async function handleSave() {
   try {
     const body = {
-      nombre: proveedorLocal.value.nombre,
+      nombreEmpresa: proveedorLocal.value.nombreEmpresa,
       nit: proveedorLocal.value.nit,
-      telefono: proveedorLocal.value.telefono,
+      responsable: proveedorLocal.value.responsable,
+      direccion: proveedorLocal.value.direccion,
+      celular: proveedorLocal.value.celular,
+      email: proveedorLocal.value.email,
+      condicionPago: proveedorLocal.value.condicionPago,
     }
 
     if (props.modoEdicion && proveedorLocal.value.id) {
@@ -67,12 +73,13 @@ async function handleSave() {
     emit('guardar')
     proveedorLocal.value = {
       id: 0,
-      nombre: '',
+      nombreEmpresa: '',
       nit: '',
-      telefono: '',
-      fechaCreacion: new Date(),
-      fechaModificacion: new Date(),
-      fechaEliminacion: null,
+      responsable: '',
+      direccion: '',
+      celular: '',
+      email: '',
+      condicionPago: '',
     }
     dialogVisible.value = false
   } catch (error) {
@@ -85,10 +92,20 @@ async function handleSave() {
 
 <template>
   <div class="card flex justify-center">
-    <Dialog v-model:visible="dialogVisible" :header="props.modoEdicion ? 'Editar Proveedor' : 'Crear Proveedor'" style="width: 25rem">
+    <Dialog
+      v-model:visible="dialogVisible"
+      :header="props.modoEdicion ? 'Editar Proveedor' : 'Crear Proveedor'"
+      style="width: 25rem"
+    >
       <div class="flex items-center gap-4 mb-4">
-        <label for="nombre" class="font-semibold w-3">Nombre</label>
-        <InputText id="nombre" v-model="proveedorLocal.nombre" class="flex-auto" autocomplete="off" autofocus />
+        <label for="nombreEmpresa" class="font-semibold w-3">Nombre Empresa</label>
+        <InputText
+          id="nombreEmpresa"
+          v-model="proveedorLocal.nombreEmpresa"
+          class="flex-auto"
+          autocomplete="off"
+          autofocus
+        />
       </div>
 
       <div class="flex items-center gap-4 mb-4">
@@ -97,12 +114,58 @@ async function handleSave() {
       </div>
 
       <div class="flex items-center gap-4 mb-4">
-        <label for="telefono" class="font-semibold w-3">Teléfono</label>
-        <InputText id="telefono" v-model="proveedorLocal.telefono" class="flex-auto" autocomplete="off" />
+        <label for="responsable" class="font-semibold w-3">Responsable</label>
+        <InputText
+          id="responsable"
+          v-model="proveedorLocal.responsable"
+          class="flex-auto"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="flex items-center gap-4 mb-4">
+        <label for="direccion" class="font-semibold w-3">Direccion</label>
+        <InputText
+          id="direccion"
+          v-model="proveedorLocal.direccion"
+          class="flex-auto"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="flex items-center gap-4 mb-4">
+        <label for="celular" class="font-semibold w-3">Celular</label>
+        <InputText
+          id="celular"
+          v-model="proveedorLocal.celular"
+          class="flex-auto"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="flex items-center gap-4 mb-4">
+        <label for="email" class="font-semibold w-3">Email</label>
+        <InputText id="email" v-model="proveedorLocal.email" class="flex-auto" autocomplete="off" />
+      </div>
+
+      <div class="flex items-center gap-4 mb-4">
+        <label for="condicionPago" class="font-semibold w-3">Condicion de Pago</label>
+        <InputText
+          id="condicionPago"
+          v-model="proveedorLocal.condicionPago"
+          class="flex-auto"
+          autocomplete="off"
+        />
       </div>
 
       <div class="flex justify-end gap-2">
-        <Button type="button" label="Cancelar" icon="pi pi-times" severity="secondary" @click="dialogVisible = false" />
+        <Button
+          type="button"
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          @click="dialogVisible = false"
+        />
         <Button type="button" label="Guardar" icon="pi pi-save" @click="handleSave" />
       </div>
     </Dialog>

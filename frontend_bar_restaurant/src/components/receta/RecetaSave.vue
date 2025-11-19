@@ -17,6 +17,7 @@ interface CreateRecetaDto {
   nombreReceta: string
   descripcion: string
   precioVentaActual: number
+  urlImagen: string
   detalles: CreateDetalleRecetaDto[]
 }
 
@@ -42,6 +43,7 @@ const dialogVisible = computed({
 const nombreReceta = ref<string>(props.receta?.nombreReceta || '')
 const descripcion = ref<string>(props.receta?.descripcion || '')
 const precioVentaActual = ref<number>(props.receta?.precioVentaActual || 0)
+const urlImagen = ref<string>(props.receta?.urlImagen || '')
 
 // Detalles
 const productos = ref<Producto[]>([])
@@ -95,6 +97,7 @@ watch(
       nombreReceta.value = r.nombreReceta || ''
       descripcion.value = r.descripcion || ''
       precioVentaActual.value = r.precioVentaActual || 0
+      urlImagen.value = r.urlImagen || ''
       // Mapear detalles si vienen (compatibilidad)
       detalles.value = (r as any).detalles
         ? (r as any).detalles.map((d: any) => ({
@@ -144,6 +147,7 @@ async function handleSave() {
       nombreReceta: nombreReceta.value,
       descripcion: descripcion.value,
       precioVentaActual: precioVentaActual.value || 0,
+      urlImagen: urlImagen.value,
       detalles: detalles.value,
     }
 
@@ -160,6 +164,7 @@ async function handleSave() {
     nombreReceta.value = ''
     descripcion.value = ''
     precioVentaActual.value = 0
+    urlImagen.value = ''
     detalles.value = []
     nuevoDetalle.value = { idProducto: 0, cantidadConsumida: 1, unidadConsumo: '' }
     dialogVisible.value = false
@@ -188,6 +193,17 @@ async function handleSave() {
               v-model="nombreReceta"
               type="text"
               class="form-control"
+            />
+          </div>
+
+          <div class="field">
+            <label for="urlImagen" class="form-label">URL Imagen</label>
+            <Textarea
+              id="urlImagen"
+              v-model="urlImagen"
+              class="form-input"
+              autocomplete="off"
+              rows="4"
             />
           </div>
 

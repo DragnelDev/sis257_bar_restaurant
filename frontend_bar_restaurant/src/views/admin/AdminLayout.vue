@@ -28,7 +28,9 @@ const confirmLogout = () => {
 
 const menuItems = [
   { icon: 'fa-tachometer-alt', text: 'Panel', route: 'admin-dashboard' },
-  { icon: 'fa-calendar-check', text: 'Reservas', route: 'admin-bookings' },
+  //{ icon: 'fa-calendar-check', text: 'Reservas', route: 'admin-bookings' },
+  { icon: 'fa-table', text: 'Mesas', route: 'admin-mesas' },
+  { icon: 'fa-user-plus', text: 'Registrar', route: 'admin-registrar' },
   { icon: 'fa-utensils', text: 'Gestión de Menus', route: 'admin-menu' },
   { icon: 'fa-shopping-cart', text: 'Ordenes', route: 'admin-orders' },
   { icon: 'fa-users', text: 'Personal', route: 'admin-staff' },

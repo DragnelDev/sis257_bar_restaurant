@@ -1,56 +1,75 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { MenuItem } from '../../types'
 
+// Adaptar la interfaz para que sea más simple (solo datos de Recetas)
+interface MenuItem {
+  id: number
+  name: string
+  price: number
+  description: string
+  image: string
+  category: string
+  // 'stock' ya no se usa para el plato terminado en el modelo 'Bajo Pedido'
+}
+
+// Nueva Interfaz para la línea de pedido (simula detalle_ventas)
+interface OrderItem {
+  idReceta: number
+  name: string
+  price: number
+  quantity: number
+  subtotal: number
+}
+
+// --- 1. DATOS DE EJEMPLO Y ESTADO ---
 const menuItems = ref<MenuItem[]>([
   {
     id: 1,
-    name: 'Chicken Burger',
-    price: 15,
-    description: 'Juicy grilled chicken with fresh vegetables',
+    name: 'Hamburguesa Clásica',
+    price: 35.0,
+    description: 'Carne, queso y pan brioche.',
     image: '/img/menu-1.jpg',
-    category: 'breakfast',
-    stock: 25,
-    ingredients: ['Chicken', 'Lettuce', 'Tomato', 'Cheese'],
+    category: 'principal',
   },
   {
     id: 2,
-    name: 'Caesar Salad',
-    price: 12,
-    description: 'Fresh romaine lettuce with caesar dressing',
+    name: 'Papas Medianas',
+    price: 15.0,
+    description: '200g de papas fritas.',
     image: '/img/menu-2.jpg',
-    category: 'lunch',
-    stock: 30,
-    ingredients: ['Lettuce', 'Parmesan', 'Croutons'],
+    category: 'acompañamiento',
   },
   {
     id: 3,
     name: 'Ribeye Steak',
-    price: 35,
-    description: 'Premium cut grilled to perfection',
+    price: 90.0,
+    description: 'Corte premium a la parrilla.',
     image: '/img/menu-3.jpg',
-    category: 'dinner',
-    stock: 15,
-    ingredients: ['Beef', 'Herbs', 'Butter'],
+    category: 'principal',
   },
   {
     id: 4,
-    name: 'Margherita Pizza',
-    price: 18,
-    description: 'Classic Italian pizza with fresh mozzarella',
+    name: 'Gaseosa Cola (Lata)',
+    price: 10.0,
+    description: 'Refresco embotellado.',
     image: '/img/menu-4.jpg',
-    category: 'lunch',
-    stock: 20,
-    ingredients: ['Dough', 'Tomato', 'Mozzarella', 'Basil'],
+    category: 'bebidas',
   },
 ])
 
 const selectedCategory = ref('all')
 const searchQuery = ref('')
-const showAddModal = ref(false)
-const selectedItem = ref<MenuItem | null>(null)
+const selectedItem = ref<MenuItem | null>(null) // Para el modal de detalle
 
+// ESTADO CLAVE PARA LA VENTA
+const currentOrder = ref<OrderItem[]>([]) // El carrito / La orden actual
+const orderTotal = computed(() => {
+  return currentOrder.value.reduce((sum, item) => sum + item.subtotal, 0)
+})
+
+// --- 2. LÓGICA DE FILTRADO Y VISUALIZACIÓN ---
 const filteredItems = computed(() => {
+  // Las categorías se adaptan a las que tienes en tu backend (ej: Carnes, Bebidas, etc.)
   return menuItems.value.filter((item) => {
     const matchesCategory =
       selectedCategory.value === 'all' || item.category === selectedCategory.value
@@ -59,215 +78,196 @@ const filteredItems = computed(() => {
   })
 })
 
-const deleteItem = (id: number) => {
-  if (confirm('Are you sure you want to delete this menu item?')) {
-    menuItems.value = menuItems.value.filter((item) => item.id !== id)
-  }
-}
-
-const viewItem = (item: MenuItem) => {
-  selectedItem.value = item
-}
-
 const getCategoryColor = (category: string) => {
   const colors: Record<string, string> = {
-    breakfast: 'warning',
-    lunch: 'success',
-    dinner: 'primary',
+    principal: 'primary',
+    acompañamiento: 'success',
+    bebidas: 'info',
+    postres: 'warning',
   }
   return colors[category] || 'secondary'
+}
+
+// --- 3. LÓGICA DE VENTA ---
+
+// Función para añadir/incrementar un ítem a la orden
+const addItemToOrder = (item: MenuItem) => {
+  const existingItem = currentOrder.value.find((i) => i.idReceta === item.id)
+
+  if (existingItem) {
+    existingItem.quantity += 1
+    existingItem.subtotal = existingItem.quantity * existingItem.price
+  } else {
+    currentOrder.value.push({
+      idReceta: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: 1,
+      subtotal: item.price,
+    })
+  }
+}
+
+// Función para remover o decrementar un ítem
+const updateItemQuantity = (idReceta: number, change: number) => {
+  const item = currentOrder.value.find((i) => i.idReceta === idReceta)
+  if (item) {
+    item.quantity += change
+    if (item.quantity <= 0) {
+      // Eliminar si la cantidad es cero o menos
+      currentOrder.value = currentOrder.value.filter((i) => i.idReceta !== idReceta)
+    } else {
+      item.subtotal = item.quantity * item.price
+    }
+  }
+}
+
+// Función para enviar la venta al backend (NestJS)
+const checkout = () => {
+  if (currentOrder.value.length === 0) {
+    alert('La orden está vacía.')
+    return
+  }
+
+  // 1. Mapear la orden al formato DTO del backend (detalle_ventas)
+  const detallesVenta = currentOrder.value.map((item) => ({
+    idReceta: item.idReceta,
+    cantidad: item.quantity,
+    precioUnitarioVenta: item.price,
+  }))
+
+  // 2. Construir el objeto de Venta (simulando los IDs de usuario y mesa)
+  const ventaPayload = {
+    idMesa: 1, // Se debe obtener dinámicamente
+    idUsuario: 2, // Se debe obtener dinámicamente (cajero logueado)
+    total: orderTotal.value,
+    estado: 'PAGADA', // Simplemente lo marcamos como pagada al cerrar
+    tipoPago: 'EFECTIVO', // Se debería seleccionar en un modal
+    detalles: detallesVenta,
+    // Aquí se agregarían nitCI y nombreFiscal si se requiere factura
+  }
+
+  // 3. ENVÍO AL BACKEND (NestJS)
+  console.log('Enviando Venta al Servidor (NestJS):', ventaPayload)
+  alert(`Venta por $${orderTotal.value.toFixed(2)} simulada con éxito. (Consola para ver Payload)`)
+
+  // Limpiar la orden después de un checkout exitoso
+  currentOrder.value = []
 }
 </script>
 
 <template>
-  <div class="menu-management">
+  <div class="menu-pos container-fluid p-4">
     <div class="page-header mb-4">
-      <h2 class="mb-1">Gestión de menús</h2>
-      <p class="text-muted">Gestionar los elementos del menú del restaurante</p>
+      <h2 class="mb-1">Toma de Pedidos (POS)</h2>
+      <p class="text-muted">Mesa 1 | Cajero: Ana Gómez</p>
     </div>
 
-    <!-- Stats -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-3">
-        <div class="stat-card border-primary">
-          <div class="stat-icon bg-primary">
-            <i class="fa fa-utensils"></i>
-          </div>
-          <div class="stat-content">
-            <h6>Total de artículos</h6>
-            <h3>{{ menuItems.length }}</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card border-warning">
-          <div class="stat-icon bg-warning">
-            <i class="fa fa-coffee"></i>
-          </div>
-          <div class="stat-content">
-            <h6>Desayuno</h6>
-            <h3>{{ menuItems.filter((i) => i.category === 'breakfast').length }}</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card border-success">
-          <div class="stat-icon bg-success">
-            <i class="fa fa-hamburger"></i>
-          </div>
-          <div class="stat-content">
-            <h6>Almuerzo</h6>
-            <h3>{{ menuItems.filter((i) => i.category === 'lunch').length }}</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card border-info">
-          <div class="stat-icon bg-info">
-            <i class="fa fa-moon"></i>
-          </div>
-          <div class="stat-content">
-            <h6>Cena</h6>
-            <h3>{{ menuItems.filter((i) => i.category === 'dinner').length }}</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="card mb-4">
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="fa fa-search"></i>
-              </span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Buscar elementos del menú..."
-                v-model="searchQuery"
-              />
-            </div>
-          </div>
-          <div class="col-md-4">
-            <select class="form-select" v-model="selectedCategory">
-              <option value="all">Todas las Categorias</option>
-              <option value="breakfast">Desayuno</option>
-              <option value="lunch">Almuerzo</option>
-              <option value="dinner">Cena</option>
-              <option value="beverages">Bebidas</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <button class="btn btn-primary w-100" @click="showAddModal = true">
-              <i class="fa fa-plus me-2"></i>Agregar elemento al menú
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Menu Items Grid -->
     <div class="row g-4">
-      <div v-for="item in filteredItems" :key="item.id" class="col-lg-3 col-md-4 col-sm-6">
-        <div class="menu-item-card">
-          <div class="item-image">
-            <img :src="item.image" :alt="item.name" />
-            <span class="category-badge" :class="`bg-${getCategoryColor(item.category)}`">
-              {{ item.category }}
-            </span>
-          </div>
-          <div class="item-content">
-            <h5>{{ item.name }}</h5>
-            <p class="text-muted small">{{ item.description }}</p>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="price">${{ item.price }}</span>
-              <span
-                class="stock"
-                :class="item.stock && item.stock < 10 ? 'text-danger' : 'text-success'"
-              >
-                <i class="fa fa-box me-1"></i>
-                {{ item.stock }} in stock
-              </span>
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fa fa-search"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Buscar plato..."
+                    v-model="searchQuery"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <select class="form-select" v-model="selectedCategory">
+                  <option value="all">Todas las Categorias</option>
+                  <option value="principal">Platos Principales</option>
+                  <option value="acompañamiento">Acompañamientos</option>
+                  <option value="bebidas">Bebidas</option>
+                  <option value="postres">Postres</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div class="item-actions">
-            <button
-              class="btn btn-sm btn-outline-info"
-              @click="viewItem(item)"
-              data-bs-toggle="modal"
-              data-bs-target="#itemModal"
-            >
-              <i class="fa fa-eye"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="fa fa-edit"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger" @click="deleteItem(item.id)">
-              <i class="fa fa-trash"></i>
-            </button>
+        </div>
+
+        <div class="row g-4 menu-grid">
+          <div v-for="item in filteredItems" :key="item.id" class="col-lg-4 col-md-6 col-sm-12">
+            <div class="menu-item-card" @click="addItemToOrder(item)">
+              <div class="item-image">
+                <img :src="item.image" :alt="item.name" />
+                <span class="category-badge" :class="`bg-${getCategoryColor(item.category)}`">
+                  {{ item.category }}
+                </span>
+              </div>
+              <div class="item-content">
+                <h5>{{ item.name }}</h5>
+                <p class="text-muted small">{{ item.description }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="price">${{ item.price.toFixed(2) }}</span>
+                  <button class="btn btn-sm btn-primary">
+                    <i class="fa fa-cart-plus me-1"></i>Añadir
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Item Detail Modal -->
-    <div class="modal fade" id="itemModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" v-if="selectedItem">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title">{{ selectedItem.name }}</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
+      <div class="col-lg-4">
+        <div class="card order-summary">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Orden Actual (Mesa 1)</h5>
           </div>
-          <div class="modal-body">
-            <img
-              :src="selectedItem.image"
-              :alt="selectedItem.name"
-              class="img-fluid rounded mb-3"
-            />
-            <table class="table">
-              <tr>
-                <th>Categoria:</th>
-                <td>
-                  <span class="badge" :class="`bg-${getCategoryColor(selectedItem.category)}`">
-                    {{ selectedItem.category }}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <th>Pricio:</th>
-                <td>${{ selectedItem.price }}</td>
-              </tr>
-              <tr>
-                <th>Stock:</th>
-                <td>{{ selectedItem.stock }} units</td>
-              </tr>
-              <tr>
-                <th>Descripcion:</th>
-                <td>{{ selectedItem.description }}</td>
-              </tr>
-              <tr v-if="selectedItem.ingredients">
-                <th>Ingredientes:</th>
-                <td>
-                  <span
-                    v-for="(ingredient, index) in selectedItem.ingredients"
-                    :key="index"
-                    class="badge bg-secondary me-1"
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush order-list">
+              <li v-if="currentOrder.length === 0" class="list-group-item text-muted text-center">
+                El carrito está vacío.
+              </li>
+              <li
+                v-for="item in currentOrder"
+                :key="item.idReceta"
+                class="list-group-item d-flex align-items-center justify-content-between"
+              >
+                <div>
+                  <span class="badge bg-primary me-2">{{ item.quantity }}x</span>
+                  <strong>{{ item.name }}</strong>
+                  <div class="text-muted small">${{ item.price.toFixed(2) }} c/u</div>
+                </div>
+                <div class="d-flex align-items-center">
+                  <div class="me-3 fs-5 fw-bold">${{ item.subtotal.toFixed(2) }}</div>
+                  <button
+                    class="btn btn-sm btn-outline-secondary me-1"
+                    @click="updateItemQuantity(item.idReceta, -1)"
                   >
-                    {{ ingredient }}
-                  </span>
-                </td>
-              </tr>
-            </table>
+                    <i class="fa fa-minus"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-secondary"
+                    @click="updateItemQuantity(item.idReceta, 1)"
+                  >
+                    <i class="fa fa-plus"></i>
+                  </button>
+                </div>
+              </li>
+            </ul>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+          <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5>Total:</h5>
+              <h4 class="text-primary fw-bold">${{ orderTotal.toFixed(2) }}</h4>
+            </div>
+
+            <button
+              class="btn btn-success w-100 btn-lg"
+              :disabled="currentOrder.length === 0"
+              @click="checkout"
+            >
+              <i class="fa fa-cash-register me-2"></i> Procesar Pago y Cerrar Venta
+            </button>
           </div>
         </div>
       </div>
@@ -382,5 +382,26 @@ const getCategoryColor = (category: string) => {
   border: none;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos específicos del POS - Se aumento*/
+.menu-item-card {
+  /* Toda la tarjeta es clicable para añadir al carrito */
+  cursor: pointer;
+}
+
+/* Estilo para la lista de la orden */
+.order-summary {
+  position: sticky;
+  top: 20px; /* Fija el carrito mientras se desplaza el menú */
+}
+
+.order-list {
+  max-height: 550px; /* Limita la altura del carrito */
+  overflow-y: auto;
+}
+
+.order-list .list-group-item {
+  padding: 15px;
 }
 </style>

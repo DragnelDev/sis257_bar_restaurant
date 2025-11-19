@@ -22,7 +22,9 @@ const mostrarConfirmDialog = ref<boolean>(false)
 const selectedCargo = ref<string>('Todos')
 const uniqueCargos = computed(() => {
   const set = new Set<string>()
-  empleados.value.forEach(e => { if (e.cargo) set.add(e.cargo) })
+  empleados.value.forEach((e) => {
+    if (e.cargo) set.add(e.cargo)
+  })
   return Array.from(set).sort()
 })
 
@@ -205,7 +207,15 @@ defineExpose({ obtenerLista })
           <td>{{ empleado.direccion }}</td>
           <td>{{ empleado.celular }}</td>
           <td>{{ empleado.email }}</td>
+          <td>
+            {{
+              typeof empleado.fechaIngreso === 'string'
+                ? empleado.fechaIngreso.split('T')[0]
+                : empleado.fechaIngreso
+            }}
+          </td>
           <td>{{ empleado.cargo }}</td>
+          <td>{{ empleado.salario }}</td>
           <td>
             <span :class="['estado-badge', empleado.activo ? 'activo' : 'inactivo']">
               {{ empleado.activo ? 'Activo' : 'Inactivo' }}

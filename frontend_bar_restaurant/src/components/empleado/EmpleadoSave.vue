@@ -1,31 +1,21 @@
 <script setup lang="ts">
-import http from '../../plugins/axios'
+import type { Empleado } from '@/models/Empleado'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
-import { computed, ref, watch, onMounted } from 'vue'
-import Select from 'primevue/select'
-import type { Empleado } from '@/models/Empleado'
+import Calendar from 'primevue/calendar'
+import Dropdown from 'primevue/dropdown'
+import InputNumber from 'primevue/inputnumber'
+import { computed, ref, watch } from 'vue'
+import http from '../../plugins/axios'
 
 const ENDPOINT = 'empleados'
 const props = defineProps({
   mostrar: Boolean,
   empleado: {
     type: Object as () => Empleado,
-    default: () => ({
-      cedulaIdentidad: '',
-      nombre: '',
-      apellidoPaterno: '',
-      apellidoMaterno: '',
-      fechaNacimiento: new Date(),
-      direccion: '',
-      celular: '',
-      email: '',
-      cargo: '',
-      activo: true
-    }) as Empleado,
+    default: () => ({}) as Empleado,
   },
   modoEdicion: Boolean,
 })
@@ -38,23 +28,28 @@ const dialogVisible = computed({
   },
 })
 
-const empleado = ref<Empleado>({
-  ...(props.empleado || {
+function defaultEmpleado(): Empleado {
+  return {
+    id: 0,
     cedulaIdentidad: '',
     nombre: '',
     apellidoPaterno: '',
     apellidoMaterno: '',
-    fechaNacimiento: new Date(),
+    fechaNacimiento: '',
     direccion: '',
     celular: '',
     email: '',
+    fechaIngreso: '',
     cargo: '',
-    activo: true
-  })
-} as Empleado)
+    salario: 0,
+    activo: true,
+  }
+}
+
+const empleado = ref<Empleado>({ ...((props.empleado as Empleado) || defaultEmpleado()) })
 
 const fechaNacimientoDate = ref<Date | null>(null)
-  empleado.value.fechaNacimiento ? new Date(empleado.value.fechaNacimiento) : new Date()
+const fechaIngresoDate = ref<Date | null>(null)
 
 // Opciones para el estado activo/inactivo
 const opcionesActivo = [
@@ -113,15 +108,23 @@ watch(
   () => props.empleado,
   (newVal) => {
     if (newVal) {
-      empleado.value = { ...newVal }
-      // Convertir la fecha a Date si es string
+      empleado.value = { ...(newVal as Empleado) }
+      // Convertir las fechas a Date si vienen como string
       if (newVal.fechaNacimiento) {
         fechaNacimientoDate.value =
           typeof newVal.fechaNacimiento === 'string'
             ? new Date(newVal.fechaNacimiento)
-            : newVal.fechaNacimiento
+            : (newVal.fechaNacimiento as Date)
       } else {
         fechaNacimientoDate.value = null
+      }
+      if (newVal.fechaIngreso) {
+        fechaIngresoDate.value =
+          typeof newVal.fechaIngreso === 'string'
+            ? new Date(newVal.fechaIngreso)
+            : (newVal.fechaIngreso as Date)
+      } else {
+        fechaIngresoDate.value = null
       }
     }
   },
@@ -133,8 +136,9 @@ watch(
   (newVal) => {
     if (newVal && !props.modoEdicion) {
       // Resetear el formulario cuando se abre en modo creación
-      empleado.value = {} as Empleado
+      empleado.value = defaultEmpleado()
       fechaNacimientoDate.value = null
+      fechaIngresoDate.value = null
     }
   },
 )
@@ -147,11 +151,16 @@ async function handleSave() {
       return
     }
 
-    // Convertir la fecha al formato correcto para el backend
+    // Convertir las fechas al formato correcto para el backend
     let fechaNacimientoFormatted: string | null = null
+    let fechaIngresoFormatted: string | null = null
     if (fechaNacimientoDate.value) {
       const date = new Date(fechaNacimientoDate.value)
       fechaNacimientoFormatted = date.toISOString().split('T')[0]
+    }
+    if (fechaIngresoDate.value) {
+      const d2 = new Date(fechaIngresoDate.value)
+      fechaIngresoFormatted = d2.toISOString().split('T')[0]
     }
 
     const body = {
@@ -160,10 +169,12 @@ async function handleSave() {
       apellidoPaterno: empleado.value.apellidoPaterno,
       apellidoMaterno: empleado.value.apellidoMaterno,
       fechaNacimiento: fechaNacimientoFormatted,
+      fechaIngreso: fechaIngresoFormatted,
       direccion: empleado.value.direccion,
       celular: empleado.value.celular,
       email: empleado.value.email,
       cargo: empleado.value.cargo,
+      salario: empleado.value.salario,
       activo: empleado.value.activo,
     }
     if (props.modoEdicion) {
@@ -245,7 +256,7 @@ async function handleSave() {
 
       <div class="mb-4">
         <label for="fechaNacimiento" class="font-semibold block mb-1">Fecha de Nacimiento</label>
-        <DatePicker
+        <Calendar
           id="fechaNacimiento"
           v-model="fechaNacimientoDate"
           class="w-full"
@@ -267,8 +278,20 @@ async function handleSave() {
       </div>
 
       <div class="mb-4">
+        <label for="fechaIngreso" class="font-semibold block mb-1">Fecha de Ingreso</label>
+        <Calendar
+          id="fechaIngreso"
+          v-model="fechaIngresoDate"
+          class="w-full"
+          :showIcon="true"
+          dateFormat="dd-mm-yy"
+        />
+        <small v-if="errors.fechaIngreso" class="error-text">{{ errors.fechaIngreso }}</small>
+      </div>
+
+      <div class="mb-4">
         <label for="cargo" class="font-semibold block mb-1">Cargo</label>
-        <Select
+        <Dropdown
           id="cargo"
           v-model="empleado.cargo"
           :options="opcionesCargo"
@@ -278,11 +301,16 @@ async function handleSave() {
         />
       </div>
 
+      <div>
+        <label for="salario" class="font-semibold block mb-1">Salario</label>
+        <InputNumber id="salario" v-model="empleado.salario" class="w-full" mode="decimal" />
+      </div>
+
       <!-- Avatar field removed as per UX requirement -->
 
       <div class="mb-4">
         <label for="activo" class="font-semibold block mb-1">Activo</label>
-        <Select
+        <Dropdown
           id="activo"
           v-model="empleado.activo"
           :options="opcionesActivo"
