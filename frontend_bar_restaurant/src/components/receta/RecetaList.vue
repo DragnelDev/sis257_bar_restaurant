@@ -123,65 +123,54 @@ defineExpose({ obtenerLista })
       </InputGroup>
     </div>
 
-    <table class="table-responsive">
-      <thead>
-        <tr>
-          <th>Nro.</th>
-          <th>Nombre Receta</th>
-          <th>Imagen Receta</th>
-          <th>Descripcion</th>
-          <th>Precio de Venta</th>
-          <th>Costo Actual</th>
-          <th>Cantidad Consumida</th>
-          <th>Unidad Consumida</th>
-          <th>Nombre Producto</th>
-          <th>Stock Producto</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(detalle, index) in detallesFiltrados" :key="detalle.id">
-          <td>{{ index + 1 }}</td>
-
-          <td>{{ detalle?.receta?.nombreReceta ?? 'N/A' }}</td>
-          <td>
-            <img
-              :src="detalle?.receta?.urlImagen"
-              :alt="`Imagen de ${detalle?.receta?.urlImagen || 'receta'}`"
-              class="imagen-receta-tabla"
-            />
-          </td>
-          <td>{{ detalle?.receta?.descripcion ?? 'N/A' }}</td>
-          <td>{{ detalle?.receta?.precioVentaActual ?? 'N/A' }}</td>
-          <td>{{ detalle?.receta?.costoActual ?? 'N/A' }}</td>
-          <td>{{ detalle.cantidadConsumida }}</td>
-          <td>{{ detalle.unidadConsumo }}</td>
-
-          <td>{{ detalle.producto?.nombre ?? 'N/A' }}</td>
-          <td>{{ detalle.producto?.stockActual ?? 'N/A' }}</td>
-
-          <td>
-            <Button
-              v-if="detalle.receta"
-              icon="pi pi-pencil"
-              aria-label="Ver/Editar Receta"
-              text
-              @click="emitirEdicion(detalle.receta)"
-            />
-            <Button
-              v-if="detalle.receta"
-              icon="pi pi-trash"
-              aria-label="Eliminar Receta"
-              text
-              @click="mostrarEliminarConfirm(detalle.receta)"
-            />
-          </td>
-        </tr>
-        <tr v-if="detallesFiltrados.length === 0">
-          <td colspan="11">No se encontraron resultados.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive mt-3">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark text-white">
+          <tr>
+            <th style="width:48px">Nro.</th>
+            <th>Nombre Receta</th>
+            <th style="width:110px">Imagen</th>
+            <th>Descripcion</th>
+            <th>Precio Venta</th>
+            <th>Costo Actual</th>
+            <th>Cant.</th>
+            <th>Unidad</th>
+            <th>Producto</th>
+            <th>Stock</th>
+            <th style="width:120px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(detalle, index) in detallesFiltrados" :key="detalle.id">
+            <td class="text-center">{{ index + 1 }}</td>
+            <td class="fw-bold">{{ detalle?.receta?.nombreReceta ?? 'N/A' }}</td>
+            <td>
+              <img
+                :src="detalle?.receta?.urlImagen || '/public/img/default-recipe.png'"
+                :alt="`Imagen de ${detalle?.receta?.nombreReceta || 'receta'}`"
+                class="imagen-receta-tabla"
+              />
+            </td>
+            <td class="text-truncate" style="max-width:280px">{{ detalle?.receta?.descripcion ?? 'N/A' }}</td>
+            <td>Bs. {{ detalle?.receta?.precioVentaActual ?? '0.00' }}</td>
+            <td>Bs. {{ detalle?.receta?.costoActual ?? '0.00' }}</td>
+            <td class="text-center">{{ detalle.cantidadConsumida }}</td>
+            <td class="text-center">{{ detalle.unidadConsumo }}</td>
+            <td>{{ detalle.producto?.nombre ?? 'N/A' }}</td>
+            <td class="text-center">{{ detalle.producto?.stockActual ?? 'N/A' }}</td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-1">
+                <Button icon="pi pi-pencil" aria-label="Editar" class="p-button-text p-button-sm" @click="emitirEdicion(detalle.receta)" />
+                <Button icon="pi pi-trash" aria-label="Eliminar" class="p-button-text p-button-sm text-danger" @click="mostrarEliminarConfirm(detalle.receta)" />
+              </div>
+            </td>
+          </tr>
+          <tr v-if="detallesFiltrados.length === 0">
+            <td colspan="11" class="text-center">No se encontraron resultados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <Dialog
       v-model:visible="mostrarConfirmDialog"
@@ -232,5 +221,29 @@ table td {
   padding: 0.5rem;
   text-align: left;
   border-bottom: 1px solid #dee2e6; /* Líneas de PrimeVue */
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 576px) {
+  .table-responsive table thead {
+    display: none;
+  }
+  .table-responsive table tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+  }
+  .table-responsive table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+  }
 }
 </style>

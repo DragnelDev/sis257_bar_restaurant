@@ -152,7 +152,7 @@ const setActiveTab = (tab: Category) => {
 <template>
   <div class="container-xxl py-5">
     <div class="container">
-      <SectionTitle subtitle="Menú de comida" title="Artículos más populares" />
+      <SectionTitle subtitle="Menú de comida" title="Nuestro Catalogo de Productos" />
 
       <div class="tab-class text-center wow fadeInUp" data-wow-delay="0.1s">
         <ul class="nav nav-pills d-inline-flex justify-content-center border-bottom mb-5">
@@ -166,7 +166,7 @@ const setActiveTab = (tab: Category) => {
               <i class="fa fa-coffee fa-2x text-primary"></i>
               <div class="ps-3">
                 <small class="text-body">Desayuno</small>
-                <h6 class="mt-n1 mb-0">Popular</h6>
+                <h6 class="mt-n1 mb-0">Saludable</h6>
               </div>
             </a>
           </li>

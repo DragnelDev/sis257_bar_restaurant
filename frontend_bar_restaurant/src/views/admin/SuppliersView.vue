@@ -29,10 +29,16 @@ function handleGuardar() {
 </script>
 
 <template>
-  <div class="mx-2 mt-6 md:m-7">
-    <h2>Proveedores</h2>
-    <Button label="Crear Nuevo" icon="pi pi-plus" @click="handleCreate" />
+  <div class="container-fluid px-3 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="m-0">Proveedores</h2>
+      <div>
+        <Button label="Crear Nuevo" icon="pi pi-plus" class="p-button-primary" @click="handleCreate" />
+      </div>
+    </div>
+
     <ProveedorList ref="proveedorListRef" @edit="handleEdit" />
+
     <ProveedorSave
       :mostrar="mostrarDialog"
       :proveedor="proveedorEdit"

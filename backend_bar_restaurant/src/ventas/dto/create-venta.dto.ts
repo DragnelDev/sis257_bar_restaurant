@@ -21,13 +21,6 @@ export class CreateVentaDto {
   @IsNumber({}, { message: 'El campo idUsuario debe ser un número' })
   readonly idUsuario: number;
 
-  /*@ApiProperty({
-    description:
-      'ID del Cliente asociado a la venta. Puede ser null si es un cliente ocasional.',
-    nullable: true,
-  })*/
-  readonly idCliente: number | null;
-
   @ApiProperty({
     description: 'Total de la Venta. Puede ser calculado en el backend.',
   })
@@ -57,6 +50,16 @@ export class CreateVentaDto {
   @ValidateNested({ each: true })
   @Type(() => ItemVentaDto) // Importante para la validación de objetos anidados
   readonly detalles: ItemVentaDto[];
+
+  // --- Campos Opcionales para Clientes Ocasionales ---
+  /*@ApiProperty({
+    description:
+      'ID del Cliente asociado a la venta. Puede ser null si es un cliente ocasional.',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'El campo idCliente debe ser un número' })*/
+  readonly idCliente: number | null;
 
   @ApiProperty({ required: false })
   @IsOptional()

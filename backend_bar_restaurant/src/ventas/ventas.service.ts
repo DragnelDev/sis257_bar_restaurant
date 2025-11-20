@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,6 +13,8 @@ import { DetalleVenta } from 'src/detalle-ventas/entities/detalle-venta.entity';
 import { Receta } from 'src/recetas/entities/receta.entity';
 import { Producto } from 'src/productos/entities/producto.entity';
 import { ClientesService } from 'src/clientes/clientes.service';
+import { MesasService } from 'src/mesas/mesas.service';
+import { Mesa } from 'src/mesas/entities/mesa.entity';
 
 @Injectable()
 export class VentasService {
@@ -19,15 +22,17 @@ export class VentasService {
     @InjectRepository(Venta) private ventaRepository: Repository<Venta>,
     private readonly dataSource: DataSource,
     private readonly clientesService: ClientesService,
+    private readonly mesasService: MesasService,
   ) {}
 
   async create(createVentaDto: CreateVentaDto): Promise<Venta> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction(); // 1. INICIAR TRANSACCIÓN
 
     try {
-      //  Desestructurar los nuevos campos opcionales del DTO
+      await queryRunner.startTransaction(); // 1. INICIAR TRANSACCIÓN
+
+      // Desestructurar los nuevos campos opcionales del DTO
       const { detalles, idCliente, nitCI, nombreFiscal, ...cabeceraData } =
         createVentaDto;
 
@@ -35,30 +40,41 @@ export class VentasService {
       let clienteIdFinal: number | null = null;
 
       if (idCliente) {
-        // Opción 1: El DTO ya trae el ID de un cliente registrado.
         clienteIdFinal = idCliente;
       } else if (nitCI && nombreFiscal) {
-        // Opción 2: Se pide factura (se envía NIT y Nombre). Se busca o crea.
-
-        // Nota: El método findOrCreateByNit debe ser implementado en ClientesService
-        // Se encarga de buscar por NIT y, si no existe, crea el nuevo cliente fiscal.
         const cliente = await this.clientesService.findOrCreateByNit({
           nitCI,
           nombreFiscal,
         });
         clienteIdFinal = cliente.id;
       }
-      // Si nit_ci no existe y id_cliente no existe, clienteIdFinal se mantiene NULL (venta anónima).
 
       // 3. CREAR LA VENTA (CABECERA)
-      // Usamos el manager del queryRunner para que esté dentro de la transacción
       let nuevaVenta = queryRunner.manager.create(Venta, {
         ...cabeceraData,
-        id_cliente: clienteIdFinal, //  ASIGNACIÓN FINAL: Será NULL o el ID del cliente
+        idCliente: clienteIdFinal,
+        estado: 'PAGADA', // Estado inicial
       });
       nuevaVenta = await queryRunner.manager.save(Venta, nuevaVenta);
 
-      // 4. PROCESAR DETALLES Y CONSUMO DE INVENTARIO
+      // 4. 🔴 CONTROL DE MESA: OCUPAR 🔴
+      if (nuevaVenta.idMesa) {
+        // Usamos el manager del queryRunner para asegurar la atomicidad del estado de la mesa
+        const mesa = await queryRunner.manager.findOneBy(Mesa, {
+          id: nuevaVenta.idMesa,
+        });
+
+        if (!mesa) {
+          throw new NotFoundException(
+            `Mesa con ID ${nuevaVenta.idMesa} no encontrada.`,
+          );
+        }
+
+        mesa.estado = 'OCUPADA';
+        await queryRunner.manager.save(Mesa, mesa);
+      }
+
+      // 5. PROCESAR DETALLES Y CONSUMO DE INVENTARIO
       for (const itemVendido of detalles) {
         // b. Cargar la Receta y su fórmula (Detalles de Receta)
         const receta = await queryRunner.manager.findOne(Receta, {
@@ -79,7 +95,6 @@ export class VentasService {
         const detalleVenta = queryRunner.manager.create(DetalleVenta, {
           ...itemVendido,
           idVenta: nuevaVenta.id,
-          // Registrar el costo en la tabla detalle_ventas
           costo_unitario: costoUnitarioReceta,
         });
         await queryRunner.manager.save(DetalleVenta, detalleVenta);
@@ -110,13 +125,17 @@ export class VentasService {
           // Disminuir Stock
           producto.stockActual = Number(producto.stockActual) - consumoTotal;
           await queryRunner.manager.save(Producto, producto);
+          // 🛑 Eliminación de la llamada incorrecta a commitTransaction()
         }
       }
 
-      await queryRunner.commitTransaction(); // 5. CONFIRMAR
+      await queryRunner.commitTransaction(); // 5. ✅ CONFIRMAR UNA SOLA VEZ AL FINAL
       return nuevaVenta;
     } catch (error: any) {
-      await queryRunner.rollbackTransaction(); // 6. REVERTIR
+      if (queryRunner.isTransactionActive) {
+        // Asegurar que la transacción haya iniciado
+        await queryRunner.rollbackTransaction(); // 6. REVERTIR
+      }
       let msg = 'Error desconocido en la transacción de venta.';
       if (error instanceof Error && error.message) msg = error.message;
       throw new InternalServerErrorException(msg);
@@ -142,6 +161,39 @@ export class VentasService {
     }
 
     return venta;
+  }
+
+  async updateStatus(id: number, newStatus: string): Promise<Venta> {
+    const venta = await this.findOne(id); // Usa tu método existente findOne para cargar la venta
+
+    const currentStatus = venta.estado;
+
+    // --- LÓGICA DE VALIDACIÓN DE TRANSICIÓN ACTUALIZADA ---
+    if (currentStatus === 'PAGADA' && newStatus === 'PREPARANDO') {
+      // Transición 1: De Pagada a Preparando (Inicio de elaboración)
+      venta.estado = newStatus;
+    } else if (currentStatus === 'PREPARANDO' && newStatus === 'LISTO') {
+      // Transición 2: De Preparando a Listo (Fin de elaboración)
+      venta.estado = newStatus;
+    } else if (currentStatus === 'LISTO' && newStatus === 'ARCHIVADA') {
+      // Transición 3: De Lista a Archivada (Entrega final al cliente)
+      venta.estado = newStatus;
+      // 🔴 CONTROL DE MESA: LIBERAR 🔴
+      if (venta.idMesa) {
+        // Llama al servicio de mesas inyectado para liberar la mesa
+        await this.mesasService.updateStatus(venta.idMesa, 'LIBRE');
+      }
+    } else if (currentStatus === 'ARCHIVADA') {
+      // La orden ya está en el estado final.
+      throw new BadRequestException(`La Venta ${id} ya está ARCHIVADA.`);
+    } else {
+      // Cualquier otro intento (incluyendo saltos no secuenciales)
+      throw new BadRequestException(
+        `Transición no permitida: No se puede cambiar de ${currentStatus} a ${newStatus}.`,
+      );
+    }
+
+    return await this.ventaRepository.save(venta);
   }
 
   async update(id: number, updateVentaDto: UpdateVentaDto): Promise<Venta> {

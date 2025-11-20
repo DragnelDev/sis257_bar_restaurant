@@ -6,11 +6,11 @@ import TestimonialSection from '../components/home/TestimonialSection.vue'
 <template>
   <div>
     <PageHeader
-      title="Testimonial"
+      title="Testimonios"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'Testimonial', link: '/testimonial' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Pagina', link: '#' },
+        { text: 'Testimonio', link: '/testimonial' },
       ]"
     />
     <TestimonialSection />

@@ -12,11 +12,8 @@ export class MesasService {
     private readonly mesaRepository: Repository<Mesa>,
   ) {}
 
-  // 🟢 Crear mesa
   async create(createMesaDto: CreateMesaDto): Promise<Mesa> {
-    let nuevaMesa = await this.mesaRepository.findOneBy({});
-    nuevaMesa = new Mesa();
-    Object.assign(nuevaMesa, createMesaDto);
+    const nuevaMesa = this.mesaRepository.create(createMesaDto);
     return this.mesaRepository.save(nuevaMesa);
   }
 
@@ -33,10 +30,16 @@ export class MesasService {
     return mesa;
   }
 
+  // 🆕 MÉTODO CLAVE: Actualizar solo el estado de la mesa
+  async updateStatus(id: number, newStatus: string): Promise<Mesa> {
+    const mesa = await this.findOne(id); // Usa el método findOne para verificar la existencia
+    mesa.estado = newStatus;
+    return this.mesaRepository.save(mesa);
+  }
   // 🟠 Actualizar mesa
   async update(id: number, updateMesaDto: UpdateMesaDto): Promise<Mesa> {
     const mesa = await this.findOne(id);
-    Object.assign(mesa, updateMesaDto);
+    this.mesaRepository.merge(mesa, updateMesaDto);
     return await this.mesaRepository.save(mesa);
   }
 

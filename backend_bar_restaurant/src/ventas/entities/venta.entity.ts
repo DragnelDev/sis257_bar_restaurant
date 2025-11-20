@@ -63,6 +63,6 @@ export class Venta {
   detalleVentas: DetalleVenta[];
 
   @ManyToOne(() => Cliente, (cliente) => cliente.ventas)
-  @JoinColumn({ name: 'idCliente' })
+  @JoinColumn({ name: 'id_cliente', referencedColumnName: 'id' })
   cliente: Cliente;
 }

@@ -31,10 +31,14 @@ function handleGuardar() {
 </script>
 
 <template>
-  <div>
-    <h2>Gestion de Recetas</h2>
-    <Button label="Registrar un nueva receta" icon="pi pi-plus" @click="handleCreate" />
+  <div class="container-fluid px-3 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="m-0">Gestión de Recetas</h2>
+      <Button label="Registrar nueva receta" icon="pi pi-plus" class="p-button-primary" @click="handleCreate" />
+    </div>
+
     <RecetaList ref="recetaListRef" @edit="handleEdit" />
+
     <RecetaSave
       :mostrar="mostrarDialog"
       :receta="recetaEdit ?? ({} as Receta)"

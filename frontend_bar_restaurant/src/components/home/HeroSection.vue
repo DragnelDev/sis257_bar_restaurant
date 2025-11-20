@@ -24,7 +24,7 @@ import { RouterLink } from 'vue-router'
             </RouterLink>
           </div>
           <div class="col-lg-6 text-center text-lg-end overflow-hidden">
-            <img class="img-fluid" src="/img/hero.png" alt="Hero Image" />
+            <img class="img-fluid" src="/img/hero-2.png" alt="Hero Image" />
           </div>
         </div>
       </div>

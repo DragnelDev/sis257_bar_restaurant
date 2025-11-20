@@ -17,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['guardar', 'close'])
 
 const categorias = ref<Categoria[]>([])
+const UNIDADES = ['Litro', 'Kilo', 'Unidad', 'g', 'ml']
 
 const dialogVisible = computed({
   get: () => props.mostrar,
@@ -150,11 +151,12 @@ watch(
 
       <div class="flex items-center gap-4 mb-4">
         <label for="unidadMedida" class="font-semibold w-3">Unidad Medida</label>
-        <InputText
+        <Dropdown
           id="unidadMedida"
           v-model="productos.unidadMedida"
+          :options="UNIDADES"
           class="flex-auto"
-          autocomplete="off"
+          placeholder="Seleccione unidad"
         />
       </div>
 

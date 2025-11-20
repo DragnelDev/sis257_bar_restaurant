@@ -9,50 +9,56 @@ const services = ref<Service[]>([
   {
     id: 1,
     icon: 'fa-user-tie',
-    title: 'Master Chefs',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Chefs Maestros',
+    description:
+      'Contamos con cocineros expertos y certificados para garantizar una experiencia culinaria inigualable.',
   },
   {
     id: 2,
     icon: 'fa-utensils',
-    title: 'Quality Food',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Comida de Calidad',
+    description:
+      'Ingredientes frescos y de primera calidad, seleccionados cuidadosamente para el mejor sabor y nutrición.',
   },
   {
     id: 3,
     icon: 'fa-cart-plus',
-    title: 'Online Order',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Pedidos en Línea',
+    description: 'Realiza tu pedido cómodamente desde nuestra plataforma y recíbelo donde estés.',
   },
   {
     id: 4,
     icon: 'fa-headset',
-    title: '24/7 Service',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Servicio 24/7',
+    description:
+      'Estamos disponibles las 24 horas del día, los 7 días de la semana, para atender tus consultas y pedidos.',
   },
   {
     id: 5,
     icon: 'fa-user-tie',
-    title: 'Master Chefs',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Chefs Maestros',
+    description:
+      'Contamos con cocineros expertos y certificados para garantizar una experiencia culinaria inigualable.',
   },
   {
     id: 6,
     icon: 'fa-utensils',
-    title: 'Quality Food',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Comida de Calidad',
+    description:
+      'Ingredientes frescos y de primera calidad, seleccionados cuidadosamente para el mejor sabor y nutrición.',
   },
   {
     id: 7,
     icon: 'fa-cart-plus',
-    title: 'Online Order',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Pedidos en Línea',
+    description: 'Realiza tu pedido cómodamente desde nuestra plataforma y recíbelo donde estés.',
   },
   {
     id: 8,
     icon: 'fa-headset',
-    title: '24/7 Service',
-    description: 'Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam',
+    title: 'Servicio 24/7',
+    description:
+      'Estamos disponibles las 24 horas del día, los 7 días de la semana, para atender tus consultas y pedidos.',
   },
 ])
 </script>
@@ -60,17 +66,17 @@ const services = ref<Service[]>([
 <template>
   <div>
     <PageHeader
-      title="Services"
+      title="Servicios"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'Service', link: '/service' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Paginas', link: '#' },
+        { text: 'Servicio', link: '/service' },
       ]"
     />
 
     <div class="container-xxl py-5">
       <div class="container">
-        <SectionTitle subtitle="Our Services" title="Explore Our Services" />
+        <SectionTitle subtitle="Nuestros Servicios" title="Explora Nuestros Servicios" />
 
         <div class="row g-4">
           <div

@@ -1,187 +1,160 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-interface Stat {
-  title: string
-  value: number | string
-  icon: string
+interface Estadistica {
+  titulo: string
+  valor: number | string
+  icono: string
   color: string
-  change: string
-  trend: 'up' | 'down'
+  cambio: string
+  tendencia: 'up' | 'down'
 }
 
-const stats = ref<Stat[]>([
+// Datos de ejemplo para que el dashboard sea funcional
+const stats = ref<Estadistica[]>([
   {
-    title: 'Total Revenue',
-    value: '$12,345',
-    icon: 'fa-dollar-sign',
-    color: 'primary',
-    change: '+12%',
-    trend: 'up',
-  },
-  {
-    title: 'Today Bookings',
-    value: 45,
-    icon: 'fa-calendar-check',
+    titulo: 'Ventas de Hoy',
+    valor: 'Bs. 1,250',
+    icono: 'fa-chart-line',
     color: 'success',
-    change: '+8%',
-    trend: 'up',
+    cambio: '12.5%',
+    tendencia: 'up',
   },
   {
-    title: 'Total Orders',
-    value: 189,
-    icon: 'fa-shopping-cart',
+    titulo: 'Reservas Activas',
+    valor: 15,
+    icono: 'fa-calendar-alt',
     color: 'info',
-    change: '-3%',
-    trend: 'down',
+    cambio: '1.2%',
+    tendencia: 'down',
   },
   {
-    title: 'Active Staff',
-    value: 24,
-    icon: 'fa-users',
+    titulo: 'Pedidos Nuevos',
+    valor: 45,
+    icono: 'fa-utensils',
     color: 'warning',
-    change: '+2',
-    trend: 'up',
+    cambio: '5.8%',
+    tendencia: 'up',
+  },
+  {
+    titulo: 'Clientes Únicos',
+    valor: 120,
+    icono: 'fa-users',
+    color: 'primary',
+    cambio: '0.5%',
+    tendencia: 'up',
   },
 ])
 
 const recentBookings = ref([
-  {
-    id: 1,
-    customer: 'John Doe',
-    date: '2024-11-01',
-    time: '19:00',
-    people: 4,
-    status: 'confirmed',
-  },
-  {
-    id: 2,
-    customer: 'Jane Smith',
-    date: '2024-11-01',
-    time: '20:30',
-    people: 2,
-    status: 'pending',
-  },
-  {
-    id: 3,
-    customer: 'Mike Johnson',
-    date: '2024-11-02',
-    time: '18:00',
-    people: 6,
-    status: 'confirmed',
-  },
-  {
-    id: 4,
-    customer: 'Sarah Williams',
-    date: '2024-11-02',
-    time: '21:00',
-    people: 3,
-    status: 'cancelled',
-  },
+  { id: 1, cliente: 'Juan Pérez', fecha: '20/11/2025', hora: '20:00', personas: 4, estado: 'confirmed' },
+  { id: 2, cliente: 'Ana Torres', fecha: '20/11/2025', hora: '19:30', personas: 2, estado: 'pending' },
+  { id: 3, cliente: 'Luis Gómez', fecha: '19/11/2025', hora: '13:00', personas: 8, estado: 'cancelled' },
+  { id: 4, cliente: 'Marta Rojas', fecha: '19/11/2025', hora: '18:45', personas: 3, estado: 'confirmed' },
 ])
 
 const recentOrders = ref([
-  {
-    id: 1,
-    orderNumber: '#ORD-001',
-    customer: 'John Doe',
-    items: 3,
-    total: 125.5,
-    status: 'completed',
-  },
-  {
-    id: 2,
-    orderNumber: '#ORD-002',
-    customer: 'Jane Smith',
-    items: 2,
-    total: 85.0,
-    status: 'preparing',
-  },
-  {
-    id: 3,
-    orderNumber: '#ORD-003',
-    customer: 'Mike Johnson',
-    items: 5,
-    total: 210.75,
-    status: 'delivered',
-  },
+  { id: 101, numeroPedido: '#ORD-101', cliente: 'María López', items: 3, total: 45.00, estado: 'delivered' },
+  { id: 102, numeroPedido: '#ORD-102', cliente: 'Carlos Ruiz', items: 2, total: 28.50, estado: 'preparing' },
+  { id: 103, numeroPedido: '#ORD-103', cliente: 'Elena Flores', items: 5, total: 82.00, estado: 'completed' },
+  { id: 104, numeroPedido: '#ORD-104', cliente: 'Pedro Soria', items: 1, total: 15.00, estado: 'preparing' },
 ])
 
+// Función para traducir y asignar clases de estado
 const getStatusClass = (status: string) => {
   const classes: Record<string, string> = {
-    confirmed: 'success',
-    pending: 'warning',
-    cancelled: 'danger',
-    completed: 'success',
-    preparing: 'info',
-    delivered: 'primary',
+    confirmed: 'success',  // Confirmada
+    pending: 'warning',    // Pendiente
+    cancelled: 'danger',   // Cancelada
+    completed: 'success',  // Completado
+    preparing: 'info',     // En Preparación
+    delivered: 'primary',  // Entregado
   }
   return classes[status] || 'secondary'
 }
+
+// Función para traducir el texto del estado
+const translateStatus = (status: string) => {
+    const translations: Record<string, string> = {
+        confirmed: 'Confirmada',
+        pending: 'Pendiente',
+        cancelled: 'Cancelada',
+        completed: 'Completado',
+        preparing: 'En Prep.',
+        delivered: 'Entregado',
+    }
+    return translations[status] || status;
+}
+
+// Se mantendría la lógica de `onMounted` si tuvieras una función `fetchData` real.
+// onMounted(() => {
+//   fetchData();
+// });
 </script>
 
 <template>
-  <div class="dashboard">
-    <!-- Page Header -->
+  <div class="dashboard container-fluid">
     <div class="page-header mb-4">
-      <h2 class="mb-1">Dashboard</h2>
-      <p class="text-muted">Welcome back! Here's what's happening today.</p>
+      <h2 class="mb-1">Panel de Control (Dashboard)</h2>
+      <p class="text-muted">¡Bienvenido de nuevo! Aquí están las novedades de hoy.</p>
     </div>
 
-    <!-- Stats Cards -->
     <div class="row g-4 mb-4">
-      <div v-for="stat in stats" :key="stat.title" class="col-lg-3 col-md-6">
+      <div v-for="stat in stats" :key="stat.titulo" class="col-lg-3 col-md-6">
         <div class="stat-card" :class="`border-${stat.color}`">
           <div class="stat-icon" :class="`bg-${stat.color}`">
-            <i :class="`fa ${stat.icon}`"></i>
+            <i :class="`fa ${stat.icono}`"></i>
           </div>
           <div class="stat-content">
-            <h6 class="stat-title">{{ stat.title }}</h6>
-            <h3 class="stat-value">{{ stat.value }}</h3>
-            <span class="stat-change" :class="stat.trend === 'up' ? 'text-success' : 'text-danger'">
-              <i :class="`fa fa-arrow-${stat.trend}`"></i>
-              {{ stat.change }}
+            <h6 class="stat-title">{{ stat.titulo }}</h6>
+            <h3 class="stat-value">{{ stat.valor }}</h3>
+            <span
+              class="stat-change"
+              :class="stat.tendencia === 'up' ? 'text-success' : 'text-danger'"
+            >
+              <i
+                :class="`fa fa-arrow-${stat.tendencia === 'up' ? 'up' : 'down'} me-1`"
+              ></i>
+              {{ stat.cambio }}
             </span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Main Content Grid -->
     <div class="row g-4">
-      <!-- Recent Bookings -->
       <div class="col-lg-7">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
               <i class="fa fa-calendar-check text-primary me-2"></i>
-              Recent Bookings
+              Reservas Recientes
             </h5>
             <RouterLink to="/admin/bookings" class="btn btn-sm btn-outline-primary">
-              View All
+              Ver Todas
             </RouterLink>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-hover mb-0">
-                <thead>
+                <thead class="table-dark">
                   <tr>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>People</th>
-                    <th>Status</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Personas</th>
+                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="booking in recentBookings" :key="booking.id">
-                    <td>{{ booking.customer }}</td>
-                    <td>{{ booking.date }}</td>
-                    <td>{{ booking.time }}</td>
-                    <td>{{ booking.people }}</td>
+                    <td>{{ booking.cliente }}</td>
+                    <td>{{ booking.fecha }}</td>
+                    <td>{{ booking.hora }}</td>
+                    <td>{{ booking.personas }}</td>
                     <td>
-                      <span class="badge" :class="`bg-${getStatusClass(booking.status)}`">
-                        {{ booking.status }}
+                      <span class="badge" :class="`bg-${getStatusClass(booking.estado)}`">
+                        {{ translateStatus(booking.estado) }}
                       </span>
                     </td>
                   </tr>
@@ -192,32 +165,34 @@ const getStatusClass = (status: string) => {
         </div>
       </div>
 
-      <!-- Recent Orders -->
       <div class="col-lg-5">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
               <i class="fa fa-shopping-cart text-primary me-2"></i>
-              Recent Orders
+              Pedidos Recientes
             </h5>
             <RouterLink to="/admin/orders" class="btn btn-sm btn-outline-primary">
-              View All
+              Ver Todos
             </RouterLink>
           </div>
           <div class="card-body p-0">
             <div class="order-list">
               <div v-for="order in recentOrders" :key="order.id" class="order-item">
                 <div class="order-info">
-                  <h6 class="mb-1">{{ order.orderNumber }}</h6>
-                  <p class="mb-1 text-muted small">{{ order.customer }}</p>
-                  <span class="badge" :class="`bg-${getStatusClass(order.status)}`">
-                    {{ order.status }}
+                  <h6 class="mb-1">{{ order.numeroPedido }}</h6>
+                  <p class="mb-1 text-muted small">{{ order.cliente }}</p>
+                  <span class="badge" :class="`bg-${getStatusClass(order.estado)}`">
+                    {{ translateStatus(order.estado) }}
                   </span>
                 </div>
                 <div class="order-total">
-                  <p class="mb-0 small text-muted">{{ order.items }} items</p>
-                  <h6 class="mb-0 text-primary">${{ order.total }}</h6>
+                  <p class="mb-0 small text-muted">{{ order.items }} ítems</p>
+                  <h6 class="mb-0 text-primary">Bs. {{ order.total }}</h6>
                 </div>
+              </div>
+              <div v-if="recentOrders.length === 0" class="text-center text-muted py-3">
+                  No hay pedidos recientes.
               </div>
             </div>
           </div>
@@ -228,8 +203,14 @@ const getStatusClass = (status: string) => {
 </template>
 
 <style scoped>
+/* Definición de variables de color (Si usas SASS/CSS Variables) */
+:root {
+    --primary: #fea116; /* Naranja de tu Login */
+    --dark: #343a40;
+}
+
 .dashboard {
-  animation: fadeIn 0.5s;
+  animation: fadeIn 0.35s ease both;
 }
 
 @keyframes fadeIn {
@@ -250,6 +231,7 @@ const getStatusClass = (status: string) => {
 
 /* Stat Cards */
 .stat-card {
+  /* ... (Estilos se mantienen) ... */
   background: white;
   border-radius: 10px;
   padding: 20px;
@@ -354,7 +336,9 @@ const getStatusClass = (status: string) => {
   text-align: right;
 }
 
-/* Background colors for badges */
+/* Background colors for badges (Asegúrate de que tus variables CSS están definidas o usa los códigos) */
+.text-primary { color: var(--primary) !important; }
+
 .bg-primary {
   background-color: var(--primary) !important;
 }

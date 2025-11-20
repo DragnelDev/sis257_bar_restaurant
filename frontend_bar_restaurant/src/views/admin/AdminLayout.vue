@@ -30,7 +30,7 @@ const menuItems = [
   { icon: 'fa-tachometer-alt', text: 'Panel', route: 'admin-dashboard' },
   //{ icon: 'fa-calendar-check', text: 'Reservas', route: 'admin-bookings' },
   { icon: 'fa-table', text: 'Mesas', route: 'admin-mesas' },
-  { icon: 'fa-user-plus', text: 'Registrar', route: 'admin-registrar' },
+  //{ icon: 'fa-user-plus', text: 'Registrar', route: 'admin-registrar' },
   //{ icon: 'fa-utensils', text: 'Gestión de Menus', route: 'admin-menu' },
   { icon: 'fa-shopping-cart', text: 'Ordenes', route: 'admin-orders' },
   { icon: 'fa-users', text: 'Personal', route: 'admin-staff' },
@@ -39,7 +39,7 @@ const menuItems = [
   { icon: 'fa-boxes-stacked', text: 'Inventarios', route: 'admin-products' },
   { icon: 'fa-user-friends', text: 'Usuarios', route: 'admin-users' },
   { icon: 'fa-shopping-bag', text: 'Compras', route: 'admin-purchases' },
-  { icon: 'fa-cash-register', text: 'Ventas', route: 'admin-sales' },
+  { icon: 'fa-cash-register', text: 'Reporte de Ventas', route: 'admin-sales' },
 ]
 </script>
 
@@ -91,9 +91,9 @@ const menuItems = [
             </button>
             <div class="dropdown-menu dropdown-menu-end">
               <h6 class="dropdown-header">Notificaciones</h6>
-              <a class="dropdown-item" href="#">New booking received</a>
-              <a class="dropdown-item" href="#">Menu item low stock</a>
-              <a class="dropdown-item" href="#">New staff member added</a>
+              <a class="dropdown-item" href="#">Nueva Recerva Recibida</a>
+              <a class="dropdown-item" href="#">Articulo Con Stock Bajo</a>
+              <a class="dropdown-item" href="#">Se ha añadido  un miembro del personal</a>
             </div>
           </div>
 
@@ -114,10 +114,10 @@ const menuItems = [
               <a class="dropdown-item" href="#"> <i class="fa fa-cog me-2"></i>Configuracion </a>
               <div class="dropdown-divider"></div>
               <RouterLink to="/" class="dropdown-item">
-                <i class="fa fa-home me-2"></i>View Website
+                <i class="fa fa-home me-2"></i>Ver sitio web
               </RouterLink>
               <button @click="openLogoutModal" class="dropdown-item text-danger">
-                <i class="fa fa-sign-out-alt me-2"></i>Logout
+                <i class="fa fa-sign-out-alt me-2"></i>Cerrar Sesión
               </button>
             </div>
           </div>

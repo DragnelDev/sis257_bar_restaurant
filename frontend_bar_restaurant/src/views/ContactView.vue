@@ -30,28 +30,28 @@ const resetForm = () => {
 <template>
   <div>
     <PageHeader
-      title="Contact Us"
+      title="Contactanos"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'Contact', link: '/contact' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Pagina', link: '#' },
+        { text: 'Contacto', link: '/contact' },
       ]"
     />
 
     <div class="container-xxl py-5">
       <div class="container">
-        <SectionTitle subtitle="Contact Us" title="Contact For Any Query" />
+        <SectionTitle subtitle="Contactanos" title="Contactanos Para Cualquier Consulta" />
 
         <div class="row g-4">
           <div class="col-12">
             <div class="row gy-4">
               <div class="col-md-4">
                 <h5 class="section-title ff-secondary fw-normal text-start text-primary">
-                  Booking
+                  Reserva
                 </h5>
                 <p>
                   <i class="fa fa-envelope-open text-primary me-2"></i>
-                  book@example.com
+                  reset@gmail.com
                 </p>
               </div>
               <div class="col-md-4">
@@ -60,16 +60,16 @@ const resetForm = () => {
                 </h5>
                 <p>
                   <i class="fa fa-envelope-open text-primary me-2"></i>
-                  info@example.com
+                  info.reset@gmail.com
                 </p>
               </div>
               <div class="col-md-4">
                 <h5 class="section-title ff-secondary fw-normal text-start text-primary">
-                  Technical
+                  Teénico
                 </h5>
                 <p>
                   <i class="fa fa-envelope-open text-primary me-2"></i>
-                  tech@example.com
+                  reset.tech@gmail.com
                 </p>
               </div>
             </div>
@@ -101,7 +101,7 @@ const resetForm = () => {
                         v-model="form.name"
                         required
                       />
-                      <label for="name">Your Name</label>
+                      <label for="name">Tu Nombre</label>
                     </div>
                   </div>
 
@@ -115,7 +115,7 @@ const resetForm = () => {
                         v-model="form.email"
                         required
                       />
-                      <label for="email">Your Email</label>
+                      <label for="email">Tu Correo</label>
                     </div>
                   </div>
 
@@ -129,7 +129,7 @@ const resetForm = () => {
                         v-model="form.subject"
                         required
                       />
-                      <label for="subject">Subject</label>
+                      <label for="subject">Asunto</label>
                     </div>
                   </div>
 
@@ -143,12 +143,12 @@ const resetForm = () => {
                         v-model="form.message"
                         required
                       ></textarea>
-                      <label for="message">Message</label>
+                      <label for="message">Mensaje</label>
                     </div>
                   </div>
 
                   <div class="col-12">
-                    <button class="btn btn-primary w-100 py-3" type="submit">Send Message</button>
+                    <button class="btn btn-primary w-100 py-3" type="submit">Enviar Mensaje</button>
                   </div>
                 </div>
               </form>

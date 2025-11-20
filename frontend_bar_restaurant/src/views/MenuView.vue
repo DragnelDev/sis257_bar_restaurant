@@ -6,11 +6,11 @@ import MenuSection from '../components/home/MenuSection.vue'
 <template>
   <div>
     <PageHeader
-      title="Food Menu"
+      title="Menú de Comidas"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'Menu', link: '/menu' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Paginas', link: '#' },
+        { text: 'Menú', link: '/menu' },
       ]"
     />
     <MenuSection />

@@ -84,17 +84,17 @@ const teamMembers = ref<TeamMember[]>([
 <template>
   <div>
     <PageHeader
-      title="Our Team"
+      title="Nuestro Equipo"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'Team', link: '/team' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Pagina', link: '#' },
+        { text: 'Equipo', link: '/team' },
       ]"
     />
 
     <div class="container-xxl pt-5 pb-3">
       <div class="container">
-        <SectionTitle subtitle="Team Members" title="Our Master Chefs" />
+        <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs Maestros" />
 
         <div class="row g-4">
           <div

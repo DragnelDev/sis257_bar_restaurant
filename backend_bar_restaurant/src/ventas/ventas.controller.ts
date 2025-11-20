@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { VentasService } from './ventas.service';
 import { CreateVentaDto } from './dto/create-venta.dto';
@@ -28,6 +29,15 @@ export class VentasController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ventasService.findOne(+id);
+  }
+
+  @Patch(':id/status')
+  updateVentaStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: string, // El cuerpo solo debe tener { "status": "LISTO" } o { "status": "ARCHIVADA" }
+  ) {
+    // Se llama al nuevo método con la lógica de control
+    return this.ventasService.updateStatus(id, status);
   }
 
   @Patch(':id')

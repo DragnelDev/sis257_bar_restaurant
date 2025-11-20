@@ -1,247 +1,364 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue';
+import type { Venta } from '../../models/venta';
+import axios from '../../plugins/axios';
 
-// Adaptación de la interfaz a tu modelo de Ventas (cabecera)
-interface VentaActiva {
-  id: number // Corresponde a ventas.id
-  orderNumber: string // Generado por el sistema (ej: 'ORD-001')
-  customer: string // Nombre del Cliente o 'Anónimo'
-  items: string // Resumen de los ítems (ej: 2x Burger, 1x Fries)
-  total: number // ventas.total
-  // Estados clave de la Venta (adaptados de tu backend)
-  status: 'PENDIENTE' | 'PREPARANDO' | 'LISTO' | 'PAGADA' | 'CANCELADA' // Usamos PENDIENTE y LISTO
-  orderTime: string // ventas.fecha (formateada)
-  idMesa: number // ventas.idMesa
+// --- Nueva Interfaz para Detalle de Ítem ---
+interface ItemDetalle {
+  name: string;
+  quantity: number;
+  price: number; // Precio unitario
 }
 
-const orders = ref<VentaActiva[]>([
-  {
-    id: 1,
-    orderNumber: 'ORD-001',
-    customer: 'Juan Pérez',
-    items: '2x Hamburguesa, 1x Coca-Cola',
-    total: 35.5,
-    status: 'PREPARANDO',
-    orderTime: '14:30',
-    idMesa: 5, // Cambiado de 'table' a 'idMesa'
-  },
-  {
-    id: 2,
-    orderNumber: 'ORD-002',
-    customer: 'Cliente Anónimo',
-    items: '1x Ribeye Steak, 1x Ensalada',
-    total: 48.0,
-    status: 'LISTO',
-    orderTime: '15:00',
-    idMesa: 12,
-  },
-  {
-    id: 3,
-    orderNumber: 'ORD-003',
-    customer: 'María López',
-    items: '3x Pizza, 2x Cerveza',
-    total: 62.5,
-    status: 'PENDIENTE', // Nueva orden sin enviar a cocina
-    orderTime: '15:30',
-    idMesa: 8,
-  },
-])
+// --- Estados de la Venta (Debe coincidir con el backend) ---
+const STATUS = {
+  PAGADA: 'PAGADA', // Estado inicial según backend
+  PREPARANDO: 'PREPARANDO',
+  LISTO: 'LISTO',
+  ARCHIVADA: 'ARCHIVADA', // Estado final que libera la mesa y saca de la lista activa
+  CANCELADA: 'CANCELADA',
+} as const;
 
-// Colores adaptados a tus estados de Venta
-const getStatusColor = (status: string) => {
+// --- Interfaz VentaActiva Actualizada ---
+interface VentaActiva {
+  id: number;
+  orderNumber: string;
+  customer: string;
+  items: string;
+  itemDetails: ItemDetalle[];
+  total: number;
+  // Usamos 'estado' para coincidir con el backend
+  estado:
+    | typeof STATUS.PAGADA
+    | typeof STATUS.PREPARANDO
+    | typeof STATUS.LISTO
+    | typeof STATUS.ARCHIVADA
+    | typeof STATUS.CANCELADA;
+  orderTime: string;
+  idMesa: number;
+}
+
+// `orders` se inicializa vacío: las ventas se cargan desde la API con `fetchVentas()`.
+const orders = ref<VentaActiva[]>([]);
+
+// Filtra las órdenes activas (no archivadas ni canceladas)
+const activeOrders = computed(() =>
+  orders.value.filter((o) => o.estado !== STATUS.ARCHIVADA && o.estado !== STATUS.CANCELADA),
+);
+
+// --- LÓGICA DEL MODAL DE DETALLES ---
+const showDetailsModal = ref(false);
+const selectedOrder = ref<VentaActiva | null>(null);
+
+const openDetailsModal = (order: VentaActiva) => {
+  selectedOrder.value = order;
+  showDetailsModal.value = true;
+};
+// ------------------------------------
+
+const getStatusColor = (estado: string) => {
   const colors: Record<string, string> = {
     PREPARANDO: 'warning',
     LISTO: 'info',
-    PAGADA: 'success', // Entregado/Cobrado
-    PENDIENTE: 'secondary', // Recién tomada, esperando envío a cocina
+    PAGADA: 'success',
+    ARCHIVADA: 'dark',
     CANCELADA: 'danger',
+  };
+  return colors[estado] || 'secondary';
+};
+
+// ------------------------------------------------------------------
+// 🆕 FUNCIÓN CLAVE: LLAMA AL BACKEND PARA EL CAMBIO DE ESTADO
+// ------------------------------------------------------------------
+
+const ENDPOINT = '/ventas';
+
+const loading = ref(false);
+const error = ref<string | null>(null);
+
+const updateOrderStatus = async (id: number, newStatus: string) => {
+  const index = orders.value.findIndex((o) => o.id === id);
+  if (index === -1) return;
+
+  const order = orders.value[index];
+
+  try {
+    const res = await axios.patch(`${ENDPOINT}/${id}/status`, { status: newStatus });
+    console.debug('[OrdersView] PATCH', `${ENDPOINT}/${id}/status`, 'resp=', res.status, res.data);
+    const raw = res.data;
+    const updatedRaw = (raw && (raw.data || raw.venta || raw.ventaActualizada || raw)) || null;
+
+    // 3. ACTUALIZACIÓN DEL FRONTEND (Reactividad)
+    if (newStatus === STATUS.ARCHIVADA) {
+      orders.value.splice(index, 1);
+      alert(`✅ Venta ${order.orderNumber} archivada y Mesa ${order.idMesa} liberada.`);
+    } else {
+      if (updatedRaw && updatedRaw.id) {
+        const mapped = mapVentaToView(updatedRaw as Venta);
+        orders.value.splice(index, 1, mapped);
+      } else {
+        order.estado = (raw && raw.estado) || newStatus;
+        orders.value.splice(index, 1, order);
+      }
+    }
+
+  } catch (error: any) {
+    console.error('Fallo en la actualización del estado:', error);
+    alert(`❌ Fallo en el servidor: ${error.message}`);
   }
-  return colors[status] || 'secondary'
-}
+};
 
-const updateStatus = (id: number, newStatus: VentaActiva['status']) => {
-  const order = orders.value.find((o) => o.id === id)
-  if (order) {
-    // Aquí iría la llamada al backend:
-    // await axios.patch(`/ventas/${id}/status`, { estado: newStatus });
-    order.status = newStatus
+// --- Ajuste: finalizeSale ahora llama al estado final ---
+// En tu backend, la secuencia es LISTO -> ARCHIVADA, donde ARCHIVADA libera la mesa.
+const finalizeSale = (id: number) => {
+  // Si la venta está lista, el siguiente paso es Archivar (Entregar/Cobrar y Liberar)
+  updateOrderStatus(id, STATUS.ARCHIVADA);
+};
+
+// -------------------------
+// CARGA REAL DESDE EL BACKEND
+// -------------------------
+const mapVentaToView = (venta: Venta): VentaActiva => {
+  const detalleVentas = (venta.detalleVentas || venta.detalles || []).map((d: any) => ({
+    // Acomodamos varios shapes posibles del detalle:
+    // - tu modelo `DetalleVenta` usa `cantidad` y `precioUnitarioVenta`
+    // - algunos endpoints pueden devolver `quantity` o `price`/`subtotal`
+    name: d.name || d.nombreReceta || `Receta ${d.idReceta}`,
+    quantity: Number(d.cantidad ?? d.quantity ?? 1),
+    price: Number(d.precioUnitarioVenta ?? d.price ?? d.subtotal ?? 0),
+  }));
+
+  const itemsStr = detalleVentas.map((d) => `${d.quantity}x ${d.name}`).join(', ');
+
+  return {
+    id: venta.id,
+    orderNumber: venta.id ? `ORD-${String(venta.id).padStart(3, '0')}` : 'ORD-0',
+    customer:
+      // intento varios campos posibles
+      // @ts-ignore
+      (venta as any).cliente?.nombreFiscal || (venta as any).cliente?.nombre || venta.nombreFiscal || 'CONSUMIDOR FINAL',
+    items: itemsStr,
+    itemDetails: detalleVentas,
+    total: Number(venta.total ?? detalleVentas.reduce((s, it) => s + it.quantity * it.price, 0)),
+    // @ts-ignore
+    estado: venta.estado || STATUS.PAGADA,
+    orderTime: venta.fechaCreacion || venta.fecha || '',
+    idMesa: venta.mesa?.numeroMesa ?? venta.idMesa ?? (venta.mesa ? venta.mesa.id : 0),
+  };
+};
+
+const fetchVentas = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const res = await axios.get(ENDPOINT);
+    console.debug('[OrdersView] GET', ENDPOINT, 'status=', res.status, 'data=', res.data);
+
+    // Aceptar varias formas de respuesta comunes: array directo, { data: [...] }, { ventas: [...] }, { results: [...] }
+    const raw = res.data;
+    let ventasArray: any[] | null = null;
+
+    if (Array.isArray(raw)) ventasArray = raw;
+    else if (raw && Array.isArray(raw.data)) ventasArray = raw.data;
+    else if (raw && Array.isArray(raw.ventas)) ventasArray = raw.ventas;
+    else if (raw && Array.isArray(raw.results)) ventasArray = raw.results;
+    else if (raw && Array.isArray(raw.items)) ventasArray = raw.items;
+
+    if (!ventasArray) {
+      console.error('[OrdersView] Respuesta no contiene lista de ventas en un formato esperado', raw);
+      throw new Error('Respuesta inesperada del servidor: no contiene lista de ventas. Mira la consola.');
+    }
+
+    orders.value = ventasArray.map(mapVentaToView);
+  } catch (err: any) {
+    console.error('Error al cargar ventas:', err);
+    // Mostrar información útil para depurar (código HTTP si aplica)
+    error.value = err?.response?.data?.message || err?.message || String(err);
+    if (err?.response) {
+      error.value += ` (HTTP ${err.response.status})`;
+    }
+  } finally {
+    loading.value = false;
   }
-}
+};
 
-// --- NUEVA LÓGICA PARA CAMBIO DE MESA ---
-const showMoveModal = ref(false)
-const orderToMove = ref<VentaActiva | null>(null)
-const newMesaId = ref<number | null>(null)
+onMounted(() => {
+  fetchVentas();
+});
 
-// Simulamos las mesas disponibles que vienen de otra API
-const availableTables = ref([4, 6, 9, 10, 11])
-
-const openMoveModal = (order: VentaActiva) => {
-  orderToMove.value = order
-  newMesaId.value = null // Resetear selección
-  showMoveModal.value = true
-}
-
-const confirmMoveTable = () => {
-  if (orderToMove.value && newMesaId.value) {
-    // --- LLAMADA AL BACKEND PARA CAMBIO DE MESA ---
-    console.log(
-      `Moviendo ORDEN ${orderToMove.value.orderNumber} (ID ${orderToMove.value.id}) de MESA ${orderToMove.value.idMesa} a MESA ${newMesaId.value}`,
-    )
-
-    // Simulación de éxito (Aquí iría la llamada a tu API de NestJS)
-    // await axios.patch(`/ventas/${orderToMove.value.id}/cambiar-mesa`, { nuevaIdMesa: newMesaId.value });
-
-    // Actualización del Front-end
-    orderToMove.value.idMesa = newMesaId.value
-    alert(`La orden ${orderToMove.value.orderNumber} ha sido movida a la Mesa ${newMesaId.value}.`)
-
-    showMoveModal.value = false
-  } else {
-    alert('Debe seleccionar una mesa destino.')
-  }
-}
 </script>
 
 <template>
   <div>
     <div class="page-header mb-4">
-      <h2 class="mb-1">Gestión de Órdenes Activas</h2>
-      <p class="text-muted">Rastrea y gestiona el flujo de pedidos del restaurante</p>
+      <h2 class="mb-1">Cobro y Finalización de Órdenes</h2>
+      <p class="text-muted">Órdenes con mesas asignadas y pendientes de cobro final.</p>
     </div>
 
-    <div class="row g-4 mb-4"></div>
-
-    <div class="card">
-      <div class="card-header">
+    <div class="card shadow-lg">
+      <div class="card-header bg-white border-bottom">
         <h5 class="mb-0">
-          <i class="fa fa-shopping-cart text-primary me-2"></i>
-          Órdenes Activas
+          <i class="fa fa-clipboard-list text-primary me-2"></i>
+          Órdenes Activas ({{ activeOrders.length }})
         </h5>
       </div>
       <div class="card-body p-0">
+        <div v-if="loading" class="p-3 text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+        <div v-if="error" class="p-3">
+          <div class="alert alert-danger d-flex justify-content-between align-items-center">
+            <div class="me-3">{{ error }}</div>
+            <div>
+              <button class="btn btn-sm btn-outline-light btn-dark" @click="fetchVentas">Reintentar</button>
+            </div>
+          </div>
+        </div>
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table class="table table-striped table-hover mb-0 align-middle">
             <thead>
-              <tr>
+              <tr class="text-secondary">
                 <th>Orden #</th>
                 <th>Cliente</th>
                 <th>Mesa</th>
-                <th>Ítems</th>
                 <th>Total</th>
                 <th>Hora</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="order in orders" :key="order.id">
+              <tr v-for="order in activeOrders" :key="order.id">
                 <td>
                   <strong>{{ order.orderNumber }}</strong>
                 </td>
                 <td>{{ order.customer }}</td>
-                <td>Mesa {{ order.idMesa }}</td>
-                <td>{{ order.items }}</td>
+                <td><span class="badge bg-dark">Mesa {{ order.idMesa }}</span></td>
                 <td>
-                  <strong>${{ order.total.toFixed(2) }}</strong>
+                  <strong class="text-success">${{ order.total.toFixed(2) }}</strong>
                 </td>
                 <td>{{ order.orderTime }}</td>
                 <td>
-                  <span class="badge" :class="`bg-${getStatusColor(order.status)}`">
-                    {{ order.status }}
+                  <span class="badge text-uppercase" :class="`bg-${getStatusColor(order.estado)}`">
+                    {{ order.estado }}
                   </span>
                 </td>
-                <td>
+                <td class="text-center">
                   <div class="btn-group btn-group-sm">
+                    <!-- 1. Botón Ver Detalles -->
                     <button
-                      v-if="order.status === 'PENDIENTE' || order.status === 'PREPARANDO'"
-                      class="btn btn-outline-info"
-                      @click="updateStatus(order.id, 'LISTO')"
-                    >
-                      <i class="fa fa-check me-1"></i>Listo
-                    </button>
-                    <button
-                      v-if="order.status !== 'PAGADA' && order.status !== 'CANCELADA'"
-                      class="btn btn-outline-success"
-                      @click="updateStatus(order.id, 'PAGADA')"
-                    >
-                      <i class="fa fa-dollar-sign me-1"></i>Pagar
-                    </button>
-
-                    <button
-                      v-if="order.status === 'PENDIENTE' || order.status === 'PREPARANDO'"
                       class="btn btn-outline-secondary"
-                      @click="openMoveModal(order)"
+                      @click="openDetailsModal(order)"
                       data-bs-toggle="modal"
-                      data-bs-target="#moveTableModal"
+                      data-bs-target="#orderDetailsModal"
+                      title="Ver Detalles"
                     >
-                      <i class="fa fa-people-arrows"></i> Mover
+                      <i class="fa fa-eye"></i>
                     </button>
 
-                    <button class="btn btn-outline-primary">
-                      <i class="fa fa-eye"></i>
+                    <!-- 2. Botones de Transición de Estado -->
+                    <!-- Transiciones según backend: PAGADA -> PREPARANDO -> LISTO -> ARCHIVADA -->
+                    <button
+                      v-if="order.estado === STATUS.PAGADA"
+                      class="btn btn-warning text-white"
+                      @click="updateOrderStatus(order.id, STATUS.PREPARANDO)"
+                      title="Iniciar Preparación (Cocina)"
+                    >
+                      <i class="fa fa-utensils"></i> Prep.
+                    </button>
+
+                    <button
+                      v-else-if="order.estado === STATUS.PREPARANDO"
+                      class="btn btn-info text-white"
+                      @click="updateOrderStatus(order.id, STATUS.LISTO)"
+                      title="Marcar como Listo para servir"
+                    >
+                      <i class="fa fa-bell"></i> Listo
+                    </button>
+
+                    <button
+                      v-else-if="order.estado === STATUS.LISTO"
+                      class="btn btn-success"
+                      @click="finalizeSale(order.id)"
+                      title="Cobrar, Entregar y Archivar (Libera Mesa)"
+                    >
+                      <i class="fa fa-check-double me-1"></i> Cobrar / Archivar
                     </button>
                   </div>
                 </td>
               </tr>
+                <tr v-if="activeOrders.length === 0">
+                  <td colspan="7" class="text-center text-muted py-3">No hay órdenes activas pendientes.</td>
+                </tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
+    <!-- Modal de Detalles (Mantenido y mejorado) -->
     <div
       class="modal fade"
-      id="moveTableModal"
+      id="orderDetailsModal"
       tabindex="-1"
-      v-if="orderToMove"
-      aria-labelledby="moveTableModalLabel"
+      v-if="selectedOrder"
+      aria-labelledby="orderDetailsModalLabel"
       aria-hidden="true"
     >
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-secondary text-white">
-            <h5 class="modal-title">Mover Orden {{ orderToMove.orderNumber }}</h5>
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="orderDetailsModalLabel">
+              Detalles de la Orden {{ selectedOrder.orderNumber }}
+            </h5>
             <button
               type="button"
               class="btn-close btn-close-white"
               data-bs-dismiss="modal"
-              @click="showMoveModal = false"
+              @click="showDetailsModal = false"
             ></button>
           </div>
           <div class="modal-body">
-            <p>
-              Moviendo orden de la <b>Mesa {{ orderToMove.idMesa }}</b
-              >.
-            </p>
-            <div class="mb-3">
-              <label for="selectNewTable" class="form-label">
-                Seleccione Mesa Destino (Libre):
-              </label>
-              <select id="selectNewTable" class="form-select" v-model="newMesaId">
-                <option :value="null" disabled>-- Seleccionar Mesa --</option>
-                <option v-for="tableId in availableTables" :key="tableId" :value="tableId">
-                  Mesa {{ tableId }}
-                </option>
-              </select>
-            </div>
+            <p><strong>Cliente:</strong> {{ selectedOrder.customer }}</p>
+            <p><strong>Mesa Asignada:</strong> <span class="badge bg-dark fs-6">Mesa {{ selectedOrder.idMesa }}</span></p>
+            <p><strong>Estado Actual:</strong> <span class="badge text-uppercase" :class="`bg-${getStatusColor(selectedOrder.estado)}`">{{ selectedOrder.estado }}</span></p>
+            <hr>
+            <h6>Productos Pedidos:</h6>
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Cant.</th>
+                  <th>Producto</th>
+                  <th class="text-end">P. Unit.</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in selectedOrder.itemDetails" :key="index">
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.name }}</td>
+                  <td class="text-end">${{ item.price.toFixed(2) }}</td>
+                  <td class="text-end"><strong>${{ (item.quantity * item.price).toFixed(2) }}</strong></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="3" class="text-end">TOTAL DE LA ORDEN:</th>
+                  <th class="text-end text-success fs-5">${{ selectedOrder.total.toFixed(2) }}</th>
+                </tr>
+              </tfoot>
+            </table>
           </div>
           <div class="modal-footer">
             <button
               type="button"
               class="btn btn-secondary"
               data-bs-dismiss="modal"
-              @click="showMoveModal = false"
+              @click="showDetailsModal = false"
             >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="confirmMoveTable"
-              :disabled="!newMesaId"
-            >
-              Confirmar Movimiento
+              Cerrar
             </button>
           </div>
         </div>
@@ -251,43 +368,17 @@ const confirmMoveTable = () => {
 </template>
 
 <style scoped>
-.stat-card {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  display: flex;
-  gap: 20px;
-  border-left: 4px solid;
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: white;
-}
-
-.stat-content h6 {
-  color: #6c757d;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.stat-content h3 {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--dark);
-  margin: 0;
-}
-
+/* Usando Tailwind CSS si estuviera disponible, pero manteniendo Bootstrap para este contexto */
 .card {
   border: none;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+.page-header {
+    border-left: 5px solid #0d6efd; /* Color primary de Bootstrap */
+    padding-left: 1rem;
+}
+.btn-group-sm .btn {
+    font-size: 0.75rem;
 }
 </style>

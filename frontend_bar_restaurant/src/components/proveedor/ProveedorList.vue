@@ -7,47 +7,51 @@
       </InputGroup>
     </div>
 
-    <div v-if="error" class="error-message mt-4">{{ error }}</div>
-    <div v-if="cargando" class="loading-message mt-4">Cargando proveedores...</div>
+    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+    <div v-if="cargando" class="alert alert-info mt-3">Cargando proveedores...</div>
 
-    <table v-if="!cargando && !error">
-      <thead>
-        <tr>
-          <th>Nro</th>
-          <th>Nombre de Empresa</th>
-          <th>NIT</th>
-          <th>Responsable</th>
-          <th>Direccion</th>
-          <th>Celular</th>
-          <th>Email</th>
-          <th>Condicion de Pago</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(prov, index) in proveedoresFiltrados"
-          :key="prov.id"
-          :class="{ 'row-alternate': index % 2 === 1 }"
-        >
-          <td>{{ (pagina - 1) * paginaSize + index + 1 }}</td>
-          <td>{{ prov.nombreEmpresa }}</td>
-          <td>{{ prov.nit }}</td>
-          <td>{{ prov.responsable }}</td>
-          <td>{{ prov.direccion }}</td>
-          <td>{{ prov.celular }}</td>
-          <td>{{ prov.email }}</td>
-          <td>{{ prov.condicionPago }}</td>
-          <td>
-            <Button icon="pi pi-pencil" aria-label="Editar" text @click="emitEdit(prov)" />
-            <Button icon="pi pi-trash" aria-label="Eliminar" text @click="confirmDelete(prov)" />
-          </td>
-        </tr>
-        <tr v-if="proveedoresFiltrados.length === 0">
-          <td colspan="5">No se encontraron resultados.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-if="!cargando && !error" class="table-responsive mt-3">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark text-white">
+          <tr>
+            <th style="width:48px">Nro</th>
+            <th>Nombre de Empresa</th>
+            <th>NIT</th>
+            <th>Responsable</th>
+            <th>Direccion</th>
+            <th>Celular</th>
+            <th>Email</th>
+            <th>Condicion de Pago</th>
+            <th style="width:120px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(prov, index) in proveedoresFiltrados"
+            :key="prov.id"
+            :class="{ 'row-alternate': index % 2 === 1 }"
+          >
+            <td class="text-center">{{ (pagina - 1) * paginaSize + index + 1 }}</td>
+            <td>{{ prov.nombreEmpresa }}</td>
+            <td>{{ prov.nit }}</td>
+            <td>{{ prov.responsable }}</td>
+            <td class="text-truncate" style="max-width:200px">{{ prov.direccion }}</td>
+            <td>{{ prov.celular }}</td>
+            <td>{{ prov.email }}</td>
+            <td>{{ prov.condicionPago }}</td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-1">
+                <Button icon="pi pi-pencil" aria-label="Editar" class="p-button-text p-button-sm" @click="emitEdit(prov)" />
+                <Button icon="pi pi-trash" aria-label="Eliminar" class="p-button-text p-button-sm text-danger" @click="confirmDelete(prov)" />
+              </div>
+            </td>
+          </tr>
+          <tr v-if="proveedoresFiltrados.length === 0">
+            <td colspan="9" class="text-center">No se encontraron resultados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <Dialog
       v-model:visible="mostrarConfirmDialog"
@@ -135,4 +139,46 @@ const pagina = ref<number>(1)
 const paginaSize = ref<number>(10)
 </script>
 
-<style scoped></style>
+<style scoped>
+.row-alternate {
+  background: rgba(0, 0, 0, 0.02);
+}
+.error-message {
+  color: #721c24;
+  background: #f8d7da;
+  padding: 0.6rem;
+  border-radius: 0.25rem;
+}
+.loading-message {
+  color: #0c5460;
+  background: #d1ecf1;
+  padding: 0.6rem;
+  border-radius: 0.25rem;
+}
+.table-responsive .table td, .table-responsive .table th {
+  vertical-align: middle;
+}
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 576px) {
+  .table-responsive table thead {
+    display: none;
+  }
+  .table-responsive table tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+  }
+  .table-responsive table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+  }
+}
+</style>

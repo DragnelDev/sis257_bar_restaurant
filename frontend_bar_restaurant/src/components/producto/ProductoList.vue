@@ -3,6 +3,7 @@ import type { Producto } from '@/models/producto'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputGroup, InputGroupAddon, InputText } from 'primevue'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
 
 const ENDPOINT = 'productos'
 const productos = ref<Producto[]>([])
@@ -64,7 +65,10 @@ async function obtenerLista() {
     }
   } catch (err) {
     console.error('Error al obtener productos:', err)
-    error.value = err instanceof Error ? err.message : 'Error al cargar los productos'
+    const msg = err instanceof Error ? err.message : 'Error al cargar los productos'
+    error.value = msg
+    const toast = useToast()
+    toast.add({ severity: 'error', summary: 'Error cargando productos', detail: msg, life: 4000 })
     productos.value = []
   } finally {
     cargando.value = false
@@ -119,51 +123,57 @@ defineExpose({ obtenerLista })
       </InputGroup>
     </div>
 
-    <div v-if="error" class="error-message mt-4">
-      {{ error }}
+    <Toast />
+    <div v-if="cargando" class="alert alert-info mt-3">Cargando productos...</div>
+
+    <div v-if="!cargando && !error" class="table-responsive mt-3">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-light text-dark">
+          <tr>
+            <th style="width: 48px">Nro.</th>
+            <th>Nombre</th>
+            <th>Categoria</th>
+            <th>Descripcion</th>
+            <th>Unidad</th>
+            <th class="text-end">Stock</th>
+            <th class="text-end">Costo Prom.</th>
+            <th>Perecedero</th>
+            <th style="width: 120px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(producto, index) in paginatedProductos" :key="producto.id">
+            <td class="text-center">{{ (pagina - 1) * paginaSize + index + 1 }}</td>
+            <td class="fw-bold">{{ producto.nombre }}</td>
+            <td>{{ producto.categoria?.nombre || '—' }}</td>
+            <td class="text-truncate" style="max-width: 240px">{{ producto.descripcion }}</td>
+            <td class="text-center">{{ producto.unidadMedida }}</td>
+            <td class="text-end">{{ producto.stockActual }}</td>
+            <td class="text-end">Bs. {{ producto.costoUnitarioPromedio }}</td>
+            <td class="text-center">{{ producto.perecedero ? 'Sí' : 'No' }}</td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-1">
+                <Button
+                  icon="pi pi-pencil"
+                  aria-label="Editar"
+                  class="p-button-text p-button-sm"
+                  @click="emitirEdicion(producto)"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  aria-label="Eliminar"
+                  class="p-button-text p-button-sm text-danger"
+                  @click="mostrarEliminarConfirm(producto)"
+                />
+              </div>
+            </td>
+          </tr>
+          <tr v-if="productosFiltrados.length === 0">
+            <td colspan="9" class="text-center">No se encontraron resultados.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
-    <div v-if="cargando" class="loading-message mt-4">Cargando productos...</div>
-
-    <table v-if="!cargando && !error">
-      <thead>
-        <tr>
-          <th>Nro.</th>
-          <th>Nombre</th>
-          <th>Categoria</th>
-          <th>Descripcion</th>
-          <th>Unidad Medida</th>
-          <th>Stock Actual</th>
-          <th>Costo Promedio</th>
-          <th>Perecedero</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(producto, index) in paginatedProductos" :key="producto.id">
-          <td>{{ (pagina - 1) * paginaSize + index + 1 }}</td>
-          <td>{{ producto.nombre }}</td>
-          <td>{{ producto.categoria?.nombre || 'Categoría no disponible' }}</td>
-          <td>{{ producto.descripcion }}</td>
-          <td>{{ producto.unidadMedida }}</td>
-          <td>{{ producto.stockActual }}</td>
-          <td>{{ producto.costoUnitarioPromedio }}</td>
-          <td>{{ producto.perecedero }}</td>
-          <td>
-            <Button icon="pi pi-pencil" aria-label="Editar" text @click="emitirEdicion(producto)" />
-            <Button
-              icon="pi pi-trash"
-              aria-label="Eliminar"
-              text
-              @click="mostrarEliminarConfirm(producto)"
-            />
-          </td>
-        </tr>
-        <tr v-if="productosFiltrados.length === 0">
-          <td colspan="9">No se encontraron resultados.</td>
-        </tr>
-      </tbody>
-    </table>
 
     <!-- Controles de paginación -->
     <div v-if="productosFiltrados.length > 0" class="mt-4 pagination-controls">
@@ -242,6 +252,13 @@ th {
   font-weight: 600;
 }
 
+/* Forzar cabecera negra */
+.table-dark,
+thead.table-dark {
+  background-color: #000 !important;
+  color: #0f0202dc !important;
+}
+
 tr:hover {
   background-color: #f8fafc;
 }
@@ -259,5 +276,29 @@ tr:hover {
   padding: 1rem;
   text-align: center;
   font-weight: 500;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 576px) {
+  .table-responsive table thead {
+    display: none;
+  }
+  .table-responsive table tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+  }
+  .table-responsive table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+  }
 }
 </style>

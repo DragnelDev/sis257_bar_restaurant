@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue' // Se importa onMounted
 import { useAuthStore } from '@/stores/index'
 
 const usuario = ref('')
@@ -7,15 +7,16 @@ const clave = ref('')
 const error = ref('')
 const loading = ref(false)
 
+// Ref para el foco automático
+const usuarioInput = ref<HTMLInputElement | null>(null)
+
 async function onSubmit() {
   const authStore = useAuthStore()
   error.value = ''
   loading.value = true
   try {
     await authStore.login(usuario.value, clave.value)
-    // navegación la maneja el store (router.push)
   } catch (err: unknown) {
-    // Intentar extraer mensaje del error de la API
     const apiErr = err as { response?: { data?: { message?: string } } }
     const msg =
       apiErr?.response?.data?.message ||
@@ -25,84 +26,93 @@ async function onSubmit() {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  // Foco automático al cargar el componente
+  usuarioInput.value?.focus()
+})
 </script>
 
 <template>
-  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-dark">
+  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center custom-bg">
     <div class="row w-100">
       <div class="col-lg-4 col-md-6 col-sm-8 mx-auto">
-        <div class="card shadow-lg border-0 rounded-lg">
-          <div class="card-header bg-primary text-white text-center py-4">
-            <h1 class="mb-0"><i class="fa fa-utensils me-2"></i>Restaurante</h1>
-            <p class="mb-0 mt-2">Acceso al panel de administración</p>
-          </div>
+        <div class="card shadow-lg border-0 rounded-lg custom-card">
 
           <div class="card-body p-5">
-            <!-- Alert de error -->
-            <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-              <i class="fa fa-exclamation-triangle me-2"></i>
+            <div class="text-center mb-5">
+                <i class="fa fa-utensils fa-3x text-primary mb-2"></i>
+                <h2 class="fw-bold mb-0 text-dark">Restaurante Admin</h2>
+                <p class="text-muted mt-2">Acceso al panel de administración</p>
+            </div>
+
+            <div v-if="error" class="alert custom-alert-danger fade show" role="alert">
+              <i class="fa fa-exclamation-circle me-2"></i>
               {{ error }}
               <button
                 type="button"
                 class="btn-close"
                 @click="error = ''"
-                aria-label="Close"
+                aria-label="Cerrar alerta"
               ></button>
             </div>
 
             <form @submit.prevent="onSubmit">
-              <!-- Usuario -->
+
               <div class="mb-4">
-                <label for="usuario" class="form-label">
-                  <i class="fa fa-user me-2"></i>Usuario
-                </label>
-                <input
-                  type="text"
-                  class="form-control form-control-lg"
-                  id="usuario"
-                  v-model="usuario"
-                  placeholder="Ingrese su usuario"
-                  required
-                  :disabled="loading"
-                />
+                <label for="usuario" class="form-label visually-hidden">Usuario</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="fa fa-user"></i></span>
+                    <input
+                      ref="usuarioInput"
+                      type="text"
+                      class="form-control"
+                      id="usuario"
+                      v-model="usuario"
+                      placeholder="Ingrese su usuario"
+                      required
+                      :disabled="loading"
+                    />
+                </div>
               </div>
 
-              <!-- Contraseña -->
               <div class="mb-4">
-                <label for="clave" class="form-label">
-                  <i class="fa fa-lock me-2"></i>Contraseña
-                </label>
-                <input
-                  type="password"
-                  class="form-control form-control-lg"
-                  id="clave"
-                  v-model="clave"
-                  placeholder="Ingrese su contraseña"
-                  required
-                  :disabled="loading"
-                />
+                <label for="clave" class="form-label visually-hidden">Contraseña</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="clave"
+                      v-model="clave"
+                      placeholder="Ingrese su contraseña"
+                      required
+                      :disabled="loading"
+                    />
+                </div>
               </div>
 
-              <!-- Submit Button -->
-              <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loading">
-                <span v-if="loading">
-                  <span
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                  Iniciando...
-                </span>
-                <span v-else>
-                  <i class="fa fa-sign-in-alt me-2"></i>
-                  Iniciar Sesión
-                </span>
-              </button>
+              <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
+                  <span v-if="loading">
+                    <span
+                      class="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Iniciando Sesión...
+                  </span>
+                  <span v-else>
+                    <i class="fa fa-sign-in-alt me-2"></i>
+                    Iniciar Sesión
+                  </span>
+                </button>
+              </div>
             </form>
           </div>
 
-          <div class="card-footer text-center py-3 bg-light">
-            <RouterLink to="/" class="text-decoration-none text-primary">
+          <div class="text-center py-3">
+            <RouterLink to="/" class="text-decoration-none text-primary fw-bold">
               <i class="fa fa-arrow-left me-2"></i>
               Volver al Sitio Web
             </RouterLink>
@@ -114,39 +124,59 @@ async function onSubmit() {
 </template>
 
 <style scoped>
-.card {
-  border-radius: 15px;
+/* Fondo: Usamos un color o degradado más sutil que el dark sólido */
+.custom-bg {
+  background-color: #f7f7f7;
+  /* O un degradado suave: */
+  /* background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%); */
+}
+
+.custom-card {
+  border-radius: 12px;
+  /* Sombra más pronunciada y suave (tendencia actual) */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  border: 1px solid #dee2e6; /* Borde más sutil */
 }
 
-.card-header {
-  background: linear-gradient(135deg, #fea116 0%, #d98a0b 100%);
+/* Color primario del restaurante (naranja) */
+.text-primary {
+    color: #fea116 !important;
 }
 
+.btn-primary {
+  background: #fea116;
+  border-color: #fea116;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #d98a0b;
+  border-color: #d98a0b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(254, 161, 22, 0.3);
+}
+
+/* Estilos de Input Group */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+    color: #6c757d;
+}
 .form-control:focus {
   border-color: #fea116;
   box-shadow: 0 0 0 0.2rem rgba(254, 161, 22, 0.25);
 }
 
-.btn-primary {
-  background: #fea116;
-  border: none;
-  transition: all 0.3s;
-}
-
-.btn-primary:hover {
-  background: #d98a0b;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(254, 161, 22, 0.3);
-}
-
-.alert-danger {
-  background-color: #fee2e2;
-  border-color: #fecaca;
-  color: #dc2626;
-}
-
-.bg-dark {
-  background-color: #1f2937 !important;
+/* Estilo de Alerta de Error más suave */
+.custom-alert-danger {
+  padding: 1rem 1rem;
+  margin-bottom: 1.5rem;
+  background-color: #fff3f3; /* Fondo muy claro */
+  border: 1px solid #f09a9a; /* Borde rojo suave */
+  color: #c94a4a; /* Texto rojo oscuro */
+  border-radius: 8px;
+  position: relative;
 }
 </style>

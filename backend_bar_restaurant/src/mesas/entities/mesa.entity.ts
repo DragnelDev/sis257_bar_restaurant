@@ -14,13 +14,13 @@ export class Mesa {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('varchar', { length: 10, name: 'numero_mesa ' })
+  @Column('int', { name: 'numero_mesa' })
   numeroMesa: number;
 
-  @Column('int', { name: 'capacidad ' })
+  @Column('int', { name: 'capacidad' })
   capacidad: number;
 
-  @Column('varchar', { length: 10, name: 'estado ' })
+  @Column('varchar', { length: 10, default: 'DISPONIBLE' })
   estado: string;
 
   // Columnas de Auditoria

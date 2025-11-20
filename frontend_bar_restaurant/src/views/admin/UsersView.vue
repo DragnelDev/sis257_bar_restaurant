@@ -221,18 +221,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="users-view">
-    <div class="page-header mb-4">
-      <h2 class="mb-1">Gestión de Usuarios</h2>
-      <p class="text-muted">Administra los usuarios del sistema</p>
+  <div class="users-view p-4"> <div class="page-header mb-4">
+      <h2 class="text-2xl font-bold">Gestión de Usuarios</h2>
+      <p class="text-muted text-sm">Administra los usuarios y sus roles dentro del sistema.</p>
     </div>
 
-    <!-- Filters -->
-    <div class="card mb-4">
-      <div class="flex gap-3 p-4">
-        <span class="p-input-icon-left flex-1">
+    <div class="card p-datatable-card mb-4">
+      <div class="flex flex-wrap gap-3 align-items-center p-3">
+        <span class="p-input-icon-left flex-grow-1">
           <i class="pi pi-search"></i>
-          <InputText v-model="searchQuery" placeholder="Buscar por usuario..." class="w-full" />
+          <InputText v-model="searchQuery" placeholder="Buscar por usuario..." class="w-full search-input" />
         </span>
 
         <Dropdown
@@ -240,12 +238,13 @@ onMounted(async () => {
           :options="[{ label: 'Todos los Roles', value: 'all' }, ...rolesOptions]"
           optionLabel="label"
           optionValue="value"
-          class="w-32"
+          class="w-12rem"
         />
 
         <Button
           label="Agregar Usuario"
-          icon="pi pi-plus"
+          icon="pi pi-user-plus"
+          severity="success"
           @click="
             () => {
               resetForm()
@@ -256,145 +255,153 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Users Table -->
-    <div class="card">
+    <div class="card p-datatable-card">
       <DataTable :value="filteredUsers" responsiveLayout="scroll" stripedRows>
-        <Column field="usuario" header="Usuario" />
-        <Column field="rol" header="Rol">
+        <Column field="usuario" header="Usuario" style="width: 15%" />
+        <Column field="rol" header="Rol" style="width: 15%">
           <template #body="slotProps">
-            <span class="pi pi-check" :style="{ color: getRoleColor(slotProps.data.rol) }" />
-            {{ slotProps.data.rol }}
+            <span :class="['p-tag', 'p-tag-' + getRoleColor(slotProps.data.rol)]">
+              {{ slotProps.data.rol }}
+            </span>
           </template>
         </Column>
-        <Column header="Empleado">
+        <Column header="Empleado" style="width: 35%">
           <template #body="slotProps">
+            <i class="pi pi-user mr-2 text-muted" />
             {{ getEmpleadoNombreCompleto(slotProps.data.empleado) }}
           </template>
         </Column>
-        <Column field="activo" header="Estado">
+        <Column field="activo" header="Estado" style="width: 10%">
           <template #body="slotProps">
-            <span v-if="slotProps.data.activo" class="badge bg-success">Activo</span>
-            <span v-else class="badge bg-danger">Inactivo</span>
+            <span v-if="slotProps.data.activo" class="p-tag p-tag-success-alt">Activo</span>
+            <span v-else class="p-tag p-tag-danger-alt">Inactivo</span>
           </template>
         </Column>
-        <Column header="Acciones" style="width: 10%">
+        <Column header="Acciones" style="width: 15%; text-align: center;">
           <template #body="slotProps">
             <Button
               icon="pi pi-pencil"
-              class="p-button-rounded p-button-warning me-2"
+              class="p-button-rounded p-button-sm me-2"
+              severity="warning"
+              text
               @click="editUser(slotProps.data)"
+              v-tooltip.top="'Editar'"
             />
             <Button
               icon="pi pi-trash"
-              class="p-button-rounded p-button-danger"
+              class="p-button-rounded p-button-sm"
+              severity="danger"
+              text
               @click="deleteUser(slotProps.data.id)"
+              v-tooltip.top="'Eliminar'"
             />
           </template>
         </Column>
       </DataTable>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="filteredUsers.length === 0" class="text-center py-5">
-      <i class="pi pi-users pi-4x text-muted mb-3"></i>
-      <h5 class="text-muted">No hay usuarios</h5>
-      <p class="text-muted">Intenta ajustar tu búsqueda o filtros</p>
+    <div v-if="filteredUsers.length === 0 && !loading" class="empty-state">
+      <i class="pi pi-users empty-icon"></i>
+      <h5 class="empty-text-title">No hay usuarios registrados</h5>
+      <p class="empty-text-subtitle">Comienza agregando un nuevo usuario o ajusta tus filtros.</p>
     </div>
 
-    <!-- Modal para Agregar/Editar Usuario -->
     <Dialog
       v-model:visible="showAddModal"
       :header="modoEdicion ? 'Editar Usuario' : 'Agregar Nuevo Usuario'"
       :modal="true"
       style="width: 40rem"
+      class="p-dialog-form"
     >
-      <!-- Alert de error -->
-      <div v-if="formError" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="pi pi-exclamation-triangle me-2"></i>
-        {{ formError }}
-        <button type="button" class="btn-close" @click="formError = ''"></button>
+      <div v-if="formError" class="p-message p-component p-message-error mb-4">
+        <div class="p-message-wrapper">
+          <i class="pi pi-exclamation-triangle p-message-icon mr-2"></i>
+          <span class="p-message-text">{{ formError }}</span>
+        </div>
       </div>
 
-      <!-- Campos del formulario -->
-      <div class="mb-4">
-        <label class="font-semibold block mb-2">Usuario</label>
-        <InputText v-model="newUserForm.usuario" class="w-full" placeholder="Nombre de usuario" />
-      </div>
+      <div class="p-fluid">
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">Usuario</label>
+          <InputText v-model="newUserForm.usuario" class="w-full" placeholder="Nombre de usuario" />
+        </div>
 
-      <div class="mb-4">
-        <label class="font-semibold block mb-2">Clave</label>
-        <InputText
-          v-model="newUserForm.clave"
-          type="password"
-          class="w-full"
-          placeholder="Contraseña (mín. 6 caracteres)"
-        />
-      </div>
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">Clave</label>
+          <InputText
+            v-model="newUserForm.clave"
+            type="password"
+            class="w-full"
+            placeholder="Contraseña (mín. 6 caracteres)"
+          />
+        </div>
 
-      <div class="mb-4">
-        <label class="font-semibold block mb-2">Confirmar Clave</label>
-        <InputText
-          v-model="(newUserForm as any).confirmPassword"
-          type="password"
-          class="w-full"
-          :class="{ 'ng-invalid': !passwordMatch }"
-          placeholder="Confirmar contraseña"
-        />
-        <small v-if="!passwordMatch" class="error-text">Las contraseñas no coinciden</small>
-      </div>
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">Confirmar Clave</label>
+          <InputText
+            v-model="(newUserForm as any).confirmPassword"
+            type="password"
+            class="w-full"
+            :class="{ 'p-invalid': !passwordMatch && (newUserForm as any).confirmPassword }"
+            placeholder="Confirmar contraseña"
+          />
+          <small v-if="!passwordMatch && (newUserForm as any).confirmPassword" class="error-text">Las contraseñas no coinciden</small>
+        </div>
 
-      <div class="mb-4">
-        <label class="font-semibold block mb-2">Rol</label>
-        <Dropdown
-          v-model="newUserForm.rol"
-          :options="rolesOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-          placeholder="Selecciona un rol"
-        />
-      </div>
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">Rol</label>
+          <Dropdown
+            v-model="newUserForm.rol"
+            :options="rolesOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            placeholder="Selecciona un rol"
+          />
+        </div>
 
-      <div class="mb-4">
-        <label class="font-semibold block mb-2">Empleado</label>
-        <Dropdown
-          v-model="newUserForm.idEmpleado"
-          :options="empleadosOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-          placeholder="Selecciona un empleado"
-          :filter="true"
-          @filter="filterEmpleados"
-          filterPlaceholder="Buscar empleado..."
-        />
-        <small v-if="newUserForm.idEmpleado" class="text-muted d-block mt-2">
-          Empleado: {{ getEmpleadoNombreCompleto(newUserForm.empleado) }}
-        </small>
-      </div>
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">Empleado</label>
+          <Dropdown
+            v-model="newUserForm.idEmpleado"
+            :options="empleadosOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            placeholder="Selecciona un empleado"
+            :filter="true"
+            @filter="filterEmpleados"
+            filterPlaceholder="Buscar empleado..."
+          />
+          <small v-if="newUserForm.idEmpleado" class="text-muted mt-2 block">
+            Empleado asociado: {{ getEmpleadoNombreCompleto(newUserForm.empleado) }}
+          </small>
+        </div>
 
-      <div class="mb-4">
-        <label class="font-semibold block mb-2">Activo</label>
-        <Dropdown
-          v-model="newUserForm.activo"
-          :options="[
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ]"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-        />
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">Estado</label>
+          <Dropdown
+            v-model="newUserForm.activo"
+            :options="[
+              { label: 'Activo', value: true },
+              { label: 'Inactivo', value: false },
+            ]"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+          />
+        </div>
       </div>
 
       <template #footer>
-        <Button label="Cancelar" icon="pi pi-times" @click="closeAddModal" severity="secondary" />
+        <Button label="Cancelar" icon="pi pi-times" @click="closeAddModal" severity="secondary" outlined />
         <Button
           :label="modoEdicion ? 'Actualizar' : 'Crear'"
           icon="pi pi-save"
           @click="handleAddUser"
           :loading="loading"
           :disabled="loading || !passwordMatch || !newUserForm.usuario"
+          severity="primary"
         />
       </template>
     </Dialog>
@@ -402,6 +409,127 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* ======================================================= */
+/* I. ESTILOS DE UTILIDAD Y LAYOUT */
+/* ======================================================= */
+/* Reset de clases internas y utilidades PrimeVue */
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-grow-1 { flex-grow: 1; }
+.align-items-center { align-items: center; }
+.gap-3 { gap: 1rem; }
+.p-4 { padding: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mr-2 { margin-right: 0.5rem; }
+.block { display: block; }
+.font-semibold { font-weight: 600; }
+.text-2xl { font-size: 1.5rem; }
+.text-sm { font-size: 0.875rem; }
+.w-full { width: 100%; }
+.w-12rem { width: 12rem; }
+
+/* Estilos de Contenedores y Tarjetas */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.p-datatable-card {
+  padding: 0; /* La tabla ya tiene padding interno */
+}
+.users-view {
+    background-color: #f8f9fa; /* Fondo general suave */
+}
+
+/* Títulos y texto secundario */
+.page-header h2 {
+    color: #343a40;
+    font-weight: 700;
+}
+.text-muted {
+    color: #6c757d;
+}
+
+/* ======================================================= */
+/* II. ESTILOS DE COMPONENTES DE PRIME VUE */
+/* ======================================================= */
+
+/* Input de Búsqueda */
+.search-input {
+    height: 42px;
+}
+/* Asegurar el padding izquierdo en el input */
+:deep(.p-input-icon-left > .p-inputtext) {
+  padding-left: 2.5rem !important;
+}
+
+/* Dropdown */
+.p-dropdown {
+    height: 42px;
+}
+
+/* DataTable Estilos */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+  background-color: #f8f9fa; /* Fondo claro del encabezado */
+  color: #495057; /* Texto oscuro */
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  padding: 1rem;
+}
+
+/* Botones de Acción en Fila (Usamos text y rounded) */
+:deep(.p-button.p-button-sm) {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Tags de Rol y Estado */
+.p-tag {
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Tags de Rol (Colores basados en getRoleColor) */
+.p-tag-danger { /* ADMINISTRADOR */ background-color: #f8d7da; color: #721c24; }
+.p-tag-primary { /* CHEF */ background-color: #cce5ff; color: #004085; }
+.p-tag-info { /* MESERO */ background-color: #d1ecf1; color: #0c5460; }
+.p-tag-warning { /* CAJERO */ background-color: #fff3cd; color: #856404; }
+.p-tag-secondary { /* CONTADOR / Default */ background-color: #e2e3e5; color: #383d41; }
+
+/* Tags de Estado (Activo/Inactivo) */
+.p-tag-success-alt { /* Activo */
+    background-color: #d4edda;
+    color: #155724;
+}
+.p-tag-danger-alt { /* Inactivo */
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* ======================================================= */
+/* III. ESTADOS DE FORMULARIO Y MODAL */
+/* ======================================================= */
+
+/* Alertas PrimeVue (para formError) */
+.p-message {
+    padding: 1rem;
+    border-radius: 6px;
+    background-color: #fff0f0; /* Fondo de error suave */
+    border: 1px solid #f5c2c7;
+    color: #842029;
+}
+
+/* Campo Inválido (Password Match) */
+.p-invalid {
+    border-color: #dc2626 !important;
+}
 .error-text {
   color: #dc2626;
   font-size: 0.875rem;
@@ -409,66 +537,26 @@ onMounted(async () => {
   margin-top: 0.25rem;
 }
 
-.card {
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+/* Empty State Styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    border: 1px dashed #ced4da;
+    border-radius: 6px;
+    margin-top: 1rem;
+    background-color: #ffffff;
 }
-
-:deep(.p-input-icon-left > i) {
-  left: 1rem;
+.empty-icon {
+    font-size: 3rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
 }
-
-:deep(.p-input-icon-left > .p-inputtext) {
-  padding-left: 2.5rem;
+.empty-text-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #495057;
 }
-
-.flex {
-  display: flex;
-}
-
-.gap-3 {
-  gap: 1rem;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.w-32 {
-  width: 8rem;
-}
-
-.p-4 {
-  padding: 1rem;
-}
-
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.font-semibold {
-  font-weight: 600;
-}
-
-.block {
-  display: block;
-}
-
-.alert {
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid transparent;
-  border-radius: 0.375rem;
-}
-
-.alert-danger {
-  color: #842029;
-  background-color: #f8d7da;
-  border-color: #f5c2c7;
+.empty-text-subtitle {
+    color: #6c757d;
 }
 </style>

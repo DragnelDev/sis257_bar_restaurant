@@ -6,11 +6,11 @@ import ReservationSection from '../components/home/ReservationSection.vue'
 <template>
   <div>
     <PageHeader
-      title="Booking"
+      title="Reservas"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'Booking', link: '/booking' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Paginas', link: '#' },
+        { text: 'Reserva', link: '/booking' },
       ]"
     />
     <ReservationSection />
