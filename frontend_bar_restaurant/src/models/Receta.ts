@@ -4,5 +4,6 @@ export interface Receta {
   descripcion: string
   precioVentaActual: number
   costoActual: number
+  categoria: string
   urlImagen: string
 }

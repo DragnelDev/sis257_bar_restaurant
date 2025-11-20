@@ -75,12 +75,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'registrar',
         name: 'admin-registrar',
-        component: () => import('../views/admin/RegistrarView.vue'),
-      },
-      {
-        path: 'menu',
-        name: 'admin-menu',
-        component: () => import('../views/admin/MenuManagementView.vue'),
+        component: () => import('../views/admin/RegistrarVentaView.vue'),
+        // Pasar props desde query: ?mesaId=123&ventaId=456
+        props: (route) => ({
+          initialMesaId: Number(route.query.mesaId) || 0,
+          initialVentaId: route.query.ventaId ? Number(route.query.ventaId) : null,
+        }),
       },
       {
         path: 'orders',

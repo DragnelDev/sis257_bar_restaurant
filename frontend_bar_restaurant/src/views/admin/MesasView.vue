@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from '../../plugins/axios'
 
+const ENDPOINT = 'mesas'
 // Adaptamos la interfaz a tu tabla 'mesas'
 interface Mesa {
   id: number
@@ -11,44 +14,85 @@ interface Mesa {
   tiempoOcupada: string // Tiempo que lleva ocupada (simulación)
 }
 
-// Datos de Ejemplo (Simulando la lectura de la base de datos)
-const mesas = ref<Mesa[]>([
-  {
-    id: 1,
-    numeroMesa: 1,
-    capacidad: 4,
-    estado: 'OCUPADA',
-    idVentaActiva: 101,
-    tiempoOcupada: '0:45 min',
-  },
-  { id: 2, numeroMesa: 2, capacidad: 2, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
-  {
-    id: 3,
-    numeroMesa: 3,
-    capacidad: 6,
-    estado: 'OCUPADA',
-    idVentaActiva: 102,
-    tiempoOcupada: '1:10 min',
-  },
-  { id: 4, numeroMesa: 4, capacidad: 4, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
-  {
-    id: 5,
-    numeroMesa: 5,
-    capacidad: 8,
-    estado: 'MANTENIMIENTO',
-    idVentaActiva: null,
-    tiempoOcupada: '',
-  },
-  {
-    id: 6,
-    numeroMesa: 6,
-    capacidad: 4,
-    estado: 'OCUPADA',
-    idVentaActiva: 103,
-    tiempoOcupada: '0:20 min',
-  },
-  { id: 7, numeroMesa: 7, capacidad: 2, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
-])
+// Datos de mesas (cargadas desde API)
+const mesas = ref<Mesa[]>([])
+const loadingMesas = ref(false)
+
+// Estado del modal para agregar mesa
+const showModalAgregar = ref(false)
+const formNuevaMesa = ref({ numeroMesa: '', capacidad: '', estado: 'LIBRE' })
+const loadingGuardar = ref(false)
+
+// Cargar mesas desde la API
+const loadMesas = async () => {
+  loadingMesas.value = true
+  try {
+    const res = await axios.get(`/${ENDPOINT}`)
+    let data = res?.data
+    if (data && (data as any).data) data = (data as any).data
+    if (data && (data as any).items) data = (data as any).items
+
+    if (!Array.isArray(data)) {
+      console.warn('Respuesta de /mesas inesperada:', res)
+      mesas.value = []
+      return
+    }
+
+    mesas.value = (data as any[]).map((m: any) => ({
+      id: m.id,
+      numeroMesa: m.numeroMesa || m.numero || 0,
+      capacidad: m.capacidad,
+      estado: m.estado || 'LIBRE',
+      idVentaActiva: m.idVentaActiva || null,
+      tiempoOcupada: m.tiempoOcupada || '',
+    }))
+    console.debug(`Mesas cargadas: ${mesas.value.length}`)
+  } catch (err) {
+    console.warn('No se pudo cargar mesas desde /mesas:', err)
+    // Fallback en desarrollo
+    if (import.meta.env.DEV) {
+      mesas.value = [
+        { id: 1, numeroMesa: 1, capacidad: 4, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
+        { id: 2, numeroMesa: 2, capacidad: 2, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
+      ]
+    } else {
+      mesas.value = []
+    }
+  } finally {
+    loadingMesas.value = false
+  }
+}
+
+// Agregar nueva mesa
+const agregarMesa = async () => {
+  if (!formNuevaMesa.value.numeroMesa || !formNuevaMesa.value.capacidad) {
+    alert('Por favor completa todos los campos')
+    return
+  }
+
+  loadingGuardar.value = true
+  try {
+    const payload = {
+      numeroMesa: Number(formNuevaMesa.value.numeroMesa),
+      capacidad: Number(formNuevaMesa.value.capacidad),
+      estado: formNuevaMesa.value.estado,
+    }
+    await axios.post(`/${ENDPOINT}`, payload)
+    alert('✅ Mesa agregada con éxito')
+    formNuevaMesa.value = { numeroMesa: '', capacidad: '', estado: 'LIBRE' }
+    showModalAgregar.value = false
+    await loadMesas() // Recargar lista
+  } catch (err) {
+    console.error('Error al agregar mesa:', err)
+    alert('❌ Error al agregar mesa. Intente de nuevo.')
+  } finally {
+    loadingGuardar.value = false
+  }
+}
+
+onMounted(() => {
+  loadMesas()
+})
 
 const selectedMesa = ref<Mesa | null>(null)
 const selectedFilter = ref('all')
@@ -76,22 +120,36 @@ const getStatusColor = (estado: Mesa['estado']): string => {
 }
 
 // Lógica de acciones de mesa
+const router = useRouter()
+
 const handleMesaAction = (mesa: Mesa) => {
   selectedMesa.value = mesa
 
   if (mesa.estado === 'LIBRE') {
-    // 1. Iniciar Venta (Simulación)
-    console.log(`Iniciando nueva orden para Mesa ${mesa.numeroMesa}`)
-    // Aquí se navegaría a la vista POS/Menu con mesa.id preseleccionada
-    alert(`Mesa ${mesa.numeroMesa} asignada. Navegando a Toma de Pedido...`)
-  } else if (mesa.estado === 'OCUPADA') {
-    // 2. Abrir Orden Existente
-    console.log(`Abriendo Venta ID ${mesa.idVentaActiva} para Mesa ${mesa.numeroMesa}`)
-    // Aquí se navegaría a la vista POS/Menu para editar la venta activa
-    alert(`Abriendo orden activa ${mesa.idVentaActiva} de Mesa ${mesa.numeroMesa}.`)
+    // Navegar a RegistrarVenta para iniciar nueva venta con mesaId
+    router.push({ name: 'admin-registrar', query: { mesaId: String(mesa.id) } })
+    return
   }
 
-  // En una aplicación real, se usaría un router.push('/pos/' + mesa.id)
+  if (mesa.estado === 'OCUPADA') {
+    // Abrir venta activa (si existe) para editar/pagar
+    if (mesa.idVentaActiva) {
+      router.push({
+        name: 'admin-registrar',
+        query: { mesaId: String(mesa.id), ventaId: String(mesa.idVentaActiva) },
+      })
+      return
+    }
+    // Si no hay venta activa, ir a crear una
+    router.push({ name: 'admin-registrar', query: { mesaId: String(mesa.id) } })
+    return
+  }
+
+  // Mantenimiento: no hacer nada o mostrar info
+  if (mesa.estado === 'MANTENIMIENTO') {
+    // dejar como estaba: no navegar
+    return
+  }
 }
 
 // Cálculo de estadísticas rápidas
@@ -162,8 +220,11 @@ const stats = computed(() => ({
             </select>
           </div>
           <div class="col-md-8 text-end">
-            <button class="btn btn-primary me-2">
-              <i class="fa fa-sync-alt me-1"></i> Sincronizar
+            <button class="btn btn-success me-2" @click="showModalAgregar = true">
+              <i class="fa fa-plus me-1"></i> Agregar Mesa
+            </button>
+            <button class="btn btn-primary me-2" @click="loadMesas" :disabled="loadingMesas">
+              <i class="fa fa-sync-alt me-1"></i> {{ loadingMesas ? 'Sincronizando...' : 'Sincronizar' }}
             </button>
             <button class="btn btn-outline-secondary">
               <i class="fa fa-map-marked-alt me-1"></i> Ver Layout
@@ -211,6 +272,59 @@ const stats = computed(() => ({
               <i class="fa fa-pen-square me-1"></i>Ver/Cerrar
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para agregar mesa -->
+    <div v-if="showModalAgregar" class="modal-overlay" @click.self="showModalAgregar = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar Nueva Mesa</h5>
+          <button type="button" class="btn-close" @click="showModalAgregar = false"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Número de Mesa:</label>
+            <input
+              type="number"
+              class="form-control"
+              v-model="formNuevaMesa.numeroMesa"
+              placeholder="Ej: 8"
+              min="1"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Capacidad (personas):</label>
+            <input
+              type="number"
+              class="form-control"
+              v-model="formNuevaMesa.capacidad"
+              placeholder="Ej: 4"
+              min="1"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Estado:</label>
+            <select class="form-select" v-model="formNuevaMesa.estado">
+              <option value="LIBRE">Libre</option>
+              <option value="OCUPADA">Ocupada</option>
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showModalAgregar = false">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="agregarMesa"
+            :disabled="loadingGuardar"
+          >
+            {{ loadingGuardar ? 'Guardando...' : 'Guardar Mesa' }}
+          </button>
         </div>
       </div>
     </div>
@@ -295,5 +409,63 @@ const stats = computed(() => ({
 /* Hacer el cursor predeterminado para mantenimiento */
 .mesa-card[style*='default'] {
   cursor: default !important;
+}
+
+/* Estilos para el modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  width: 90%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header .modal-title {
+  margin: 0;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.btn-close:hover {
+  color: #000;
 }
 </style>

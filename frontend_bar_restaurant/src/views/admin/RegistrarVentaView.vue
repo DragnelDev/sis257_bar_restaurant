@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from '../../plugins/axios'
+import { useAuth } from '../../composables/useAuth'
 
+const ENDPOINT = 'ventas'
 // --- 1. INTERFACES (Adaptadas de tu backend) ---
 interface Receta {
   id: number
-  name: string
-  price: number
-  category: string
-  image: string
+  nombreReceta: string
+  precioVentaActual: number
+  categoria: string
+  urlImagen: string
 }
 
 interface DetalleVentaItem {
@@ -31,6 +34,10 @@ const currentOrder = ref<DetalleVentaItem[]>([]) // El carrito
 const mesaId = ref(props.initialMesaId)
 const ventaId = ref(props.initialVentaId || null)
 
+// Auth
+const { user, checkAuth } = useAuth()
+checkAuth()
+
 // ESTADO DE FILTROS Y BÚSQUEDA
 const selectedCategory = ref('all')
 const searchQuery = ref('')
@@ -44,32 +51,139 @@ const requiereFactura = ref(false)
 const nitCI = ref('')
 const nombreFiscal = ref('')
 
-// --- 4. DATOS DE EJEMPLO DEL MENÚ (Simulación de consulta a /recetas) ---
-const menuItems = ref<Receta[]>([
-  {
-    id: 1,
-    name: 'Hamburguesa Clásica',
-    price: 35.0,
-    category: 'principal',
-    image: '/img/hamburguesa.jpg',
-  },
-  {
-    id: 2,
-    name: 'Papas Fritas Medianas',
-    price: 15.0,
-    category: 'acompañamiento',
-    image: '/img/papas.jpg',
-  },
-  { id: 3, name: 'Ribeye Steak', price: 90.0, category: 'principal', image: '/img/ribeye.jpg' },
-  {
-    id: 4,
-    name: 'Gaseosa Cola (Lata)',
-    price: 10.0,
-    category: 'bebidas',
-    image: '/img/gaseosa.jpg',
-  },
-  { id: 5, name: 'Tiramisú', price: 20.0, category: 'postres', image: '/img/tiramisu.jpg' },
-])
+// --- 4. DATOS DEL MENÚ (serán cargados desde /recetas y normalizados) ---
+const menuItems = ref<Receta[]>([])
+
+// Normaliza posibles estructuras de la API a la forma que usa el componente
+const normalizeReceta = (r: unknown): Receta => {
+  const obj: any = r as any
+  const precioRaw = obj.precioVentaActual ?? obj.price ?? 0
+  let precioNum = 0
+  if (typeof precioRaw === 'string') {
+    const cleaned = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '')
+    precioNum = parseFloat(cleaned)
+  } else {
+    precioNum = Number(precioRaw)
+  }
+  if (!Number.isFinite(precioNum)) precioNum = 0
+  return {
+    id: obj.id,
+    nombreReceta: obj.nombreReceta || obj.name || 'Sin nombre',
+    precioVentaActual: precioNum,
+    // Soporta `categoria` como string o como objeto { nombre }
+    categoria:
+      typeof obj.categoria === 'string'
+        ? obj.categoria
+        : obj.categoria?.nombre || obj.category || 'principal',
+    urlImagen: obj.urlImagen || obj.image || '/img/default.jpg',
+  }
+}
+
+// Formatea precios de forma segura para la plantilla
+const formatPrice = (v: unknown) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? n.toFixed(2) : '0.00'
+}
+
+const loadMenu = async () => {
+  try {
+    const res = await axios.get('/recetas')
+    // Manejar varias envolturas comunes: res.data, res.data.data, res.data.items
+    let data: unknown = res?.data
+    if (data && (data as any).data) data = (data as any).data
+    if (data && (data as any).items) data = (data as any).items
+
+    if (!Array.isArray(data)) {
+      console.warn('Respuesta de /recetas inesperada:', res)
+      menuItems.value = []
+      return
+    }
+
+    const normalized = (data as unknown[]).map((r) => normalizeReceta(r))
+    menuItems.value = normalized
+    console.debug(`Menú cargado: ${menuItems.value.length} recetas. Categorías:`,
+      Array.from(new Set(menuItems.value.map((m) => m.categoria))))
+    // Si está vacío en desarrollo, opcionalmente poblar con ejemplo para visualización
+    if (menuItems.value.length === 0 && import.meta.env.DEV) {
+      console.info('Falló carga de recetas; usando datos de ejemplo en modo DEV')
+      menuItems.value = [
+        { id: 999, nombreReceta: 'Ejemplo - Hamburguesa', precioVentaActual: 35, categoria: 'principal', urlImagen: '/img/hamburguesa.jpg' },
+        { id: 998, nombreReceta: 'Ejemplo - Papas', precioVentaActual: 15, categoria: 'acompañamiento', urlImagen: '/img/papas.jpg' },
+      ]
+    }
+  } catch (err) {
+    console.warn('No se pudo cargar el menú desde /recetas:', err)
+    // Fallback en modo desarrollo para facilitar pruebas
+    if (import.meta.env.DEV) {
+      menuItems.value = [
+        { id: 999, nombreReceta: 'Ejemplo - Hamburguesa', precioVentaActual: 35, categoria: 'principal', urlImagen: '/img/hamburguesa.jpg' },
+        { id: 998, nombreReceta: 'Ejemplo - Papas', precioVentaActual: 15, categoria: 'acompañamiento', urlImagen: '/img/papas.jpg' },
+      ]
+    } else {
+      menuItems.value = []
+    }
+  }
+}
+
+// Cargar una venta existente y poblar el carrito
+const loadVenta = async (vId: number) => {
+  try {
+    const res = await axios.get(`/${ENDPOINT}/${vId}`)
+    let data = res?.data
+    if (data && (data as any).data) data = (data as any).data
+
+    if (!data || !Array.isArray(data.detalles)) {
+      console.warn('Venta no encontrada o sin detalles:', res)
+      return
+    }
+
+    // Poblar currentOrder con los detalles existentes
+    currentOrder.value = (data.detalles as any[]).map((d: any) => ({
+      idReceta: d.idReceta,
+      name: d.name || d.nombreReceta || 'Sin nombre',
+      price: Number(d.price ?? d.precioUnitarioVenta ?? 0),
+      quantity: Number(d.quantity ?? d.cantidad ?? 0),
+      subtotal:
+        Number(d.quantity ?? d.cantidad ?? 0) * Number(d.price ?? d.precioUnitarioVenta ?? 0),
+    }))
+
+    // Cargar otros datos de la venta
+    tipoPago.value = data.tipoPago || 'EFECTIVO'
+    requiereFactura.value = data.requiereFactura || false
+    nitCI.value = data.nitCI || ''
+    nombreFiscal.value = data.nombreFiscal || ''
+
+    console.debug(`Venta #${vId} cargada: ${currentOrder.value.length} ítems`)
+  } catch (err) {
+    console.warn(`No se pudo cargar la venta #${vId}:`, err)
+  }
+}
+
+onMounted(() => {
+  loadMenu()
+  // Si hay una venta existente, cargarla
+  if (props.initialVentaId) {
+    loadVenta(props.initialVentaId)
+  }
+})
+
+// Sincronizar cambios en props (en caso de que las props cambien)
+watch(
+  () => props.initialMesaId,
+  (newMesaId) => {
+    mesaId.value = newMesaId
+  }
+)
+
+watch(
+  () => props.initialVentaId,
+  (newVentaId) => {
+    if (newVentaId) {
+      ventaId.value = newVentaId
+      loadVenta(newVentaId)
+    }
+  }
+)
 
 // --- 5. PROPIEDADES COMPUTADAS ---
 const totalPagar = computed(() => {
@@ -90,8 +204,8 @@ const vuelto = computed(() => {
 const filteredItems = computed(() => {
   return menuItems.value.filter((item) => {
     const matchesCategory =
-      selectedCategory.value === 'all' || item.category === selectedCategory.value
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      selectedCategory.value === 'all' || item.categoria === selectedCategory.value
+    const matchesSearch = item.nombreReceta.toLowerCase().includes(searchQuery.value.toLowerCase())
     return matchesCategory && matchesSearch
   })
 })
@@ -106,6 +220,18 @@ const getCategoryColor = (category: string) => {
   return colors[category] || 'secondary'
 }
 
+// Lista dinámica de categorías (incluye 'all')
+const uniqueCategories = computed(() => {
+  const set = new Set<string>()
+  menuItems.value.forEach((m) => set.add(m.categoria || 'principal'))
+  return ['all', ...Array.from(set)]
+})
+
+const formatCategoryLabel = (c: string) => {
+  if (c === 'all') return 'Todas las Categorias'
+  return c.charAt(0).toUpperCase() + c.slice(1)
+}
+
 // --- 6. LÓGICA DE CARRITO (ÍDEM ANTERIOR) ---
 const addItemToOrder = (item: Receta) => {
   const existingItem = currentOrder.value.find((i) => i.idReceta === item.id)
@@ -116,10 +242,10 @@ const addItemToOrder = (item: Receta) => {
   } else {
     currentOrder.value.push({
       idReceta: item.id,
-      name: item.name,
-      price: item.price,
+      name: item.nombreReceta,
+      price: Number(item.precioVentaActual) || 0,
       quantity: 1,
-      subtotal: item.price,
+      subtotal: Number(item.precioVentaActual) || 0,
     })
   }
 }
@@ -164,38 +290,60 @@ const checkout = async () => {
     precioUnitarioVenta: item.price,
   }))
 
+  // Validaciones de integridad (evitar FK violations)
+  if (!mesaId.value || Number(mesaId.value) === 0) {
+    alert('La venta debe estar asociada a una mesa válida. Verifique la mesa asignada.')
+    return
+  }
+
+  const idUsuario = Number(user.value?.id ?? 0)
+  if (!idUsuario || idUsuario === 0) {
+    alert('No hay un usuario autenticado. Inicie sesión antes de procesar la venta.')
+    return
+  }
+
   // 2. Construir el objeto de Venta con DATOS FISCALES
-  const ventaPayload = {
-    idMesa: mesaId.value,
-    idUsuario: 1, // Simulación de ID
+  const ventaPayload: any = {
+    idMesa: Number(mesaId.value),
+    idUsuario: idUsuario,
     total: totalPagar.value,
     estado: 'PAGADA', // CRÍTICO: Activa descuento de stock
     tipoPago: tipoPago.value,
     detalles: detallesVenta,
-
-    // CAMPOS FISCALES
     requiereFactura: requiereFactura.value,
-    nitCI: requiereFactura.value ? nitCI.value : null,
-    nombreFiscal: requiereFactura.value ? nombreFiscal.value : null,
+    // El backend suele esperar strings para nit/nombre; enviar cadena vacía si no aplica
+    nitCI: requiereFactura.value ? nitCI.value : '',
+    nombreFiscal: requiereFactura.value ? nombreFiscal.value : '',
   }
-
   try {
     // --- 3. ENVÍO AL BACKEND (NestJS) ---
-    const endpoint = ventaId.value ? `/ventas/${ventaId.value}/pagar` : '/ventas'
+    const endpoint = ventaId.value ? `/${ENDPOINT}/${ventaId.value}/pagar` : `/${ENDPOINT}`
 
-    console.log(`Enviando venta a ${endpoint}:`, ventaPayload)
-    // await axios.post(endpoint, ventaPayload);
+    console.debug(`Enviando venta a ${endpoint}:`, ventaPayload)
+    const res = await axios.post(endpoint, ventaPayload)
 
-    alert(
-      `✅ Venta procesada con éxito. Total: $${totalPagar.value.toFixed(2)}. ¡STOCK DESCONTADO!`,
-    )
+    console.info('Respuesta del servidor al crear/pagar venta:', res?.data)
+    alert(`✅ Venta procesada con éxito. Total: $${totalPagar.value.toFixed(2)}.`)
 
     // 4. Limpiar y Emitir evento para volver
     currentOrder.value = []
+    montoRecibido.value = null
+    // Opcional: actualizar ventaId si backend devuelve el id
+    if (res?.data?.id) ventaId.value = res.data.id
     emit('close')
   } catch (error) {
     console.error('Error al procesar la venta:', error)
-    alert('❌ Error al procesar la venta. Intente de nuevo.')
+    // Mostrar detalles si la respuesta del servidor provee información
+    const err: any = error
+    if (err.response && err.response.data) {
+      const serverData = err.response.data
+      const msg = serverData.message || serverData.error || JSON.stringify(serverData)
+      alert(`❌ Error al procesar la venta: ${msg}`)
+    } else if (err.message) {
+      alert(`❌ Error al procesar la venta: ${err.message}`)
+    } else {
+      alert('❌ Error al procesar la venta. Intente de nuevo.')
+    }
   }
 }
 </script>
@@ -229,11 +377,9 @@ const checkout = async () => {
               </div>
               <div class="col-md-5">
                 <select class="form-select" v-model="selectedCategory">
-                  <option value="all">Todas las Categorias</option>
-                  <option value="principal">Platos Principales</option>
-                  <option value="acompañamiento">Acompañamientos</option>
-                  <option value="bebidas">Bebidas</option>
-                  <option value="postres">Postres</option>
+                  <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
+                    {{ formatCategoryLabel(cat) }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -244,13 +390,18 @@ const checkout = async () => {
           <div v-for="item in filteredItems" :key="item.id" class="col-lg-3 col-md-4 col-sm-6">
             <div class="menu-item-card text-center" @click="addItemToOrder(item)">
               <img
-                :src="item.image"
-                :alt="item.name"
+                :src="item.urlImagen"
+                :alt="item.nombreReceta"
                 class="img-fluid rounded mb-2"
                 style="height: 100px; object-fit: cover"
               />
-              <h6 class="mb-0">{{ item.name }}</h6>
-              <span class="price fw-bold">${{ item.price.toFixed(2) }}</span>
+              <div class="mb-1">
+                <span :class="['badge', 'bg-' + getCategoryColor(item.categoria)]">
+                  {{ item.categoria }}
+                </span>
+              </div>
+              <h6 class="mb-0">{{ item.nombreReceta }}</h6>
+              <span class="price fw-bold">${{ formatPrice(item.precioVentaActual) }}</span>
             </div>
           </div>
         </div>
@@ -295,7 +446,7 @@ const checkout = async () => {
                     </button>
                   </div>
                   <div class="fs-5 fw-bold text-end" style="width: 80px">
-                    ${{ item.subtotal.toFixed(2) }}
+                    ${{ formatPrice(item.subtotal) }}
                   </div>
                 </div>
               </li>

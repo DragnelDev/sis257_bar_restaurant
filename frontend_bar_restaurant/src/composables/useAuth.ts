@@ -28,10 +28,17 @@ export function useAuth() {
         token.value = authToken
 
         // Guardar en localStorage si "Remember Me" está activado
+        // Usar claves `user` y `token` para ser compatibles con el store y helpers
         if (credentials.rememberMe) {
+          localStorage.setItem('user', JSON.stringify(userData))
+          localStorage.setItem('token', authToken)
+          // mantener compatibilidad con claves antiguas
           localStorage.setItem('auth_user', JSON.stringify(userData))
           localStorage.setItem('auth_token', authToken)
         } else {
+          sessionStorage.setItem('user', JSON.stringify(userData))
+          sessionStorage.setItem('token', authToken)
+          // mantener compatibilidad con claves antiguas
           sessionStorage.setItem('auth_user', JSON.stringify(userData))
           sessionStorage.setItem('auth_token', authToken)
         }
@@ -51,18 +58,41 @@ export function useAuth() {
     token.value = null
     localStorage.removeItem('auth_user')
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
     sessionStorage.removeItem('auth_user')
     sessionStorage.removeItem('auth_token')
+    sessionStorage.removeItem('user')
+    sessionStorage.removeItem('token')
   }
 
   const checkAuth = () => {
-    // Verificar si hay sesión guardada
-    const savedUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user')
-    const savedToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+    // Verificar si hay sesión guardada.
+    // Compatibilidad: buscar claves `user`/`token` y `auth_user`/`auth_token`.
+    const savedUser =
+      localStorage.getItem('user') ||
+      sessionStorage.getItem('user') ||
+      localStorage.getItem('auth_user') ||
+      sessionStorage.getItem('auth_user') ||
+      null
 
+    const savedToken =
+      localStorage.getItem('token') ||
+      sessionStorage.getItem('token') ||
+      localStorage.getItem('auth_token') ||
+      sessionStorage.getItem('auth_token') ||
+      null
+
+    console.debug('checkAuth found savedUser:', savedUser, 'savedToken:', savedToken)
     if (savedUser && savedToken) {
-      user.value = JSON.parse(savedUser)
+      try {
+        user.value = JSON.parse(savedUser)
+      } catch {
+        // si no es JSON, asignar la cadena
+        user.value = (savedUser as unknown) as User
+      }
       token.value = savedToken
+      console.debug('checkAuth loaded user:', user.value, 'token present? ', !!token.value)
     }
   }
 

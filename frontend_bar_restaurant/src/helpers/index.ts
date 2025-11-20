@@ -1,12 +1,15 @@
 function getTokenFromLocalStorage() {
   const tokenAuht = localStorage.getItem('token') || ''
   if (!tokenAuht) return null
-
-  const jwtPayload = parseJwt(tokenAuht)
-  const isExpired = jwtPayload.exp < Date.now() / 1000
-
-  if (!isExpired) return tokenAuht
-  else return null
+  try {
+    const jwtPayload = parseJwt(tokenAuht)
+    const isExpired = jwtPayload.exp < Date.now() / 1000
+    if (!isExpired) return tokenAuht
+    else return null
+  } catch {
+    // Si el token no es un JWT válido, no intentar parsearlo — devolverlo (no podemos comprobar expiración)
+    return tokenAuht
+  }
 }
 
 function parseJwt(token: string) {
