@@ -1,50 +1,77 @@
 <script setup lang="ts">
-import type { Compra } from '@/models/compra'
+import type { Compra } from '@/models/Compra'
 import type { DetalleCompra } from '@/models/DetalleCompra'
 import http from '@/plugins/axios'
-import { Button, Dialog, InputGroup, InputGroupAddon, InputText } from 'primevue'
+
+import { Button, Dialog, InputText } from 'primevue'
+import { useToast } from 'primevue/usetoast'
+
 import { computed, onMounted, ref } from 'vue'
 
 const ENDPOINT = 'detalle-compras/detailed-list'
+
 const detallesCompra = ref<DetalleCompra[]>([])
+const loading = ref(false)
+const errorMessage = ref<string | null>(null)
+const busqueda = ref('')
 const compraDelete = ref<Compra | null>(null)
-const mostrarConfirmDialog = ref<boolean>(false)
-const busqueda = ref<string>('')
-// El evento 'edit' emitirá el objeto Compra
+const mostrarConfirmDialog = ref(false)
+
+const toast = useToast()
 const emit = defineEmits(['edit'])
 
-function fechaToString(f: string | Date | null | undefined) {
+function fechaToString(f: any): string {
   if (!f) return ''
-  // Aseguramos que la fecha sea un objeto Date si viene de la API como string ISO
-  const date = typeof f === 'string' ? new Date(f) : f
-  if (date instanceof Date && !isNaN(date.getTime())) return date.toISOString().slice(0, 10)
-  return String(f)
+  const d = typeof f === 'string' ? new Date(f) : f
+  return !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : ''
 }
 
-// El filtro debe buscar en las propiedades del detalle, la compra, el proveedor, etc.
 const detallesFiltrados = computed(() => {
-  return detallesCompra.value.filter((detalle) => {
-    const q = busqueda.value.toLowerCase()
-    const compra = detalle.compra // Accedemos a la cabecera
+  const q = busqueda.value.toLowerCase().trim()
+  if (!q) return detallesCompra.value
 
-    return (
-      // Búsqueda por Proveedor (asumiendo nombre en el objeto proveedor)
-      compra?.proveedor?.nombreEmpresa?.toLowerCase().includes(q) ||
-      // Búsqueda por Producto (asumiendo nombre en el objeto producto)
-      detalle.producto?.nombre?.toLowerCase().includes(q) ||
-      // Búsqueda por Usuario (asumiendo nombre en el objeto usuario)
-      compra?.usuario?.usuario?.includes(q) ||
-      // Búsqueda por Fecha
-      fechaToString(compra?.fechaCompra).toLowerCase().includes(q) ||
-      // Búsqueda por Total
-      String(detalle.subTotal ?? '').includes(q)
-    )
+  return detallesCompra.value.filter((d) => {
+    const c = d.compra
+    return [
+      c?.proveedor?.nombreEmpresa,
+      c?.numeroFactura,
+      d.producto?.nombre,
+      c?.usuario?.usuario,
+      fechaToString(c?.fechaCompra),
+      d.subTotal?.toString(),
+      d.precioUnitarioCompra?.toString(),
+    ]
+      .map((x) => (x ?? '').toString().toLowerCase())
+      .some((x) => x.includes(q))
   })
 })
 
 async function obtenerLista() {
-  // Tipado a DetalleCompra[]
-  detallesCompra.value = await http.get<DetalleCompra[]>(ENDPOINT).then((response) => response.data)
+  try {
+    loading.value = true
+    errorMessage.value = null
+
+    const response = await http.get(ENDPOINT)
+
+    let data = response.data
+
+    if (Array.isArray(data)) {
+      detallesCompra.value = data as DetalleCompra[]
+    }
+    else if (Array.isArray(data.detalles)) {
+      detallesCompra.value = data.detalles
+    }
+    else {
+      const firstArray = Object.values(data).find((v) => Array.isArray(v))
+      detallesCompra.value = (firstArray as DetalleCompra[]) ?? []
+    }
+  } catch (error: any) {
+    console.error('Error cargando detalles:', error)
+    errorMessage.value = 'No se pudieron cargar los detalles de compra.'
+    toast.add({ severity: 'error', summary: 'Error', detail: errorMessage.value, life: 4000 })
+  } finally {
+    loading.value = false
+  }
 }
 
 function emitirEdicion(compra: Compra) {
@@ -57,126 +84,179 @@ function mostrarEliminarConfirm(compra: Compra) {
 }
 
 async function eliminar() {
-  // La eliminación solo requiere el ID
-  await http.delete(`${ENDPOINT}/${compraDelete.value?.id}`)
-  obtenerLista()
-  mostrarConfirmDialog.value = false
+  if (!compraDelete.value?.id) return
+
+  try {
+    await http.delete(`compras/${compraDelete.value.id}`)
+
+    toast.add({
+      severity: 'success',
+      summary: 'Compra eliminada',
+      detail: 'La compra fue eliminada correctamente.',
+      life: 3000,
+    })
+
+    mostrarConfirmDialog.value = false
+    obtenerLista()
+  } catch (error) {
+    console.error('Error eliminando compra:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error al eliminar',
+      detail: 'No se pudo eliminar la compra.',
+      life: 4000,
+    })
+  }
 }
 
-onMounted(() => {
-  obtenerLista()
-})
-// La función obtenerLista es expuesta para que el componente padre la pueda llamar
+onMounted(() => obtenerLista())
+
 defineExpose({ obtenerLista })
 </script>
 
 <template>
-  <div>
-    <div class="col-7 pl-0 mt-3">
-      <InputGroup>
-        <InputGroupAddon><i class="pi pi-search"></i></InputGroupAddon>
-        <InputText
-          v-model="busqueda"
-          type="text"
-          placeholder="Buscar por fecha, proveedor, usuario o total"
-        />
-      </InputGroup>
+  <div class="card p-4">
+    <div class="grid p-fluid">
+      <div class="col-12 md:col-4 mb-4">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-search" />
+          </span>
+          <InputText
+            v-model="busqueda"
+            placeholder="Buscar por proveedor, factura, fecha o producto..."
+          />
+        </div>
+      </div>
     </div>
 
-    <table class="table-responsive">
-      <thead>
-        <tr>
-          <th>Nro.</th>
-          <th>Proveedor</th>
-          <th>Numero de Factura</th>
-          <th>Fecha Compra</th>
-          <th>Fecha Recepcion</th>
-          <th>Producto</th>
-          <th>Cantidad</th>
-          <th>Costo Unitario</th>
-          <th>Sub Total</th>
-          <th>Usuario</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(detalle, index) in detallesFiltrados" :key="detalle.id">
-          <td>{{ index + 1 }}</td>
+    <div v-if="loading" class="p-mb-3">Cargando compras...</div>
+    <div v-else-if="errorMessage" class="p-mb-3 text-danger">{{ errorMessage }}</div>
 
-          <td>{{ detalle.compra?.proveedor?.nombreEmpresa ?? 'N/A' }}</td>
-          <td>{{ detalle.compra?.numeroFactura }}</td>
-          <td>{{ fechaToString(detalle.compra?.fechaCompra) }}</td>
-          <td>{{ fechaToString(detalle.compra?.fechaRecepcion) }}</td>
+    <div class="overflow-auto border-round border-1 surface-border">
+      <table class="p-datatable-table w-full compra-details-list-table">
+        <thead>
+          <tr>
+            <th>Nro.</th>
+            <th>Proveedor</th>
+            <th>Factura</th>
+            <th>Fecha Compra</th>
+            <th>Fecha Recepción</th>
+            <th>Producto</th>
+            <th class="text-right">Cantidad</th>
+            <th class="text-right">Costo Unitario</th>
+            <th class="text-right">Sub Total</th>
+            <th>Usuario</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
 
-          <td>{{ detalle.producto?.nombre ?? 'N/A' }}</td>
-          <td>{{ detalle.cantidad }}</td>
-          <td>{{ detalle.precioUnitarioCompra }}</td>
-          <td>{{ detalle.subTotal }}</td>
+        <tbody>
+          <tr
+            v-for="(detalle, i) in detallesFiltrados"
+            :key="detalle.id"
+            class="hover:surface-hover transition-colors"
+          >
+            <td>{{ i + 1 }}</td>
+            <td>{{ detalle.compra?.proveedor?.nombreEmpresa ?? 'N/A' }}</td>
+            <td>{{ detalle.compra?.numeroFactura }}</td>
+            <td>{{ fechaToString(detalle.compra?.fechaCompra) }}</td>
+            <td>{{ fechaToString(detalle.compra?.fechaRecepcion) }}</td>
 
-          <td>{{ detalle.compra?.usuario?.usuario ?? 'N/A' }}</td>
+            <td>{{ detalle.producto?.nombre ?? 'N/A' }}</td>
+            <td class="text-right">{{ detalle.cantidad }}</td>
+            <td class="text-right">{{ Number(detalle.precioUnitarioCompra).toFixed(2) }}</td>
+            <td class="text-right font-bold">{{ Number(detalle.subTotal).toFixed(2) }}</td>
 
-          <td>
-            <Button
-              v-if="detalle.compra"
-              icon="pi pi-pencil"
-              aria-label="Ver/Editar Compra"
-              text
-              @click="emitirEdicion(detalle.compra)"
-            />
-            <Button
-              v-if="detalle.compra"
-              icon="pi pi-trash"
-              aria-label="Eliminar Compra"
-              text
-              @click="mostrarEliminarConfirm(detalle.compra)"
-            />
-          </td>
-        </tr>
-        <tr v-if="detallesFiltrados.length === 0">
-          <td colspan="9">No se encontraron resultados.</td>
-        </tr>
-      </tbody>
-    </table>
+            <td>{{ detalle.compra?.usuario?.usuario }}</td>
+
+            <td class="text-center">
+              <Button
+                icon="pi pi-pencil"
+                severity="info"
+                text
+                rounded
+                class="p-button-sm"
+                @click="emitirEdicion(detalle.compra)"
+              />
+              <Button
+                icon="pi pi-trash"
+                severity="danger"
+                text
+                rounded
+                class="p-button-sm ml-2"
+                @click="mostrarEliminarConfirm(detalle.compra)"
+              />
+            </td>
+          </tr>
+
+          <tr v-if="detallesFiltrados.length === 0">
+            <td colspan="11" class="text-center p-3 text-color-secondary">
+              No se encontraron resultados para su búsqueda.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <Dialog
       v-model:visible="mostrarConfirmDialog"
       header="Confirmar Eliminación"
+      :modal="true"
       :style="{ width: '25rem' }"
     >
-      <p>
-        ¿Estás seguro de que deseas eliminar la compra con fecha **{{
-          fechaToString(compraDelete?.fechaCompra)
-        }}**?
-      </p>
-      <div class="flex justify-end gap-2">
+      <div class="flex align-items-center gap-3">
+        <i class="pi pi-exclamation-triangle text-2xl text-red-500"></i>
+
+        <p class="m-0">
+          ¿Eliminar la <b>COMPRA COMPLETA</b> con fecha
+          <b>{{ fechaToString(compraDelete?.fechaCompra) }}</b
+          >?
+          <br />
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+
+      <template #footer>
         <Button
-          type="button"
           label="Cancelar"
           severity="secondary"
+          outlined
           @click="mostrarConfirmDialog = false"
         />
-        <Button type="button" label="Eliminar" @click="eliminar" />
-      </div>
+        <Button label="Eliminar" severity="danger" icon="pi pi-trash" @click="eliminar" />
+      </template>
     </Dialog>
   </div>
 </template>
 
 <style scoped>
-.table-responsive {
-  overflow-x: auto; /* Permite el desplazamiento horizontal */
-}
-
-/* Opcional: Forzar un ancho mínimo para la tabla para que el scroll funcione */
-table {
-  min-width: 600px;
+.compra-details-list-table {
   border-collapse: collapse;
 }
 
-/* Estilos de PrimeVue para la tabla si no están aplicados */
-table th,
-table td {
-  padding: 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid #dee2e6; /* Líneas de PrimeVue */
+.compra-details-list-table th {
+  background: var(--surface-ground);
+  color: var(--text-color-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.compra-details-list-table th,
+.compra-details-list-table td {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+.font-bold {
+  font-weight: bold;
 }
 </style>

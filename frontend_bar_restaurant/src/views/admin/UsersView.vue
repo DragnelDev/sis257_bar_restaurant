@@ -221,7 +221,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="users-view p-4"> <div class="page-header mb-4">
+  <div class="users-view p-4">
+    <div class="page-header mb-4">
       <h2 class="text-2xl font-bold">Gestión de Usuarios</h2>
       <p class="text-muted text-sm">Administra los usuarios y sus roles dentro del sistema.</p>
     </div>
@@ -230,7 +231,11 @@ onMounted(async () => {
       <div class="flex flex-wrap gap-3 align-items-center p-3">
         <span class="p-input-icon-left flex-grow-1">
           <i class="pi pi-search"></i>
-          <InputText v-model="searchQuery" placeholder="Buscar por usuario..." class="w-full search-input" />
+          <InputText
+            v-model="searchQuery"
+            placeholder="Buscar por usuario..."
+            class="w-full search-input"
+          />
         </span>
 
         <Dropdown
@@ -277,7 +282,7 @@ onMounted(async () => {
             <span v-else class="p-tag p-tag-danger-alt">Inactivo</span>
           </template>
         </Column>
-        <Column header="Acciones" style="width: 15%; text-align: center;">
+        <Column header="Acciones" style="width: 15%; text-align: center">
           <template #body="slotProps">
             <Button
               icon="pi pi-pencil"
@@ -345,7 +350,9 @@ onMounted(async () => {
             :class="{ 'p-invalid': !passwordMatch && (newUserForm as any).confirmPassword }"
             placeholder="Confirmar contraseña"
           />
-          <small v-if="!passwordMatch && (newUserForm as any).confirmPassword" class="error-text">Las contraseñas no coinciden</small>
+          <small v-if="!passwordMatch && (newUserForm as any).confirmPassword" class="error-text"
+            >Las contraseñas no coinciden</small
+          >
         </div>
 
         <div class="mb-4">
@@ -394,7 +401,13 @@ onMounted(async () => {
       </div>
 
       <template #footer>
-        <Button label="Cancelar" icon="pi pi-times" @click="closeAddModal" severity="secondary" outlined />
+        <Button
+          label="Cancelar"
+          icon="pi pi-times"
+          @click="closeAddModal"
+          severity="secondary"
+          outlined
+        />
         <Button
           :label="modoEdicion ? 'Actualizar' : 'Crear'"
           icon="pi pi-save"
@@ -413,22 +426,54 @@ onMounted(async () => {
 /* I. ESTILOS DE UTILIDAD Y LAYOUT */
 /* ======================================================= */
 /* Reset de clases internas y utilidades PrimeVue */
-.flex { display: flex; }
-.flex-wrap { flex-wrap: wrap; }
-.flex-grow-1 { flex-grow: 1; }
-.align-items-center { align-items: center; }
-.gap-3 { gap: 1rem; }
-.p-4 { padding: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mr-2 { margin-right: 0.5rem; }
-.block { display: block; }
-.font-semibold { font-weight: 600; }
-.text-2xl { font-size: 1.5rem; }
-.text-sm { font-size: 0.875rem; }
-.w-full { width: 100%; }
-.w-12rem { width: 12rem; }
+.flex {
+  display: flex;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.flex-grow-1 {
+  flex-grow: 1;
+}
+.align-items-center {
+  align-items: center;
+}
+.gap-3 {
+  gap: 1rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mr-2 {
+  margin-right: 0.5rem;
+}
+.block {
+  display: block;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.text-2xl {
+  font-size: 1.5rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.w-full {
+  width: 100%;
+}
+.w-12rem {
+  width: 12rem;
+}
 
 /* Estilos de Contenedores y Tarjetas */
 .card {
@@ -441,16 +486,16 @@ onMounted(async () => {
   padding: 0; /* La tabla ya tiene padding interno */
 }
 .users-view {
-    background-color: #f8f9fa; /* Fondo general suave */
+  background-color: #f8f9fa; /* Fondo general suave */
 }
 
 /* Títulos y texto secundario */
 .page-header h2 {
-    color: #343a40;
-    font-weight: 700;
+  color: #343a40;
+  font-weight: 700;
 }
 .text-muted {
-    color: #6c757d;
+  color: #6c757d;
 }
 
 /* ======================================================= */
@@ -459,7 +504,7 @@ onMounted(async () => {
 
 /* Input de Búsqueda */
 .search-input {
-    height: 42px;
+  height: 42px;
 }
 /* Asegurar el padding izquierdo en el input */
 :deep(.p-input-icon-left > .p-inputtext) {
@@ -468,7 +513,7 @@ onMounted(async () => {
 
 /* Dropdown */
 .p-dropdown {
-    height: 42px;
+  height: 42px;
 }
 
 /* DataTable Estilos */
@@ -483,34 +528,56 @@ onMounted(async () => {
 
 /* Botones de Acción en Fila (Usamos text y rounded) */
 :deep(.p-button.p-button-sm) {
-    width: 2rem;
-    height: 2rem;
+  width: 2rem;
+  height: 2rem;
 }
 
 /* Tags de Rol y Estado */
 .p-tag {
-    padding: 0.25rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 /* Tags de Rol (Colores basados en getRoleColor) */
-.p-tag-danger { /* ADMINISTRADOR */ background-color: #f8d7da; color: #721c24; }
-.p-tag-primary { /* CHEF */ background-color: #cce5ff; color: #004085; }
-.p-tag-info { /* MESERO */ background-color: #d1ecf1; color: #0c5460; }
-.p-tag-warning { /* CAJERO */ background-color: #fff3cd; color: #856404; }
-.p-tag-secondary { /* CONTADOR / Default */ background-color: #e2e3e5; color: #383d41; }
+.p-tag-danger {
+  /* ADMINISTRADOR */
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.p-tag-primary {
+  /* CHEF */
+  background-color: #cce5ff;
+  color: #004085;
+}
+.p-tag-info {
+  /* MESERO */
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+.p-tag-warning {
+  /* CAJERO */
+  background-color: #fff3cd;
+  color: #856404;
+}
+.p-tag-secondary {
+  /* CONTADOR / Default */
+  background-color: #e2e3e5;
+  color: #383d41;
+}
 
 /* Tags de Estado (Activo/Inactivo) */
-.p-tag-success-alt { /* Activo */
-    background-color: #d4edda;
-    color: #155724;
+.p-tag-success-alt {
+  /* Activo */
+  background-color: #d4edda;
+  color: #155724;
 }
-.p-tag-danger-alt { /* Inactivo */
-    background-color: #f8d7da;
-    color: #721c24;
+.p-tag-danger-alt {
+  /* Inactivo */
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 /* ======================================================= */
@@ -519,16 +586,16 @@ onMounted(async () => {
 
 /* Alertas PrimeVue (para formError) */
 .p-message {
-    padding: 1rem;
-    border-radius: 6px;
-    background-color: #fff0f0; /* Fondo de error suave */
-    border: 1px solid #f5c2c7;
-    color: #842029;
+  padding: 1rem;
+  border-radius: 6px;
+  background-color: #fff0f0; /* Fondo de error suave */
+  border: 1px solid #f5c2c7;
+  color: #842029;
 }
 
 /* Campo Inválido (Password Match) */
 .p-invalid {
-    border-color: #dc2626 !important;
+  border-color: #dc2626 !important;
 }
 .error-text {
   color: #dc2626;
@@ -539,24 +606,24 @@ onMounted(async () => {
 
 /* Empty State Styling */
 .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    border: 1px dashed #ced4da;
-    border-radius: 6px;
-    margin-top: 1rem;
-    background-color: #ffffff;
+  text-align: center;
+  padding: 3rem 1rem;
+  border: 1px dashed #ced4da;
+  border-radius: 6px;
+  margin-top: 1rem;
+  background-color: #ffffff;
 }
 .empty-icon {
-    font-size: 3rem;
-    color: #adb5bd;
-    margin-bottom: 1rem;
+  font-size: 3rem;
+  color: #adb5bd;
+  margin-bottom: 1rem;
 }
 .empty-text-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #495057;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #495057;
 }
 .empty-text-subtitle {
-    color: #6c757d;
+  color: #6c757d;
 }
 </style>

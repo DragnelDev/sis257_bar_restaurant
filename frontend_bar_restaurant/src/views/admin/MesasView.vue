@@ -4,14 +4,13 @@ import { useRouter } from 'vue-router'
 import axios from '../../plugins/axios'
 
 const ENDPOINT = 'mesas'
-// Adaptamos la interfaz a tu tabla 'mesas'
 interface Mesa {
   id: number
-  numeroMesa: number // El número visible al público
-  capacidad: number // Cuántas personas caben
-  estado: 'LIBRE' | 'OCUPADA' | 'MANTENIMIENTO' // Estado operativo
-  idVentaActiva: number | null // ID de la venta PENDIENTE asociada a esta mesa
-  tiempoOcupada: string // Tiempo que lleva ocupada (simulación)
+  numeroMesa: number
+  capacidad: number
+  estado: 'LIBRE' | 'OCUPADA' | 'MANTENIMIENTO'
+  idVentaActiva: number | null
+  tiempoOcupada: string
 }
 
 // Datos de mesas (cargadas desde API)
@@ -52,8 +51,22 @@ const loadMesas = async () => {
     // Fallback en desarrollo
     if (import.meta.env.DEV) {
       mesas.value = [
-        { id: 1, numeroMesa: 1, capacidad: 4, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
-        { id: 2, numeroMesa: 2, capacidad: 2, estado: 'LIBRE', idVentaActiva: null, tiempoOcupada: '' },
+        {
+          id: 1,
+          numeroMesa: 1,
+          capacidad: 4,
+          estado: 'LIBRE',
+          idVentaActiva: null,
+          tiempoOcupada: '',
+        },
+        {
+          id: 2,
+          numeroMesa: 2,
+          capacidad: 2,
+          estado: 'LIBRE',
+          idVentaActiva: null,
+          tiempoOcupada: '',
+        },
       ]
     } else {
       mesas.value = []
@@ -224,7 +237,8 @@ const stats = computed(() => ({
               <i class="fa fa-plus me-1"></i> Agregar Mesa
             </button>
             <button class="btn btn-primary me-2" @click="loadMesas" :disabled="loadingMesas">
-              <i class="fa fa-sync-alt me-1"></i> {{ loadingMesas ? 'Sincronizando...' : 'Sincronizar' }}
+              <i class="fa fa-sync-alt me-1"></i>
+              {{ loadingMesas ? 'Sincronizando...' : 'Sincronizar' }}
             </button>
             <button class="btn btn-outline-secondary">
               <i class="fa fa-map-marked-alt me-1"></i> Ver Layout

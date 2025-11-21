@@ -16,13 +16,9 @@ const busqueda = ref('')
 const EmpleadoListRef = ref<InstanceType<typeof EmpleadoList> | null>(null)
 
 // Computed
-const empleadosActivos = computed(() =>
-  empleados.value.filter(e => e.activo).length
-)
+const empleadosActivos = computed(() => empleados.value.filter((e) => e.activo).length)
 
-const empleadosInactivos = computed(() =>
-  empleados.value.filter(e => !e.activo).length
-)
+const empleadosInactivos = computed(() => empleados.value.filter((e) => !e.activo).length)
 
 // Methods
 const cargarEmpleados = async () => {
@@ -148,7 +144,7 @@ onMounted(() => {
     >
       <div v-if="empleadoSeleccionado" class="empleado-details">
         <div class="profile-header">
-          <div class="profile-info" style="width:100%">
+          <div class="profile-info" style="width: 100%">
             <h3>{{ getNombreCompleto(empleadoSeleccionado) }}</h3>
             <p class="cargo">{{ empleadoSeleccionado.cargo }}</p>
             <span :class="['estado-badge', empleadoSeleccionado.activo ? 'activo' : 'inactivo']">
@@ -182,7 +178,8 @@ onMounted(() => {
       </div>
     </Dialog>
   </div>
-</template><style scoped>
+</template>
+<style scoped>
 .staff-view {
   max-width: 1600px;
   width: 100%;

@@ -17,7 +17,6 @@ export class ProductosService {
   ) {}
 
   async create(createProductoDto: CreateProductoDto): Promise<Producto> {
-    // 1. Validar unicidad (basada en atributos que definen el producto, no en el stock)
     const { nombre, descripcion, unidadMedida, idCategoria } =
       createProductoDto;
 
@@ -32,7 +31,6 @@ export class ProductosService {
 
     if (productoExistente) throw new ConflictException('El Producto ya existe');
 
-    // 2. Crear y guardar
     const producto = this.productosRepository.create(createProductoDto);
     return this.productosRepository.save(producto);
   }

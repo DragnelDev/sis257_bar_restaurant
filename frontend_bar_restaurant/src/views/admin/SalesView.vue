@@ -4,8 +4,6 @@ import { ref, type ComponentPublicInstance } from 'vue'
 
 type VentaListInstance = ComponentPublicInstance & { obtenerLista?: () => void }
 const ventaListRef = ref<VentaListInstance | null>(null)
-
-
 </script>
 
 <template>

@@ -15,6 +15,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 // Import Font Awesome
 import '@fortawesome/fontawesome-free/css/all.min.css'
+// Asegurar registro JS de iconos (fallback si el CSS no pinta correctamente)
+import '@fortawesome/fontawesome-free/js/all.js'
 
 // Import Bootstrap Icons
 import 'bootstrap-icons/font/bootstrap-icons.css'

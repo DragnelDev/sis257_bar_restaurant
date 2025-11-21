@@ -34,7 +34,12 @@ function handleGuardar() {
   <div class="container-fluid px-3 py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="m-0">Gestión de Recetas</h2>
-      <Button label="Registrar nueva receta" icon="pi pi-plus" class="p-button-primary" @click="handleCreate" />
+      <Button
+        label="Registrar nueva receta"
+        icon="pi pi-plus"
+        class="p-button-primary"
+        @click="handleCreate"
+      />
     </div>
 
     <RecetaList ref="recetaListRef" @edit="handleEdit" />

@@ -22,7 +22,6 @@ export class ClientesService {
   }): Promise<Cliente> {
     const { nitCI, nombreFiscal } = payload;
 
-    // Buscar cliente por NIT
     const existente = await this.clientesRepository.findOneBy({ nitCI });
     if (existente) return existente;
 

@@ -17,17 +17,10 @@ export class DetalleComprasService {
   }
 
   async findAllDetailed(): Promise<DetalleCompra[]> {
-    // Nota: Asume que las entidades DetalleCompra, Compra, Producto, Proveedor y Usuario están relacionadas.
     return this.detalleComprasRepository.find({
-      // Carga recursiva de relaciones
-      relations: [
-        'producto', // Para el nombre y unidad del producto
-        'compra', // Para acceder a la cabecera
-        'compra.proveedor', // Para el nombre del proveedor
-        'compra.usuario', // Para el nombre del usuario
-      ],
+      relations: ['producto', 'compra', 'compra.proveedor', 'compra.usuario'],
       order: {
-        compra: { fechaCreacion: 'DESC' }, // Ordenar por fecha de la compra
+        compra: { fechaCreacion: 'DESC' },
         id: 'ASC',
       },
     });

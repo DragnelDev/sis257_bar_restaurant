@@ -185,7 +185,8 @@ async function handleSave() {
     dialogVisible.value = false
   } catch (err: any) {
     console.error('Error guardando receta:', err)
-    const serverMsg = err?.response?.data?.message || err?.response?.data || err?.message || String(err)
+    const serverMsg =
+      err?.response?.data?.message || err?.response?.data || err?.message || String(err)
     alert(`Error guardando la receta: ${serverMsg}`)
   } finally {
     saving.value = false
@@ -257,7 +258,9 @@ async function handleSave() {
           </div>
 
           <div class="col-12">
-            <h5 class="mt-2">Detalles de la Receta <small class="text-muted">(Total qty: {{ totalCosto }})</small></h5>
+            <h5 class="mt-2">
+              Detalles de la Receta <small class="text-muted">(Total qty: {{ totalCosto }})</small>
+            </h5>
             <div class="border rounded p-3 mb-2">
               <div class="row align-items-end detail-controls">
                 <div class="col-12 col-md-6 mb-3">
@@ -274,22 +277,51 @@ async function handleSave() {
                   />
                   <div v-if="selectedProductStock !== null" class="small text-muted mt-1">
                     Stock: {{ selectedProductStock }}
-                    <span v-if="selectedProductStock !== null && nuevoDetalle.cantidadConsumida > selectedProductStock" class="text-danger"> — insuficiente stock</span>
+                    <span
+                      v-if="
+                        selectedProductStock !== null &&
+                        nuevoDetalle.cantidadConsumida > selectedProductStock
+                      "
+                      class="text-danger"
+                    >
+                      — insuficiente stock</span
+                    >
                   </div>
                 </div>
 
                 <div class="col-6 col-md-3 mb-3">
                   <label for="cantidadConsumida" class="form-label">Cantidad</label>
-                  <InputNumber id="cantidadConsumida" name="cantidadConsumida" v-model="nuevoDetalle.cantidadConsumida" :min="0.001" class="form-control" :step="0.1" />
+                  <InputNumber
+                    id="cantidadConsumida"
+                    name="cantidadConsumida"
+                    v-model="nuevoDetalle.cantidadConsumida"
+                    :min="0.001"
+                    class="form-control"
+                    :step="0.1"
+                  />
                 </div>
 
                 <div class="col-6 col-md-3 mb-3">
                   <label for="unidadConsumo" class="form-label">Unidad</label>
-                  <Dropdown id="unidadConsumo" name="unidadConsumo" v-model="nuevoDetalle.unidadConsumo" :options="UNIDADES" placeholder="Seleccione unidad" class="w-100" />
+                  <Dropdown
+                    id="unidadConsumo"
+                    name="unidadConsumo"
+                    v-model="nuevoDetalle.unidadConsumo"
+                    :options="UNIDADES"
+                    placeholder="Seleccione unidad"
+                    class="w-100"
+                  />
                 </div>
 
                 <div class="col-12 col-md-2 mb-3 d-flex align-items-end ms-auto">
-                  <Button icon="pi pi-plus" label="Agregar" class="p-button-sm w-100" @click="agregarDetalle" :disabled="!canAddDetalle" severity="success" />
+                  <Button
+                    icon="pi pi-plus"
+                    label="Agregar"
+                    class="p-button-sm w-100"
+                    @click="agregarDetalle"
+                    :disabled="!canAddDetalle"
+                    severity="success"
+                  />
                 </div>
               </div>
 
@@ -305,12 +337,25 @@ async function handleSave() {
                   </thead>
                   <tbody>
                     <tr v-for="(d, i) in detalles" :key="i">
-                      <td>{{ (productos.find((p) => p.id === d.idProducto) || {}).nombre || d.idProducto }}</td>
+                      <td>
+                        {{
+                          (productos.find((p) => p.id === d.idProducto) || {}).nombre ||
+                          d.idProducto
+                        }}
+                      </td>
                       <td class="text-end">{{ d.cantidadConsumida }}</td>
                       <td class="text-center">{{ d.unidadConsumo }}</td>
-                      <td class="text-center"><Button icon="pi pi-trash" class="p-button-text p-button-sm text-danger" @click="eliminarDetalle(i)" /></td>
+                      <td class="text-center">
+                        <Button
+                          icon="pi pi-trash"
+                          class="p-button-text p-button-sm text-danger"
+                          @click="eliminarDetalle(i)"
+                        />
+                      </td>
                     </tr>
-                    <tr v-if="detalles.length === 0"><td colspan="4" class="text-center">No hay detalles agregados.</td></tr>
+                    <tr v-if="detalles.length === 0">
+                      <td colspan="4" class="text-center">No hay detalles agregados.</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -318,8 +363,23 @@ async function handleSave() {
           </div>
 
           <div class="col-12 d-flex justify-content-end gap-2 mt-2">
-            <Button type="button" label="Cancelar" icon="pi pi-times" severity="secondary" class="p-button-sm" @click="dialogVisible = false" />
-            <Button type="button" label="Guardar Receta" icon="pi pi-save" class="p-button-sm p-button-primary" @click="handleSave" :loading="saving" :disabled="saving" />
+            <Button
+              type="button"
+              label="Cancelar"
+              icon="pi pi-times"
+              severity="secondary"
+              class="p-button-sm"
+              @click="dialogVisible = false"
+            />
+            <Button
+              type="button"
+              label="Guardar Receta"
+              icon="pi pi-save"
+              class="p-button-sm p-button-primary"
+              @click="handleSave"
+              :loading="saving"
+              :disabled="saving"
+            />
           </div>
         </form>
       </div>
@@ -373,7 +433,7 @@ async function handleSave() {
   max-height: 120px;
   object-fit: cover;
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .detail-controls {
@@ -381,6 +441,6 @@ async function handleSave() {
 }
 
 .p-button-sm {
-  padding: .45rem .6rem;
+  padding: 0.45rem 0.6rem;
 }
 </style>

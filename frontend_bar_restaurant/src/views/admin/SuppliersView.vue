@@ -33,7 +33,12 @@ function handleGuardar() {
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="m-0">Proveedores</h2>
       <div>
-        <Button label="Crear Nuevo" icon="pi pi-plus" class="p-button-primary" @click="handleCreate" />
+        <Button
+          label="Crear Nuevo"
+          icon="pi pi-plus"
+          class="p-button-primary"
+          @click="handleCreate"
+        />
       </div>
     </div>
 

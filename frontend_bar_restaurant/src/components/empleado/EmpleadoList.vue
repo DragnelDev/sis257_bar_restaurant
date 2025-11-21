@@ -380,38 +380,38 @@ defineExpose({ obtenerLista })
 /* 1. Botón de Búsqueda (InputGroupAddon) */
 /* Fondo blanco/claro y texto/ícono negro. */
 .input-group-addon {
-    background-color: #f8f9fa; /* Fondo blanco muy ligero */
-    color: #343a40; /* <-- CAMBIO: Ícono a Negro */
-    border-color: #ced4da; /* Borde gris claro */
+  background-color: #f8f9fa; /* Fondo blanco muy ligero */
+  color: #343a40; /* <-- CAMBIO: Ícono a Negro */
+  border-color: #ced4da; /* Borde gris claro */
 }
 
 /* 2. Botón "Nuevo Empleado" (Severity Success - Verde) */
 /* Fondo de acento de color claro y texto negro. */
 .p-button.p-button-success {
-    /* Usamos un verde/menta más claro para que el texto negro resalte */
-    background-color: #9392df;
-    border-color: #565ed3e5;
-    color: #212529 !important; /* <--- CAMBIO: Color de texto a Negro */
-    font-weight: 600;
+  /* Usamos un verde/menta más claro para que el texto negro resalte */
+  background-color: #9392df;
+  border-color: #565ed3e5;
+  color: #212529 !important; /* <--- CAMBIO: Color de texto a Negro */
+  font-weight: 600;
 }
 .p-button.p-button-success:hover {
-    background-color: #79c986;
-    border-color: #79c986;
-    color: #212529 !important;
+  background-color: #79c986;
+  border-color: #79c986;
+  color: #212529 !important;
 }
 
 /* 3. Botones de Paginación (si se usa severity='secondary' o 'primary' con 'text' */
 /* Aseguramos que los botones de paginación sean oscuros sobre fondos claros */
-.p-button[aria-label="Anterior"],
-.p-button[aria-label="Siguiente"] {
-    color: #343a40 !important;
+.p-button[aria-label='Anterior'],
+.p-button[aria-label='Siguiente'] {
+  color: #343a40 !important;
 }
 
 /* 4. Selector de Cargo y Paginación (select) */
 .p-dropdown {
-    /* Ya estaba con fondo blanco, solo confirmamos color del texto */
-    color: #212529;
-    background-color: white;
+  /* Ya estaba con fondo blanco, solo confirmamos color del texto */
+  color: #212529;
+  background-color: white;
 }
 
 /* --- FIN ZONA DE CAMBIO SOLICITADO --- */
@@ -441,13 +441,17 @@ defineExpose({ obtenerLista })
 
 /* Paginador (Clases PrimeVue) */
 .p-paginator {
-    background-color: white;
-    border: 1px solid #e9ecef;
+  background-color: white;
+  border: 1px solid #e9ecef;
 }
 
 /* Las clases de utilidad y otros estilos se mantienen */
-.flex { display: flex; }
-.flex-wrap { flex-wrap: wrap; }
+.flex {
+  display: flex;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
 
 /* Clases de utilidad Tailwind (si las usas en tu proyecto): */
 .flex {
@@ -495,12 +499,12 @@ defineExpose({ obtenerLista })
 
 /* Asegurando que la etiqueta 'Cargo:' sea negra */
 label {
-    /* Forzamos el color negro absoluto */
-    color: #000000 !important;
+  /* Forzamos el color negro absoluto */
+  color: #000000 !important;
 }
 
 /* O, si solo quieres afectar la etiqueta 'Cargo' específica: */
 .text-900 {
-    color: #000000 !important;
+  color: #000000 !important;
 }
 </style>

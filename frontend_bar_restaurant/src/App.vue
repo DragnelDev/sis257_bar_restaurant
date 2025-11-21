@@ -48,9 +48,7 @@ onMounted(() => {
 </template>
 
 <style>
-@import '@fortawesome/fontawesome-free/css/all.min.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';
-@import 'animate.css';
+/* Font Awesome, Bootstrap Icons y Animate ya se importan globalmente en `main.ts` */
 
 /* Agrega aquí los estilos personalizados o importa el CSS de la plantilla */
 :root {

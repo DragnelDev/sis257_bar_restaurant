@@ -29,7 +29,11 @@ const useAuthStore = defineStore('auth', {
 
         // Determinar token
         const maybeToken =
-          payload?.access_token ?? response.data?.access_token ?? payload?.token ?? response.data?.token ?? null
+          payload?.access_token ??
+          response.data?.access_token ??
+          payload?.token ??
+          response.data?.token ??
+          null
 
         // Determinar usuario: si el payload es un objeto con `id`, usarlo; si `usuario` es objeto, usarlo; si `usuario` es string y hay otros campos, construir objeto mínimo
         let userObj: any = null
@@ -39,7 +43,12 @@ const useAuthStore = defineStore('auth', {
           userObj = payload.usuario
         } else if (response.data?.usuario && typeof response.data.usuario === 'object') {
           userObj = response.data.usuario
-        } else if (payload && typeof payload === 'object' && payload.usuario && typeof payload.usuario === 'string') {
+        } else if (
+          payload &&
+          typeof payload === 'object' &&
+          payload.usuario &&
+          typeof payload.usuario === 'string'
+        ) {
           // payload contains username string and possibly id
           userObj = {
             id: payload.id ?? null,

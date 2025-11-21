@@ -7,11 +7,16 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { VentasService } from './ventas.service';
 import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('ventas')
 export class VentasController {
   constructor(private readonly ventasService: VentasService) {}
@@ -34,9 +39,8 @@ export class VentasController {
   @Patch(':id/status')
   updateVentaStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body('status') status: string, // El cuerpo solo debe tener { "status": "LISTO" } o { "status": "ARCHIVADA" }
+    @Body('status') status: string,
   ) {
-    // Se llama al nuevo método con la lógica de control
     return this.ventasService.updateStatus(id, status);
   }
 

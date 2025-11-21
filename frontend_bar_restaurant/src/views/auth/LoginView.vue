@@ -38,12 +38,11 @@ onMounted(() => {
     <div class="row w-100">
       <div class="col-lg-4 col-md-6 col-sm-8 mx-auto">
         <div class="card shadow-lg border-0 rounded-lg custom-card">
-
           <div class="card-body p-5">
             <div class="text-center mb-5">
-                <i class="fa fa-utensils fa-3x text-primary mb-2"></i>
-                <h2 class="fw-bold mb-0 text-dark">Restaurante Admin</h2>
-                <p class="text-muted mt-2">Acceso al panel de administración</p>
+              <i class="fa fa-utensils fa-3x text-primary mb-2"></i>
+              <h2 class="fw-bold mb-0 text-dark">Restaurante Admin</h2>
+              <p class="text-muted mt-2">Acceso al panel de administración</p>
             </div>
 
             <div v-if="error" class="alert custom-alert-danger fade show" role="alert">
@@ -58,37 +57,36 @@ onMounted(() => {
             </div>
 
             <form @submit.prevent="onSubmit">
-
               <div class="mb-4">
                 <label for="usuario" class="form-label visually-hidden">Usuario</label>
                 <div class="input-group input-group-lg">
-                    <span class="input-group-text"><i class="fa fa-user"></i></span>
-                    <input
-                      ref="usuarioInput"
-                      type="text"
-                      class="form-control"
-                      id="usuario"
-                      v-model="usuario"
-                      placeholder="Ingrese su usuario"
-                      required
-                      :disabled="loading"
-                    />
+                  <span class="input-group-text"><i class="fa fa-user"></i></span>
+                  <input
+                    ref="usuarioInput"
+                    type="text"
+                    class="form-control"
+                    id="usuario"
+                    v-model="usuario"
+                    placeholder="Ingrese su usuario"
+                    required
+                    :disabled="loading"
+                  />
                 </div>
               </div>
 
               <div class="mb-4">
                 <label for="clave" class="form-label visually-hidden">Contraseña</label>
                 <div class="input-group input-group-lg">
-                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
-                    <input
-                      type="password"
-                      class="form-control"
-                      id="clave"
-                      v-model="clave"
-                      placeholder="Ingrese su contraseña"
-                      required
-                      :disabled="loading"
-                    />
+                  <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="clave"
+                    v-model="clave"
+                    placeholder="Ingrese su contraseña"
+                    required
+                    :disabled="loading"
+                  />
                 </div>
               </div>
 
@@ -141,7 +139,7 @@ onMounted(() => {
 
 /* Color primario del restaurante (naranja) */
 .text-primary {
-    color: #fea116 !important;
+  color: #fea116 !important;
 }
 
 .btn-primary {
@@ -160,9 +158,9 @@ onMounted(() => {
 
 /* Estilos de Input Group */
 .input-group-text {
-    background-color: #f8f9fa;
-    border-right: none;
-    color: #6c757d;
+  background-color: #f8f9fa;
+  border-right: none;
+  color: #6c757d;
 }
 .form-control:focus {
   border-color: #fea116;

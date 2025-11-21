@@ -14,7 +14,7 @@
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>
-            <th style="width:48px">Nro</th>
+            <th style="width: 48px">Nro</th>
             <th>Nombre de Empresa</th>
             <th>NIT</th>
             <th>Responsable</th>
@@ -22,7 +22,7 @@
             <th>Celular</th>
             <th>Email</th>
             <th>Condicion de Pago</th>
-            <th style="width:120px">Acciones</th>
+            <th style="width: 120px">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -35,14 +35,24 @@
             <td>{{ prov.nombreEmpresa }}</td>
             <td>{{ prov.nit }}</td>
             <td>{{ prov.responsable }}</td>
-            <td class="text-truncate" style="max-width:200px">{{ prov.direccion }}</td>
+            <td class="text-truncate" style="max-width: 200px">{{ prov.direccion }}</td>
             <td>{{ prov.celular }}</td>
             <td>{{ prov.email }}</td>
             <td>{{ prov.condicionPago }}</td>
             <td class="text-center">
               <div class="d-flex justify-content-center gap-1">
-                <Button icon="pi pi-pencil" aria-label="Editar" class="p-button-text p-button-sm" @click="emitEdit(prov)" />
-                <Button icon="pi pi-trash" aria-label="Eliminar" class="p-button-text p-button-sm text-danger" @click="confirmDelete(prov)" />
+                <Button
+                  icon="pi pi-pencil"
+                  aria-label="Editar"
+                  class="p-button-text p-button-sm"
+                  @click="emitEdit(prov)"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  aria-label="Eliminar"
+                  class="p-button-text p-button-sm text-danger"
+                  @click="confirmDelete(prov)"
+                />
               </div>
             </td>
           </tr>
@@ -155,7 +165,8 @@ const paginaSize = ref<number>(10)
   padding: 0.6rem;
   border-radius: 0.25rem;
 }
-.table-responsive .table td, .table-responsive .table th {
+.table-responsive .table td,
+.table-responsive .table th {
   vertical-align: middle;
 }
 .text-truncate {

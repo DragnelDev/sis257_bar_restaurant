@@ -48,7 +48,7 @@ export class CreateVentaDto {
   })
   @IsArray({ message: 'El detalle de venta debe ser un array.' })
   @ValidateNested({ each: true })
-  @Type(() => ItemVentaDto) // Importante para la validación de objetos anidados
+  @Type(() => ItemVentaDto)
   readonly detalles: ItemVentaDto[];
 
   // --- Campos Opcionales para Clientes Ocasionales ---

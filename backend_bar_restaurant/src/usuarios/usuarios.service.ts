@@ -79,7 +79,6 @@ export class UsuariosService {
       throw new UnauthorizedException('Clave incorrecta');
     }
 
-    // delete usuarioOk.clave;
     return usuarioOk;
   }
 }

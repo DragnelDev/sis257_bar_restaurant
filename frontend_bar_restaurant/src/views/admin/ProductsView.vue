@@ -48,8 +48,18 @@ function handleGuardar() {
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="m-0">Gestión de Productos (Materia prima)</h2>
       <div class="d-flex gap-2">
-        <Button label="Añadir Categoria" icon="pi pi-plus" class="p-button-secondary" @click="handleCreateCategoria" />
-        <Button label="Añadir Nuevo Producto" icon="pi pi-plus" class="p-button-primary" @click="handleCreate" />
+        <Button
+          label="Añadir Categoria"
+          icon="pi pi-plus"
+          class="p-button-secondary"
+          @click="handleCreateCategoria"
+        />
+        <Button
+          label="Añadir Nuevo Producto"
+          icon="pi pi-plus"
+          class="p-button-primary"
+          @click="handleCreate"
+        />
       </div>
     </div>
 

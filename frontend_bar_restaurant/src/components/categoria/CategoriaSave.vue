@@ -72,7 +72,7 @@ async function handleSave() {
   <div class="card flex justify-center">
     <Dialog
       v-model:visible="dialogVisible"
-      :header="props.modoEdicion ? 'Editar Venta' : 'Crear Venta'"
+      :header="props.modoEdicion ? 'Editar Categoria' : 'Crear Categoria'"
       style="width: 25rem"
     >
       <div class="flex items-center gap-4 mb-4">

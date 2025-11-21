@@ -25,7 +25,6 @@ function handleCloseDialog() {
 }
 
 function handleGuardar() {
-  // cuando se guarda, refrescamos la lista
   compraListRef.value?.obtenerLista?.()
 }
 </script>

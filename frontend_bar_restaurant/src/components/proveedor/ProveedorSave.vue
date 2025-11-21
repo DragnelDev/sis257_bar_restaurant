@@ -111,32 +111,62 @@ async function handleSave() {
 
         <div class="col-md-6">
           <label for="nit" class="form-label">NIT</label>
-          <InputText id="nit" v-model="proveedorLocal.nit" class="form-control" autocomplete="off" />
+          <InputText
+            id="nit"
+            v-model="proveedorLocal.nit"
+            class="form-control"
+            autocomplete="off"
+          />
         </div>
 
         <div class="col-md-6">
           <label for="responsable" class="form-label">Responsable</label>
-          <InputText id="responsable" v-model="proveedorLocal.responsable" class="form-control" autocomplete="off" />
+          <InputText
+            id="responsable"
+            v-model="proveedorLocal.responsable"
+            class="form-control"
+            autocomplete="off"
+          />
         </div>
 
         <div class="col-12">
           <label for="direccion" class="form-label">Dirección</label>
-          <InputText id="direccion" v-model="proveedorLocal.direccion" class="form-control" autocomplete="off" />
+          <InputText
+            id="direccion"
+            v-model="proveedorLocal.direccion"
+            class="form-control"
+            autocomplete="off"
+          />
         </div>
 
         <div class="col-md-6">
           <label for="celular" class="form-label">Celular</label>
-          <InputText id="celular" v-model="proveedorLocal.celular" class="form-control" autocomplete="off" />
+          <InputText
+            id="celular"
+            v-model="proveedorLocal.celular"
+            class="form-control"
+            autocomplete="off"
+          />
         </div>
 
         <div class="col-md-6">
           <label for="email" class="form-label">Email</label>
-          <InputText id="email" v-model="proveedorLocal.email" class="form-control" autocomplete="off" />
+          <InputText
+            id="email"
+            v-model="proveedorLocal.email"
+            class="form-control"
+            autocomplete="off"
+          />
         </div>
 
         <div class="col-12">
           <label for="condicionPago" class="form-label">Condición de Pago</label>
-          <InputText id="condicionPago" v-model="proveedorLocal.condicionPago" class="form-control" autocomplete="off" />
+          <InputText
+            id="condicionPago"
+            v-model="proveedorLocal.condicionPago"
+            class="form-control"
+            autocomplete="off"
+          />
         </div>
 
         <div class="col-12 d-flex justify-content-end gap-2 mt-2">
@@ -148,7 +178,13 @@ async function handleSave() {
             class="p-button-sm"
             @click="dialogVisible = false"
           />
-          <Button type="button" label="Guardar" icon="pi pi-save" class="p-button-sm" @click="handleSave" />
+          <Button
+            type="button"
+            label="Guardar"
+            icon="pi pi-save"
+            class="p-button-sm"
+            @click="handleSave"
+          />
         </div>
       </form>
     </Dialog>

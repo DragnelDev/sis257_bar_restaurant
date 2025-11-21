@@ -89,7 +89,7 @@ export function useAuth() {
         user.value = JSON.parse(savedUser)
       } catch {
         // si no es JSON, asignar la cadena
-        user.value = (savedUser as unknown) as User
+        user.value = savedUser as unknown as User
       }
       token.value = savedToken
       console.debug('checkAuth loaded user:', user.value, 'token present? ', !!token.value)

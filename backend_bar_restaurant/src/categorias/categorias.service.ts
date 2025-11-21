@@ -12,18 +12,15 @@ export class CategoriasService {
     private categoriasRepository: Repository<Categoria>,
   ) {}
 
-  // 🟢 Crear categoría
   async create(createCategoriaDto: CreateCategoriaDto): Promise<Categoria> {
     const nuevaCategoria = this.categoriasRepository.create(createCategoriaDto);
     return await this.categoriasRepository.save(nuevaCategoria);
   }
 
-  // 🔵 Listar todas las categorías
   async findAll(): Promise<Categoria[]> {
     return await this.categoriasRepository.find();
   }
 
-  // 🟣 Buscar una categoría por ID
   async findOne(id: number): Promise<Categoria> {
     const categoria = await this.categoriasRepository.findOneBy({ id });
     if (!categoria) {
@@ -32,7 +29,6 @@ export class CategoriasService {
     return categoria;
   }
 
-  // 🟠 Actualizar una categoría
   async update(
     id: number,
     updateCategoriaDto: UpdateCategoriaDto,
@@ -42,7 +38,6 @@ export class CategoriasService {
     return await this.categoriasRepository.save(categoria);
   }
 
-  // 🔴 Eliminar una categoría
   async remove(id: number): Promise<Categoria> {
     const categoria = await this.findOne(id);
     return await this.categoriasRepository.softRemove(categoria);

@@ -16,7 +16,7 @@ export class Receta {
   id: number;
 
   @Column('varchar', { length: 100, unique: true, name: 'nombre_receta' })
-  nombreReceta: string; // Ej: "Hamburguesa Clásica"
+  nombreReceta: string;
 
   @Column('varchar', { length: 255, nullable: true })
   descripcion: string;

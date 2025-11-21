@@ -47,43 +47,99 @@ const stats = ref<Estadistica[]>([
 ])
 
 const recentBookings = ref([
-  { id: 1, cliente: 'Juan Pérez', fecha: '20/11/2025', hora: '20:00', personas: 4, estado: 'confirmed' },
-  { id: 2, cliente: 'Ana Torres', fecha: '20/11/2025', hora: '19:30', personas: 2, estado: 'pending' },
-  { id: 3, cliente: 'Luis Gómez', fecha: '19/11/2025', hora: '13:00', personas: 8, estado: 'cancelled' },
-  { id: 4, cliente: 'Marta Rojas', fecha: '19/11/2025', hora: '18:45', personas: 3, estado: 'confirmed' },
+  {
+    id: 1,
+    cliente: 'Juan Pérez',
+    fecha: '20/11/2025',
+    hora: '20:00',
+    personas: 4,
+    estado: 'confirmed',
+  },
+  {
+    id: 2,
+    cliente: 'Ana Torres',
+    fecha: '20/11/2025',
+    hora: '19:30',
+    personas: 2,
+    estado: 'pending',
+  },
+  {
+    id: 3,
+    cliente: 'Luis Gómez',
+    fecha: '19/11/2025',
+    hora: '13:00',
+    personas: 8,
+    estado: 'cancelled',
+  },
+  {
+    id: 4,
+    cliente: 'Marta Rojas',
+    fecha: '19/11/2025',
+    hora: '18:45',
+    personas: 3,
+    estado: 'confirmed',
+  },
 ])
 
 const recentOrders = ref([
-  { id: 101, numeroPedido: '#ORD-101', cliente: 'María López', items: 3, total: 45.00, estado: 'delivered' },
-  { id: 102, numeroPedido: '#ORD-102', cliente: 'Carlos Ruiz', items: 2, total: 28.50, estado: 'preparing' },
-  { id: 103, numeroPedido: '#ORD-103', cliente: 'Elena Flores', items: 5, total: 82.00, estado: 'completed' },
-  { id: 104, numeroPedido: '#ORD-104', cliente: 'Pedro Soria', items: 1, total: 15.00, estado: 'preparing' },
+  {
+    id: 101,
+    numeroPedido: '#ORD-101',
+    cliente: 'María López',
+    items: 3,
+    total: 45.0,
+    estado: 'delivered',
+  },
+  {
+    id: 102,
+    numeroPedido: '#ORD-102',
+    cliente: 'Carlos Ruiz',
+    items: 2,
+    total: 28.5,
+    estado: 'preparing',
+  },
+  {
+    id: 103,
+    numeroPedido: '#ORD-103',
+    cliente: 'Elena Flores',
+    items: 5,
+    total: 82.0,
+    estado: 'completed',
+  },
+  {
+    id: 104,
+    numeroPedido: '#ORD-104',
+    cliente: 'Pedro Soria',
+    items: 1,
+    total: 15.0,
+    estado: 'preparing',
+  },
 ])
 
 // Función para traducir y asignar clases de estado
 const getStatusClass = (status: string) => {
   const classes: Record<string, string> = {
-    confirmed: 'success',  // Confirmada
-    pending: 'warning',    // Pendiente
-    cancelled: 'danger',   // Cancelada
-    completed: 'success',  // Completado
-    preparing: 'info',     // En Preparación
-    delivered: 'primary',  // Entregado
+    confirmed: 'success', // Confirmada
+    pending: 'warning', // Pendiente
+    cancelled: 'danger', // Cancelada
+    completed: 'success', // Completado
+    preparing: 'info', // En Preparación
+    delivered: 'primary', // Entregado
   }
   return classes[status] || 'secondary'
 }
 
 // Función para traducir el texto del estado
 const translateStatus = (status: string) => {
-    const translations: Record<string, string> = {
-        confirmed: 'Confirmada',
-        pending: 'Pendiente',
-        cancelled: 'Cancelada',
-        completed: 'Completado',
-        preparing: 'En Prep.',
-        delivered: 'Entregado',
-    }
-    return translations[status] || status;
+  const translations: Record<string, string> = {
+    confirmed: 'Confirmada',
+    pending: 'Pendiente',
+    cancelled: 'Cancelada',
+    completed: 'Completado',
+    preparing: 'En Prep.',
+    delivered: 'Entregado',
+  }
+  return translations[status] || status
 }
 
 // Se mantendría la lógica de `onMounted` si tuvieras una función `fetchData` real.
@@ -112,9 +168,7 @@ const translateStatus = (status: string) => {
               class="stat-change"
               :class="stat.tendencia === 'up' ? 'text-success' : 'text-danger'"
             >
-              <i
-                :class="`fa fa-arrow-${stat.tendencia === 'up' ? 'up' : 'down'} me-1`"
-              ></i>
+              <i :class="`fa fa-arrow-${stat.tendencia === 'up' ? 'up' : 'down'} me-1`"></i>
               {{ stat.cambio }}
             </span>
           </div>
@@ -192,7 +246,7 @@ const translateStatus = (status: string) => {
                 </div>
               </div>
               <div v-if="recentOrders.length === 0" class="text-center text-muted py-3">
-                  No hay pedidos recientes.
+                No hay pedidos recientes.
               </div>
             </div>
           </div>
@@ -205,8 +259,8 @@ const translateStatus = (status: string) => {
 <style scoped>
 /* Definición de variables de color (Si usas SASS/CSS Variables) */
 :root {
-    --primary: #fea116; /* Naranja de tu Login */
-    --dark: #343a40;
+  --primary: #fea116; /* Naranja de tu Login */
+  --dark: #343a40;
 }
 
 .dashboard {
@@ -337,7 +391,9 @@ const translateStatus = (status: string) => {
 }
 
 /* Background colors for badges (Asegúrate de que tus variables CSS están definidas o usa los códigos) */
-.text-primary { color: var(--primary) !important; }
+.text-primary {
+  color: var(--primary) !important;
+}
 
 .bg-primary {
   background-color: var(--primary) !important;

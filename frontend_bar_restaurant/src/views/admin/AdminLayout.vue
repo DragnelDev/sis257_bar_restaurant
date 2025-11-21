@@ -93,7 +93,7 @@ const menuItems = [
               <h6 class="dropdown-header">Notificaciones</h6>
               <a class="dropdown-item" href="#">Nueva Recerva Recibida</a>
               <a class="dropdown-item" href="#">Articulo Con Stock Bajo</a>
-              <a class="dropdown-item" href="#">Se ha añadido  un miembro del personal</a>
+              <a class="dropdown-item" href="#">Se ha añadido un miembro del personal</a>
             </div>
           </div>
 

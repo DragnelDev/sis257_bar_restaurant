@@ -24,56 +24,46 @@ export class ComprasService {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
-    await queryRunner.startTransaction(); // 1. INICIAR TRANSACCIÓN (ACID)
+    await queryRunner.startTransaction();
 
     try {
-      // Separar cabecera y detalles para la creación
       const { detalles, ...cabeceraData } = createCompraDto;
 
-      // 2. CREAR LA COMPRA (CABECERA)
       let nuevaCompra = this.comprasRepository.create(cabeceraData);
       nuevaCompra = await queryRunner.manager.save(Compra, nuevaCompra);
 
-      // 3. PROCESAR DETALLES Y ACTUALIZAR STOCK
       for (const item of detalles) {
-        // a. Registrar el Detalle de la Compra
         const detalle = queryRunner.manager.create(DetalleCompra, {
           idCompra: nuevaCompra.id,
           idProducto: item.idProducto,
           cantidad: item.cantidad,
           precioUnitarioCompra: item.precioUnitarioCompra,
-          subTotal: item.cantidad * item.precioUnitarioCompra, // Calcular subtotal
+          subTotal: item.cantidad * item.precioUnitarioCompra,
         });
         await queryRunner.manager.save(DetalleCompra, detalle);
 
-        // b. AUMENTAR EL STOCK del Producto
         const producto = await queryRunner.manager.findOneBy(Producto, {
           id: item.idProducto,
         });
 
         if (!producto) {
-          // Si un producto no existe, abortamos la transacción
           throw new NotFoundException(
             `Producto con ID ${item.idProducto} no encontrado para actualizar stock.`,
           );
         }
 
-        // Actualizar el stock: sumar la cantidad comprada
-        // Asegúrate de manejar los tipos de datos (PostgreSQL usa NUMERIC, TypeORM lo lee como string/number)
         producto.stockActual =
           Number(producto.stockActual || 0) + Number(item.cantidad);
 
         await queryRunner.manager.save(Producto, producto);
       }
 
-      await queryRunner.commitTransaction(); // 4. CONFIRMAR (COMMIT)
+      await queryRunner.commitTransaction();
       return nuevaCompra;
     } catch (error) {
-      // 5. REVERTIR (ROLLBACK) si cualquier paso falla
       await queryRunner.rollbackTransaction();
-      throw error; // Relanzar el error para que NestJS lo maneje
+      throw error;
     } finally {
-      // 6. LIBERAR el QueryRunner
       await queryRunner.release();
     }
   }
@@ -81,7 +71,6 @@ export class ComprasService {
   async findAll(): Promise<Compra[]> {
     return this.comprasRepository.find({
       relations: ['proveedor', 'usuario'],
-      // Opcional: ordenar por fecha
       order: {
         fechaCreacion: 'DESC',
       },

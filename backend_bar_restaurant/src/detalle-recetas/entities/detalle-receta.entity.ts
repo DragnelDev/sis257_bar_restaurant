@@ -22,7 +22,6 @@ export class DetalleReceta {
   @Column('integer', { name: 'id_producto' })
   idProducto: number;
 
-  // Cantidad de la materia prima que se consume para hacer UNA unidad de la Receta/Plato
   @Column({
     type: 'numeric',
     precision: 10,

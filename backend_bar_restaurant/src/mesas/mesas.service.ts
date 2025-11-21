@@ -17,12 +17,10 @@ export class MesasService {
     return this.mesaRepository.save(nuevaMesa);
   }
 
-  // 🔵 Listar todas las mesas
   async findAll(): Promise<Mesa[]> {
     return await this.mesaRepository.find();
   }
 
-  // 🟣 Buscar una mesa por ID
   async findOne(id: number): Promise<Mesa> {
     const mesa = await this.mesaRepository.findOneBy({ id });
     if (!mesa)
@@ -30,20 +28,17 @@ export class MesasService {
     return mesa;
   }
 
-  // 🆕 MÉTODO CLAVE: Actualizar solo el estado de la mesa
   async updateStatus(id: number, newStatus: string): Promise<Mesa> {
-    const mesa = await this.findOne(id); // Usa el método findOne para verificar la existencia
+    const mesa = await this.findOne(id);
     mesa.estado = newStatus;
     return this.mesaRepository.save(mesa);
   }
-  // 🟠 Actualizar mesa
   async update(id: number, updateMesaDto: UpdateMesaDto): Promise<Mesa> {
     const mesa = await this.findOne(id);
     this.mesaRepository.merge(mesa, updateMesaDto);
     return await this.mesaRepository.save(mesa);
   }
 
-  // 🔴 Eliminar mesa
   async remove(id: number): Promise<void> {
     const mesa = await this.findOne(id);
     await this.mesaRepository.remove(mesa);

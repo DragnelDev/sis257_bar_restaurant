@@ -226,59 +226,94 @@ defineExpose({ obtenerLista })
       </table>
     </div>
 
-      <!-- Dialog: Detalles de venta -->
-      <Dialog v-model:visible="dialogVisible" :modal="true" :style="{ width: '90vw', maxWidth: '800px' }" header="Detalles de la Venta">
-        <div v-if="selectedVenta">
-          <div class="mb-2">
-            <strong>Fecha:</strong> {{ formatFecha(selectedVenta.fecha) }}
-            &nbsp;|&nbsp; <strong>Estado:</strong> {{ selectedVenta.estado }}
-            &nbsp;|&nbsp; <strong>Tipo Pago:</strong> {{ selectedVenta.tipoPago }}
-          </div>
-
-          <div class="mb-2">
-            <strong>Mesa:</strong> {{ selectedVenta.mesa?.numeroMesa ?? selectedVenta.idMesa ?? 'N/A' }}
-            &nbsp;|&nbsp; <strong>Usuario:</strong> {{ selectedVenta.usuario?.usuario ?? 'N/A' }}
-            &nbsp;|&nbsp; <strong>Cliente:</strong> {{ selectedVenta.cliente?.nombreFiscal ?? 'Consumidor Final' }}
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-              <thead class="table-light">
-                <tr>
-                  <th>Producto</th>
-                  <th class="text-end">Cantidad</th>
-                  <th class="text-end">Precio Unit.</th>
-                  <th class="text-end">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(d, i) in (selectedVenta.detalleVentas || [])" :key="i">
-                  <td>{{ (d.producto && d.producto.nombre) || d.nombreProducto || d.nombre || d.idProducto }}</td>
-                  <td class="text-end">{{ d.cantidad ?? d.cantidadVenta ?? 0 }}</td>
-                  <td class="text-end">Bs. {{ parseFloat(d.precioUnitarioVenta ?? d.precio_unitario ?? d.precio ?? 0).toFixed(2) }}</td>
-                  <td class="text-end">Bs. {{ ( (parseFloat(d.cantidad ?? d.cantidadVenta ?? 0) * parseFloat(d.precioUnitarioVenta ?? d.precio_unitario ?? d.precio ?? 0)) ).toFixed(2) }}</td>
-                </tr>
-                <tr v-if="!(selectedVenta.detalleVentas && selectedVenta.detalleVentas.length)">
-                  <td colspan="4" class="text-center">No hay detalles disponibles.</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="3" class="text-end"><strong>Total Venta</strong></td>
-                  <td class="text-end"><strong>Bs. {{ parseFloat(selectedVenta.total ?? '0').toFixed(2) }}</strong></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <div class="d-flex justify-content-end mt-3">
-            <Button label="Cerrar" icon="pi pi-times" class="p-button-secondary" @click="dialogVisible = false" />
-          </div>
+    <!-- Dialog: Detalles de venta -->
+    <Dialog
+      v-model:visible="dialogVisible"
+      :modal="true"
+      :style="{ width: '90vw', maxWidth: '800px' }"
+      header="Detalles de la Venta"
+    >
+      <div v-if="selectedVenta">
+        <div class="mb-2">
+          <strong>Fecha:</strong> {{ formatFecha(selectedVenta.fecha) }} &nbsp;|&nbsp;
+          <strong>Estado:</strong> {{ selectedVenta.estado }} &nbsp;|&nbsp;
+          <strong>Tipo Pago:</strong> {{ selectedVenta.tipoPago }}
         </div>
-        <div v-else>
-          <p>No hay venta seleccionada.</p>
+
+        <div class="mb-2">
+          <strong>Mesa:</strong>
+          {{ selectedVenta.mesa?.numeroMesa ?? selectedVenta.idMesa ?? 'N/A' }} &nbsp;|&nbsp;
+          <strong>Usuario:</strong> {{ selectedVenta.usuario?.usuario ?? 'N/A' }} &nbsp;|&nbsp;
+          <strong>Cliente:</strong> {{ selectedVenta.cliente?.nombreFiscal ?? 'Consumidor Final' }}
         </div>
-      </Dialog>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Producto</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Precio Unit.</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(d, i) in selectedVenta.detalleVentas || []" :key="i">
+                <td>
+                  {{
+                    (d.producto && d.producto.nombre) ||
+                    d.nombreProducto ||
+                    d.nombre ||
+                    d.idProducto
+                  }}
+                </td>
+                <td class="text-end">{{ d.cantidad ?? d.cantidadVenta ?? 0 }}</td>
+                <td class="text-end">
+                  Bs.
+                  {{
+                    parseFloat(d.precioUnitarioVenta ?? d.precio_unitario ?? d.precio ?? 0).toFixed(
+                      2,
+                    )
+                  }}
+                </td>
+                <td class="text-end">
+                  Bs.
+                  {{
+                    (
+                      parseFloat(d.cantidad ?? d.cantidadVenta ?? 0) *
+                      parseFloat(d.precioUnitarioVenta ?? d.precio_unitario ?? d.precio ?? 0)
+                    ).toFixed(2)
+                  }}
+                </td>
+              </tr>
+              <tr v-if="!(selectedVenta.detalleVentas && selectedVenta.detalleVentas.length)">
+                <td colspan="4" class="text-center">No hay detalles disponibles.</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="text-end"><strong>Total Venta</strong></td>
+                <td class="text-end">
+                  <strong>Bs. {{ parseFloat(selectedVenta.total ?? '0').toFixed(2) }}</strong>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+          <Button
+            label="Cerrar"
+            icon="pi pi-times"
+            class="p-button-secondary"
+            @click="dialogVisible = false"
+          />
+        </div>
+      </div>
+      <div v-else>
+        <p>No hay venta seleccionada.</p>
+      </div>
+    </Dialog>
 
     <div class="d-flex justify-content-between align-items-center mt-3">
       <span>Mostrando {{ ventasPaginadas.length }} de {{ ventasFiltradas.length }} registros.</span>

@@ -127,9 +127,9 @@ defineExpose({ obtenerLista })
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>
-            <th style="width:48px">Nro.</th>
+            <th style="width: 48px">Nro.</th>
             <th>Nombre Receta</th>
-            <th style="width:110px">Imagen</th>
+            <th style="width: 110px">Imagen</th>
             <th>Descripcion</th>
             <th>Precio Venta</th>
             <th>Costo Actual</th>
@@ -137,7 +137,7 @@ defineExpose({ obtenerLista })
             <th>Unidad</th>
             <th>Producto</th>
             <th>Stock</th>
-            <th style="width:120px">Acciones</th>
+            <th style="width: 120px">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -151,7 +151,9 @@ defineExpose({ obtenerLista })
                 class="imagen-receta-tabla"
               />
             </td>
-            <td class="text-truncate" style="max-width:280px">{{ detalle?.receta?.descripcion ?? 'N/A' }}</td>
+            <td class="text-truncate" style="max-width: 280px">
+              {{ detalle?.receta?.descripcion ?? 'N/A' }}
+            </td>
             <td>Bs. {{ detalle?.receta?.precioVentaActual ?? '0.00' }}</td>
             <td>Bs. {{ detalle?.receta?.costoActual ?? '0.00' }}</td>
             <td class="text-center">{{ detalle.cantidadConsumida }}</td>
@@ -160,8 +162,18 @@ defineExpose({ obtenerLista })
             <td class="text-center">{{ detalle.producto?.stockActual ?? 'N/A' }}</td>
             <td class="text-center">
               <div class="d-flex justify-content-center gap-1">
-                <Button icon="pi pi-pencil" aria-label="Editar" class="p-button-text p-button-sm" @click="emitirEdicion(detalle.receta)" />
-                <Button icon="pi pi-trash" aria-label="Eliminar" class="p-button-text p-button-sm text-danger" @click="mostrarEliminarConfirm(detalle.receta)" />
+                <Button
+                  icon="pi pi-pencil"
+                  aria-label="Editar"
+                  class="p-button-text p-button-sm"
+                  @click="emitirEdicion(detalle.receta)"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  aria-label="Eliminar"
+                  class="p-button-text p-button-sm text-danger"
+                  @click="mostrarEliminarConfirm(detalle.receta)"
+                />
               </div>
             </td>
           </tr>

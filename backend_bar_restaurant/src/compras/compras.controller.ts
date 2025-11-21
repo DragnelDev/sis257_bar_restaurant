@@ -10,22 +10,24 @@ import {
   ValidationPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ComprasService } from './compras.service';
 import { CreateCompraDto } from './dto/create-compra.dto';
 import { UpdateCompraDto } from './dto/update-compra.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('compras')
 export class ComprasController {
   constructor(private readonly comprasService: ComprasService) {}
 
   @Post()
-  // Aplica la validación a nivel de controlador.
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  // Usa HttpCode para devolver 201 Created
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createCompraDto: CreateCompraDto) {
-    // La transacción completa (guardar compra + actualizar stock) ocurre aquí.
     return this.comprasService.create(createCompraDto);
   }
 

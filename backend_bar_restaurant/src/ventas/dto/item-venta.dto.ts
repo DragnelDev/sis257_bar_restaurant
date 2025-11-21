@@ -10,7 +10,7 @@ export class ItemVentaDto {
   @ApiProperty({ description: 'Cantidad de unidades de la Receta vendidas.' })
   @IsDefined({ message: 'El campo cantidad debe estar definido' })
   @IsNumber({}, { message: 'El campo cantidad debe ser numérico' })
-  @Min(0.001, { message: 'La cantidad debe ser mayor a cero' }) // Asegurar que sea positivo
+  @Min(0.001, { message: 'La cantidad debe ser mayor a cero' })
   readonly cantidad: number;
 
   @ApiProperty({ description: 'Precio unitario de venta final.' })
@@ -18,6 +18,4 @@ export class ItemVentaDto {
   @IsNumber({}, { message: 'El campo precioUnitarioVenta debe ser numérico' })
   @Min(0, { message: 'El precio unitario no puede ser negativo' })
   readonly precioUnitarioVenta: number;
-
-  // NOTA: Se ha removido idVenta, ya que se asigna en el servicio.
 }

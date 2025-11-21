@@ -101,14 +101,28 @@ const loadMenu = async () => {
 
     const normalized = (data as unknown[]).map((r) => normalizeReceta(r))
     menuItems.value = normalized
-    console.debug(`Menú cargado: ${menuItems.value.length} recetas. Categorías:`,
-      Array.from(new Set(menuItems.value.map((m) => m.categoria))))
+    console.debug(
+      `Menú cargado: ${menuItems.value.length} recetas. Categorías:`,
+      Array.from(new Set(menuItems.value.map((m) => m.categoria))),
+    )
     // Si está vacío en desarrollo, opcionalmente poblar con ejemplo para visualización
     if (menuItems.value.length === 0 && import.meta.env.DEV) {
       console.info('Falló carga de recetas; usando datos de ejemplo en modo DEV')
       menuItems.value = [
-        { id: 999, nombreReceta: 'Ejemplo - Hamburguesa', precioVentaActual: 35, categoria: 'principal', urlImagen: '/img/hamburguesa.jpg' },
-        { id: 998, nombreReceta: 'Ejemplo - Papas', precioVentaActual: 15, categoria: 'acompañamiento', urlImagen: '/img/papas.jpg' },
+        {
+          id: 999,
+          nombreReceta: 'Ejemplo - Hamburguesa',
+          precioVentaActual: 35,
+          categoria: 'principal',
+          urlImagen: '/img/hamburguesa.jpg',
+        },
+        {
+          id: 998,
+          nombreReceta: 'Ejemplo - Papas',
+          precioVentaActual: 15,
+          categoria: 'acompañamiento',
+          urlImagen: '/img/papas.jpg',
+        },
       ]
     }
   } catch (err) {
@@ -116,8 +130,20 @@ const loadMenu = async () => {
     // Fallback en modo desarrollo para facilitar pruebas
     if (import.meta.env.DEV) {
       menuItems.value = [
-        { id: 999, nombreReceta: 'Ejemplo - Hamburguesa', precioVentaActual: 35, categoria: 'principal', urlImagen: '/img/hamburguesa.jpg' },
-        { id: 998, nombreReceta: 'Ejemplo - Papas', precioVentaActual: 15, categoria: 'acompañamiento', urlImagen: '/img/papas.jpg' },
+        {
+          id: 999,
+          nombreReceta: 'Ejemplo - Hamburguesa',
+          precioVentaActual: 35,
+          categoria: 'principal',
+          urlImagen: '/img/hamburguesa.jpg',
+        },
+        {
+          id: 998,
+          nombreReceta: 'Ejemplo - Papas',
+          precioVentaActual: 15,
+          categoria: 'acompañamiento',
+          urlImagen: '/img/papas.jpg',
+        },
       ]
     } else {
       menuItems.value = []
@@ -172,7 +198,7 @@ watch(
   () => props.initialMesaId,
   (newMesaId) => {
     mesaId.value = newMesaId
-  }
+  },
 )
 
 watch(
@@ -182,7 +208,7 @@ watch(
       ventaId.value = newVentaId
       loadVenta(newVentaId)
     }
-  }
+  },
 )
 
 // --- 5. PROPIEDADES COMPUTADAS ---

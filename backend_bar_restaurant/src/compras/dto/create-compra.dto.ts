@@ -28,14 +28,10 @@ export class ItemCompraDto {
   @IsNumber({}, { message: 'El campo precioUnitarioCompra debe ser numérico.' })
   @Min(0, { message: 'El precio unitario no puede ser negativo.' })
   readonly precioUnitarioCompra: number;
-
-  // NOTA: No necesitamos 'subTotal' aquí, pues se calcula en el servicio (lógica de negocio).
 }
 
 // 2. DTO PRINCIPAL para la Transacción de Compra
 export class CreateCompraDto {
-  // --- CAMPOS DE LA CABECERA (tabla 'compras') ---
-
   @ApiProperty({ description: 'ID del proveedor.' })
   @IsDefined({ message: 'El campo idProveedor debe estar definido' })
   @IsInt({ message: 'El campo idProveedor debe ser de tipo numérico' })
@@ -73,7 +69,7 @@ export class CreateCompraDto {
     description: 'Lista de productos incluidos en la compra.',
   })
   @IsArray({ message: 'El detalle de compra debe ser un array.' })
-  @ValidateNested({ each: true }) // Valida cada objeto dentro del array
-  @Type(() => ItemCompraDto) // Necesario para que class-transformer sepa qué tipo instanciar
+  @ValidateNested({ each: true })
+  @Type(() => ItemCompraDto)
   readonly detalles: ItemCompraDto[];
 }
