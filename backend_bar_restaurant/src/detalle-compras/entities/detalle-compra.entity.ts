@@ -13,7 +13,7 @@ import {
 
 @Entity('detalle_compras')
 export class DetalleCompra {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('identity')
   id: number;
 
   @Column('integer', { name: 'id_compra' })
@@ -28,9 +28,9 @@ export class DetalleCompra {
   @Column('decimal', {
     precision: 10,
     scale: 2,
-    name: 'precio_unitario_compra',
+    name: 'precio_unitario',
   })
-  precioUnitarioCompra: number;
+  precioUnitario: number;
 
   @Column('decimal', { name: 'sub_total', precision: 10, scale: 2 })
   subTotal: number;

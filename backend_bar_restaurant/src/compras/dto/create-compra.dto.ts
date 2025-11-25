@@ -27,7 +27,7 @@ export class ItemCompraDto {
   @IsDefined()
   @IsNumber({}, { message: 'El campo precioUnitarioCompra debe ser numérico.' })
   @Min(0, { message: 'El precio unitario no puede ser negativo.' })
-  readonly precioUnitarioCompra: number;
+  readonly precioUnitario: number;
 }
 
 // 2. DTO PRINCIPAL para la Transacción de Compra
@@ -41,14 +41,6 @@ export class CreateCompraDto {
   @IsDefined({ message: 'El campo idUsuario debe estar definido' })
   @IsInt({ message: 'El campo idUsuario debe ser de tipo numérico' })
   readonly idUsuario: number;
-
-  @ApiProperty({ description: 'Fecha de la emisión de la factura/compra.' })
-  @IsDefined({ message: 'El campo fechaCompra debe estar definido' })
-  @IsDateString(
-    {},
-    { message: 'El campo fecha de Compra debe ser una fecha válida' },
-  )
-  readonly fechaCompra: string; // Usar string para fechas ISO/DateString
 
   @ApiProperty({ description: 'Número de factura de la compra.' })
   @IsDefined({ message: 'El campo numeroFactura debe estar definido' })

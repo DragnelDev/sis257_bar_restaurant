@@ -23,6 +23,7 @@ export class ItemRecetaDto {
   @ApiProperty({
     description: 'Unidad de medida en la que se expresa la cantidad consumida.',
   })
-  @IsDefined({ message: 'El campo unidadConsumo debe estar definido' })
-  readonly unidadConsumo: string;
+  @IsDefined({ message: 'El campo idUnidadConsumo debe estar definido' })
+  @IsInt({ message: 'El campo idUnidadConsumo debe ser un número entero' })
+  readonly idUnidadConsumo: number;
 }

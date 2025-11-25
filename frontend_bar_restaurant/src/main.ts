@@ -26,6 +26,7 @@ import 'animate.css'
 
 // Import custom global styles
 import './assets/styles/custom.css'
+import { ToastService } from 'primevue'
 
 const app = createApp(App)
 
@@ -35,6 +36,9 @@ app.use(pinia)
 
 // Router
 app.use(router)
+
+// Toast Service
+app.use(ToastService);
 
 // Prime Vue Configuration - instance (antes de montar)
 app.use(PrimeVue, {

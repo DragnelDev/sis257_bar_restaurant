@@ -1,3 +1,4 @@
+import { compare, genSalt, hash } from 'bcrypt';
 import { Compra } from 'src/compras/entities/compra.entity';
 import { Empleado } from 'src/empleados/entities/empleado.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
@@ -14,7 +15,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { compare, genSalt, hash } from 'bcrypt';
 
 @Entity('usuarios')
 export class Usuario {

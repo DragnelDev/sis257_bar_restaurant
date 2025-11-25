@@ -1,4 +1,5 @@
 import { Producto } from 'src/productos/entities/producto.entity';
+import { Receta } from 'src/recetas/entities/receta.entity';
 import {
   Column,
   CreateDateColumn,
@@ -17,6 +18,9 @@ export class Categoria {
   @Column('varchar', { length: 20 })
   nombre: string;
 
+  @Column('varchar', { length: 20, name: 'tipo_categoria' })
+  tipoCategoria: 'INVENTARIO' | 'MENÚ';
+
   @Column('varchar', { length: 120 })
   descripcion: string;
 
@@ -31,4 +35,7 @@ export class Categoria {
 
   @OneToMany(() => Producto, (producto) => producto.categoria)
   productos: Producto[];
+
+  @OneToMany(() => Receta, (receta) => receta.categoria)
+  recetas: Receta[];
 }

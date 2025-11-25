@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsInt, IsNumber, Min } from 'class-validator';
 
-export class ItemVentaDto {
+export class ItemVentaRecetaDto {
   @ApiProperty({ description: 'ID de la Receta (Plato/Bebida) vendida.' })
   @IsDefined({ message: 'El campo idReceta debe estar definido' })
   @IsInt({ message: 'El campo idReceta debe ser un número entero' })
@@ -17,5 +17,5 @@ export class ItemVentaDto {
   @IsDefined({ message: 'El campo precioUnitarioVenta debe estar definido' })
   @IsNumber({}, { message: 'El campo precioUnitarioVenta debe ser numérico' })
   @Min(0, { message: 'El precio unitario no puede ser negativo' })
-  readonly precioUnitarioVenta: number;
+  readonly precioUnitario: number;
 }

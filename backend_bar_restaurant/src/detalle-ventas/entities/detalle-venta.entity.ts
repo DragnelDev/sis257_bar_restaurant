@@ -1,3 +1,4 @@
+import { Producto } from 'src/productos/entities/producto.entity';
 import { Receta } from 'src/recetas/entities/receta.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import {
@@ -20,8 +21,11 @@ export class DetalleVenta {
   @Column('integer', { name: 'id_venta' })
   idVenta: number;
 
-  @Column('integer', { name: 'id_receta' })
+  @Column('integer', { name: 'id_receta', nullable: true })
   idReceta: number;
+
+  @Column('integer', { name: 'id_producto', nullable: true })
+  idProducto: number;
 
   @Column('int')
   cantidad: number;
@@ -29,12 +33,12 @@ export class DetalleVenta {
   @Column('decimal', {
     precision: 10,
     scale: 2,
-    name: 'precio_unitario_venta',
+    name: 'precio_unitario',
   })
-  precioUnitarioVenta: number;
+  precioUnitario: number;
 
   @Column('decimal', { precision: 10, scale: 2, name: 'costo_unitario' })
-  costo_unitario: number;
+  costoUnitario: number;
 
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
@@ -53,4 +57,8 @@ export class DetalleVenta {
   @ManyToOne(() => Receta, (receta) => receta.detallesVenta)
   @JoinColumn({ name: 'id_receta', referencedColumnName: 'id' })
   receta: Receta;
+
+  @ManyToOne(() => Producto, (producto) => producto.detalleVentas)
+  @JoinColumn({ name: 'id_producto', referencedColumnName: 'id' })
+  producto: Producto;
 }

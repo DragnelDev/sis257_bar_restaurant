@@ -5,7 +5,7 @@ import type { Producto } from '@/models/producto'
 
 import { useAuthStore } from '@/stores'
 import http from '@/plugins/axios'
-import { Button, Dialog, InputNumber, Dropdown, Panel } from 'primevue'
+import { Button, Dialog, InputNumber, Dropdown, Panel, InputText } from 'primevue'
 import { useToast } from 'primevue/usetoast'
 
 import { computed, ref, watch, onMounted } from 'vue'

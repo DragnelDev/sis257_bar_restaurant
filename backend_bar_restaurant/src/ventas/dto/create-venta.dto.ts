@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
-  IsOptional,
 } from 'class-validator';
-import { ItemVentaDto } from './item-venta.dto';
-import { Type } from 'class-transformer';
+import { ItemVentaMixtoDto } from './item-venta-mixto.dto';
 
 export class CreateVentaDto {
   @ApiProperty()
@@ -43,13 +43,13 @@ export class CreateVentaDto {
   // --- Detalles de la Venta (CRÍTICO: El array anidado) ---
 
   @ApiProperty({
-    type: [ItemVentaDto],
-    description: 'Lista de ítems (Recetas) incluidos en la venta.',
+    type: [ItemVentaMixtoDto], // 👈 Usar el DTO Mixto
+    description: 'Lista de ítems (Recetas o Productos) incluidos en la venta.',
   })
   @IsArray({ message: 'El detalle de venta debe ser un array.' })
   @ValidateNested({ each: true })
-  @Type(() => ItemVentaDto)
-  readonly detalles: ItemVentaDto[];
+  @Type(() => ItemVentaMixtoDto) // 👈 Usar el DTO Mixto
+  readonly detalles: ItemVentaMixtoDto[];
 
   // --- Campos Opcionales para Clientes Ocasionales ---
   /*@ApiProperty({

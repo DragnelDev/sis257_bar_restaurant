@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -9,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Receta } from './entities/receta.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DetalleReceta } from 'src/detalle-recetas/entities/detalle-receta.entity';
+import { Categoria } from 'src/categorias/entities/categoria.entity';
+import { Producto } from 'src/productos/entities/producto.entity';
 
 @Injectable()
 export class RecetasService {
@@ -28,7 +31,11 @@ export class RecetasService {
 
     const receta = await manager.findOne(Receta, {
       where: { id: idReceta },
-      relations: ['ingredientes', 'ingredientes.producto'],
+      relations: [
+        'ingredientes',
+        'ingredientes.producto',
+        'ingredientes.unidadConsumo',
+      ],
     });
 
     if (!receta) return 0;
@@ -57,7 +64,7 @@ export class RecetasService {
     await queryRunner.startTransaction();
 
     try {
-      const { detalles, ...recetaData } = createRecetaDto;
+      const { detalles, categoria, ...recetaData } = createRecetaDto;
 
       const existente = await queryRunner.manager.findOneBy(Receta, {
         nombreReceta: recetaData.nombreReceta,
@@ -66,16 +73,51 @@ export class RecetasService {
         throw new ConflictException('La receta con ese nombre ya existe.');
       }
 
-      let nuevaReceta = queryRunner.manager.create(Receta, recetaData);
+      // Resolver la categoría por nombre (el DTO trae `categoria` como string)
+      const categoriaEntity = await queryRunner.manager.findOne(Categoria, {
+        where: { nombre: categoria },
+      });
+      if (!categoriaEntity) {
+        throw new NotFoundException(`La categoría '${categoria}' no existe`);
+      }
+
+      let nuevaReceta = queryRunner.manager.create(Receta, {
+        ...recetaData,
+        idCategoria: categoriaEntity.id,
+      });
       nuevaReceta = await queryRunner.manager.save(Receta, nuevaReceta);
 
-      const detallesReceta = detalles.map((detalle) =>
-        queryRunner.manager.create(DetalleReceta, {
-          ...detalle,
-          idReceta: nuevaReceta.id,
-        }),
-      );
-      await queryRunner.manager.save(DetalleReceta, detallesReceta);
+      if (Array.isArray(detalles) && detalles.length > 0) {
+        //  INICIO DE LA VALIDACIÓN CLAVE - Verificar que los productos ingredientes no sean vendibles
+        for (const detalle of detalles) {
+          const productoIngrediente = await queryRunner.manager.findOneBy(
+            Producto,
+            {
+              id: detalle.idProducto,
+            },
+          );
+
+          if (!productoIngrediente) {
+            throw new NotFoundException(
+              `Producto ingrediente ID ${detalle.idProducto} no encontrado.`,
+            );
+          }
+
+          if (productoIngrediente.esVendible) {
+            throw new BadRequestException(
+              `El producto "${productoIngrediente.nombre}" no puede ser usado como ingrediente porque está marcado como vendible directamente.`,
+            );
+          }
+        }
+
+        const detallesReceta = detalles.map((detalle) =>
+          queryRunner.manager.create(DetalleReceta, {
+            ...detalle,
+            idReceta: nuevaReceta.id,
+          }),
+        );
+        await queryRunner.manager.save(DetalleReceta, detallesReceta);
+      }
 
       await this.calcularCostoReceta(nuevaReceta.id, queryRunner.manager);
 
@@ -95,17 +137,52 @@ export class RecetasService {
     await queryRunner.startTransaction();
 
     try {
-      const { detalles, ...recetaData } = updateRecetaDto;
+      const { detalles, categoria, ...recetaData } = updateRecetaDto;
 
       const receta = await queryRunner.manager.findOneBy(Receta, { id });
       if (!receta) {
         throw new NotFoundException(`La receta con ID ${id} no existe`);
       }
 
-      queryRunner.manager.merge(Receta, receta, recetaData);
+      // Si el DTO trae `categoria` como nombre, resolver y usar `idCategoria`.
+      const patch: Partial<Receta> = { ...recetaData };
+      if (typeof categoria === 'string' && categoria.trim().length > 0) {
+        const categoriaEntity = await queryRunner.manager.findOne(Categoria, {
+          where: { nombre: categoria },
+        });
+        if (!categoriaEntity) {
+          throw new NotFoundException(`La categoría '${categoria}' no existe`);
+        }
+        patch.idCategoria = categoriaEntity.id;
+      }
+
+      queryRunner.manager.merge(Receta, receta, patch);
       await queryRunner.manager.save(Receta, receta);
 
-      if (detalles && detalles.length > 0) {
+      if (Array.isArray(detalles) && detalles.length > 0) {
+        // INICIO DE LA VALIDACIÓN CLAVE: Verificar que los productos ingredientes no sean vendibles
+        for (const detalle of detalles) {
+          // Nota: Asegúrate de que la entidad 'Producto' esté accesible (importada o disponible en el scope)
+          const productoIngrediente = await queryRunner.manager.findOneBy(
+            Producto,
+            {
+              id: detalle.idProducto,
+            },
+          );
+
+          if (!productoIngrediente) {
+            throw new NotFoundException(
+              `Producto ingrediente ID ${detalle.idProducto} no encontrado.`,
+            );
+          }
+
+          if (productoIngrediente.esVendible) {
+            throw new BadRequestException(
+              `El producto "${productoIngrediente.nombre}" no puede ser usado como ingrediente porque está marcado como vendible directamente.`,
+            );
+          }
+        }
+
         await queryRunner.manager.delete(DetalleReceta, { idReceta: id });
 
         const nuevosDetalles = detalles.map((detalle) =>
@@ -131,18 +208,28 @@ export class RecetasService {
 
   async findAll(): Promise<Receta[]> {
     return this.recetasRepository.find({
-      relations: ['ingredientes', 'ingredientes.producto'],
+      relations: [
+        'ingredientes',
+        'ingredientes.producto',
+        'ingredientes.unidadConsumo',
+      ],
       order: { nombreReceta: 'ASC' },
     });
   }
+
   async findOne(id: number): Promise<Receta> {
     const receta = await this.recetasRepository.findOne({
       where: { id },
-      relations: ['ingredientes'],
+      relations: [
+        'ingredientes',
+        'ingredientes.producto',
+        'ingredientes.unidadConsumo',
+      ],
     });
     if (!receta) throw new NotFoundException('La receta no existe');
     return receta;
   }
+
   async remove(id: number): Promise<Receta> {
     const receta = await this.findOne(id);
     return this.recetasRepository.softRemove(receta);

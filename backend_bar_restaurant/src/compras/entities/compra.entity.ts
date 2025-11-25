@@ -15,7 +15,7 @@ import {
 
 @Entity('compras')
 export class Compra {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('identity')
   id: number;
 
   @Column('int', { name: 'id_proveedor' })
@@ -24,7 +24,7 @@ export class Compra {
   @Column('int', { name: 'id_usuario' })
   idUsuario: number;
 
-  @Column('date', { name: 'fecha_compra' })
+  @Column('date', { name: 'fecha_compra', default: () => 'CURRENT_DATE' })
   fechaCompra: Date;
 
   @Column('varchar', { name: 'numero_factura', length: 8 })

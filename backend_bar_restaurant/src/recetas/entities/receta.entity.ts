@@ -1,3 +1,4 @@
+import { Categoria } from 'src/categorias/entities/categoria.entity';
 import { DetalleReceta } from 'src/detalle-recetas/entities/detalle-receta.entity';
 import { DetalleVenta } from 'src/detalle-ventas/entities/detalle-venta.entity';
 import {
@@ -5,6 +6,8 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -15,6 +18,9 @@ export class Receta {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
+  @Column('int', { name: 'id_categoria' })
+  idCategoria: number;
+
   @Column('varchar', { length: 100, unique: true, name: 'nombre_receta' })
   nombreReceta: string;
 
@@ -24,16 +30,13 @@ export class Receta {
   @Column('numeric', { precision: 10, scale: 2, name: 'precio_venta_actual' })
   precioVentaActual: number;
 
-  @Column('numeric', {
+  @Column('decimal', {
     precision: 10,
     scale: 2,
     name: 'costo_actual',
     default: 0,
   })
   costoActual: number;
-
-  @Column('varchar', { length: 50, nullable: true })
-  categoria: string;
 
   @Column('varchar', { length: 255, nullable: true, name: 'url_imagen' })
   urlImagen: string;
@@ -47,6 +50,10 @@ export class Receta {
 
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
+
+  @ManyToOne(() => Categoria, (categoria) => categoria.recetas)
+  @JoinColumn({ name: 'id_categoria', referencedColumnName: 'id' })
+  categoria: Categoria;
 
   // Relación: Una Receta tiene muchos ingredientes (detalles)
   @OneToMany(() => DetalleReceta, (detalle) => detalle.receta)

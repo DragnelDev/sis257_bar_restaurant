@@ -124,7 +124,7 @@ defineExpose({ obtenerLista })
           </span>
           <InputText
             v-model="busqueda"
-            placeholder="Buscar por proveedor, factura, fecha o producto..."
+            placeholder="Buscar por proveedor"
           />
         </div>
       </div>

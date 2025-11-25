@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -70,50 +71,101 @@ export class VentasService {
       }
 
       for (const itemVendido of detalles) {
-        const receta = await queryRunner.manager.findOne(Receta, {
-          where: { id: itemVendido.idReceta },
-          relations: ['ingredientes'],
-        });
+        let costoUnitarioItem = 0;
 
-        if (!receta) {
-          throw new NotFoundException(
-            `Receta con ID ${itemVendido.idReceta} no encontrada.`,
-          );
-        }
+        // ----------------------------------------------------
+        // 1. CASO: VENTA DE RECETA (Plato/Bebida)
+        // ----------------------------------------------------
+        if (itemVendido.idReceta) {
+          const receta = await queryRunner.manager.findOne(Receta, {
+            where: { id: itemVendido.idReceta },
+            relations: ['ingredientes', 'ingredientes.producto'],
+          });
 
-        const costoUnitarioReceta = receta.costoActual;
+          if (!receta) {
+            throw new NotFoundException(
+              `Receta con ID ${itemVendido.idReceta} no encontrada.`,
+            );
+          }
 
-        const detalleVenta = queryRunner.manager.create(DetalleVenta, {
-          ...itemVendido,
-          idVenta: nuevaVenta.id,
-          costo_unitario: costoUnitarioReceta,
-        });
-        await queryRunner.manager.save(DetalleVenta, detalleVenta);
+          costoUnitarioItem = Number(receta.costoActual) || 0; // Usar el costo actual de la receta
 
-        for (const detalleConsumo of receta.ingredientes) {
+          // Descargar INVENTARIO (Productos base) según la receta
+          for (const detalleConsumo of receta.ingredientes) {
+            const producto = detalleConsumo.producto;
+
+            if (!producto) {
+              throw new NotFoundException(
+                `Producto base ID ${detalleConsumo.idProducto} no encontrado para la receta.`,
+              );
+            }
+
+            // Consumo total = Cantidad por ítem en receta * Cantidad de ítems vendidos
+            const consumoTotal =
+              Number(detalleConsumo.cantidadConsumida) *
+              Number(itemVendido.cantidad);
+
+            if (Number(producto.stockActual) < consumoTotal) {
+              // Lanzar BadRequestException con mensaje claro
+              throw new BadRequestException(
+                `Stock insuficiente para ${producto.nombre}. Se requiere ${consumoTotal}, solo hay ${producto.stockActual}.`,
+              );
+            }
+
+            producto.stockActual = Number(producto.stockActual) - consumoTotal;
+            await queryRunner.manager.save(Producto, producto);
+          }
+
+          // ----------------------------------------------------
+          // 2. CASO: VENTA DIRECTA DE PRODUCTO
+          // ----------------------------------------------------
+        } else if (itemVendido.idProducto) {
           const producto = await queryRunner.manager.findOneBy(Producto, {
-            id: detalleConsumo.idProducto,
+            id: itemVendido.idProducto,
           });
 
           if (!producto) {
             throw new NotFoundException(
-              `Producto base ID ${detalleConsumo.idProducto} no encontrado para la receta.`,
+              `Producto con ID ${itemVendido.idProducto} no encontrado para venta directa.`,
             );
           }
 
-          const consumoTotal =
-            Number(detalleConsumo.cantidadConsumida) *
-            Number(itemVendido.cantidad);
+          if (!producto.esVendible) {
+            throw new BadRequestException(
+              `El producto ${producto.nombre} no está marcado como vendible.`,
+            );
+          }
+
+          costoUnitarioItem = Number(producto.costoUnitarioPromedio) || 0;
+          const consumoTotal = Number(itemVendido.cantidad);
 
           if (Number(producto.stockActual) < consumoTotal) {
-            throw new Error(
-              `Stock insuficiente para ${producto.nombre}. Se requiere ${consumoTotal}, solo hay ${producto.stockActual}.`,
+            throw new BadRequestException(
+              `Stock insuficiente para el producto ${producto.nombre}. Se requiere ${consumoTotal}, solo hay ${producto.stockActual}.`,
             );
           }
 
+          // Descargar INVENTARIO (Producto directo)
           producto.stockActual = Number(producto.stockActual) - consumoTotal;
           await queryRunner.manager.save(Producto, producto);
+
+          // ----------------------------------------------------
+          // 3. CASO: ERROR DE DTO (Ni Receta ni Producto)
+          // ----------------------------------------------------
+        } else {
+          throw new BadRequestException(
+            'Cada ítem vendido debe especificar idReceta o idProducto.',
+          );
         }
+
+        // 4. CREACIÓN DEL DETALLE DE VENTA (Común a ambos)
+        const detalleVenta = queryRunner.manager.create(DetalleVenta, {
+          // Asegúrate de mapear idReceta/idProducto correctamente en la entidad DetalleVenta
+          ...itemVendido,
+          idVenta: nuevaVenta.id,
+          costoUnitario: costoUnitarioItem, // Usar el costo calculado
+        });
+        await queryRunner.manager.save(DetalleVenta, detalleVenta);
       }
 
       await queryRunner.commitTransaction();
@@ -122,8 +174,21 @@ export class VentasService {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
       }
+
+      // Lanzar excepciones controladas (4xx) directamente
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+
+      // Si no es un error controlado, se lanza como 500 con un mensaje más seguro
       let msg = 'Error desconocido en la transacción de venta.';
-      if (error instanceof Error && error.message) msg = error.message;
+      if (error instanceof Error && error.message) {
+        msg = error.message;
+      }
       throw new InternalServerErrorException(msg);
     } finally {
       await queryRunner.release();

@@ -37,8 +37,8 @@ export class ComprasService {
           idCompra: nuevaCompra.id,
           idProducto: item.idProducto,
           cantidad: item.cantidad,
-          precioUnitarioCompra: item.precioUnitarioCompra,
-          subTotal: item.cantidad * item.precioUnitarioCompra,
+          precioUnitario: item.precioUnitario,
+          subTotal: item.cantidad * item.precioUnitario,
         });
         await queryRunner.manager.save(DetalleCompra, detalle);
 

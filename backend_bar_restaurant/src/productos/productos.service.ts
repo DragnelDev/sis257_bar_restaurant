@@ -17,14 +17,14 @@ export class ProductosService {
   ) {}
 
   async create(createProductoDto: CreateProductoDto): Promise<Producto> {
-    const { nombre, descripcion, unidadMedida, idCategoria } =
+    const { nombre, descripcion, idUnidadAlmacenamiento, idCategoria } =
       createProductoDto;
 
     const productoExistente = await this.productosRepository.findOne({
       where: {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
-        unidadMedida,
+        idUnidadAlmacenamiento,
         idCategoria,
       },
     });
@@ -41,8 +41,9 @@ export class ProductosService {
       select: {
         id: true,
         nombre: true,
+        urlImagen: true,
         descripcion: true,
-        unidadMedida: true,
+        idUnidadAlmacenamiento: true,
         stockActual: true,
         stockMinimo: true,
         costoUnitarioPromedio: true,

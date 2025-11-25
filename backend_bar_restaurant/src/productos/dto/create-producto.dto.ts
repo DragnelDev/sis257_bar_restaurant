@@ -26,6 +26,17 @@ export class CreateProductoDto {
   )
   readonly nombre: string;
 
+  @ApiProperty({ description: 'URL de la imagen representativa de la receta.' })
+  @IsNotEmpty({ message: 'La URL de la imagen es obligatoria' })
+  @IsString({ message: 'La URL de la imagen debe ser de tipo cadena' })
+  @MaxLength(255, {
+    message: 'La URL de la imagen no debe ser mayor a 255 caracteres',
+  })
+  @Transform(({ value }): string | undefined =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  readonly urlImagen: string;
+
   @ApiProperty()
   @IsNotEmpty({ message: 'El campo descripcion no debe estar vacío' })
   @IsString({ message: 'El campo descripcion debe ser de tipo cadena' })
@@ -38,12 +49,11 @@ export class CreateProductoDto {
   readonly descripcion: string;
 
   @ApiProperty()
-  @IsDefined({ message: 'El campo unidadMedida debe estar definido' })
-  @IsString({ message: 'El campo unidadMedida debe ser de tipo cadena' })
-  @MaxLength(30, {
-    message: 'El campo unidadMedida no debe exceder los 30 caracteres',
+  @IsDefined({ message: 'El campo idUnidadAlmacenamiento debe estar definido' })
+  @IsInt({
+    message: 'El campo idUnidadAlmacenamiento debe ser de tipo numérico',
   })
-  readonly unidadMedida: string;
+  readonly idUnidadAlmacenamiento: number;
 
   @ApiProperty()
   @IsDefined({ message: 'El campo costoUnitarioPromedio debe estar definido' })
@@ -52,4 +62,12 @@ export class CreateProductoDto {
     { message: 'El campo costoUnitarioPromedio debe ser de tipo numérico' },
   )
   readonly costoUnitarioPromedio: number;
+
+  @ApiProperty()
+  @IsDefined({ message: 'El campo perecedero debe estar definido' })
+  readonly perecedero: boolean;
+
+  @ApiProperty()
+  @IsDefined({ message: 'El campo esVendible debe estar definido' })
+  readonly esVendible: boolean;
 }
