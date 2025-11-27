@@ -34,7 +34,7 @@ export class RecetasService {
       relations: [
         'ingredientes',
         'ingredientes.producto',
-        'ingredientes.unidadConsumo',
+        'ingredientes.producto.unidadMedida',
       ],
     });
 
@@ -59,31 +59,43 @@ export class RecetasService {
   }
 
   async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
+    console.log('📥 DTO recibido:', JSON.stringify(createRecetaDto, null, 2));
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const { detalles, categoria, ...recetaData } = createRecetaDto;
+      const { detalles, idCategoria, ...recetaData } = createRecetaDto;
+      console.log('✅ Desestructuración OK');
+      console.log('  - idCategoria:', idCategoria);
+      console.log('  - detalles:', detalles);
 
       const existente = await queryRunner.manager.findOneBy(Receta, {
         nombreReceta: recetaData.nombreReceta,
       });
+
       if (existente) {
         throw new ConflictException('La receta con ese nombre ya existe.');
       }
+      console.log('✅ No existe receta duplicada');
 
-      // Resolver la categoría por nombre (el DTO trae `categoria` como string)
       const categoriaEntity = await queryRunner.manager.findOne(Categoria, {
-        where: { nombre: categoria },
+        where: { id: idCategoria },
       });
+
       if (!categoriaEntity) {
-        throw new NotFoundException(`La categoría '${categoria}' no existe`);
+        throw new NotFoundException(
+          `La categoría con id ${idCategoria} no existe`,
+        );
       }
+      console.log('✅ Categoría encontrada:', categoriaEntity.nombre);
+
+      // ... resto del código
 
       let nuevaReceta = queryRunner.manager.create(Receta, {
         ...recetaData,
-        idCategoria: categoriaEntity.id,
+        idCategoria: idCategoria,
       });
       nuevaReceta = await queryRunner.manager.save(Receta, nuevaReceta);
 
@@ -137,23 +149,25 @@ export class RecetasService {
     await queryRunner.startTransaction();
 
     try {
-      const { detalles, categoria, ...recetaData } = updateRecetaDto;
+      const { detalles, idCategoria, ...recetaData } = updateRecetaDto;
 
       const receta = await queryRunner.manager.findOneBy(Receta, { id });
       if (!receta) {
         throw new NotFoundException(`La receta con ID ${id} no existe`);
       }
 
-      // Si el DTO trae `categoria` como nombre, resolver y usar `idCategoria`.
+      // Si el DTO trae `idCategoria`, validar que exista y aplicarlo.
       const patch: Partial<Receta> = { ...recetaData };
-      if (typeof categoria === 'string' && categoria.trim().length > 0) {
+      if (typeof idCategoria !== 'undefined') {
         const categoriaEntity = await queryRunner.manager.findOne(Categoria, {
-          where: { nombre: categoria },
+          where: { id: idCategoria },
         });
         if (!categoriaEntity) {
-          throw new NotFoundException(`La categoría '${categoria}' no existe`);
+          throw new NotFoundException(
+            `La categoría con id ${idCategoria} no existe`,
+          );
         }
-        patch.idCategoria = categoriaEntity.id;
+        patch.idCategoria = idCategoria;
       }
 
       queryRunner.manager.merge(Receta, receta, patch);
@@ -209,9 +223,10 @@ export class RecetasService {
   async findAll(): Promise<Receta[]> {
     return this.recetasRepository.find({
       relations: [
+        'categoria',
         'ingredientes',
         'ingredientes.producto',
-        'ingredientes.unidadConsumo',
+        'ingredientes.producto.unidadMedida',
       ],
       order: { nombreReceta: 'ASC' },
     });
@@ -221,9 +236,10 @@ export class RecetasService {
     const receta = await this.recetasRepository.findOne({
       where: { id },
       relations: [
+        'categoria',
         'ingredientes',
         'ingredientes.producto',
-        'ingredientes.unidadConsumo',
+        'ingredientes.producto.unidadMedida',
       ],
     });
     if (!receta) throw new NotFoundException('La receta no existe');

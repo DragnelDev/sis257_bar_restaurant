@@ -40,16 +40,12 @@ export class CreateRecetaDto {
   @Min(0, { message: 'El precio no puede ser negativo' })
   readonly precioVentaActual: number;
 
-  @ApiProperty({ description: 'Categoría a la que pertenece la receta.' })
-  @IsNotEmpty({ message: 'La categoría es obligatoria' })
-  @IsString({ message: 'La categoría debe ser de tipo cadena' })
-  @MaxLength(50, {
-    message: 'La categoría no debe ser mayor a 50 caracteres',
+  @ApiProperty({
+    description: 'ID de la categoría a la que pertenece la receta.',
   })
-  @Transform(({ value }): string | undefined =>
-    typeof value === 'string' ? value.trim() : value,
-  )
-  readonly categoria: string;
+  @IsNotEmpty({ message: 'El ID de la categoría es obligatorio' })
+  @IsNumber({}, { message: 'El ID de la categoría debe ser numérico' })
+  readonly idCategoria: number;
 
   @ApiProperty({ description: 'URL de la imagen representativa de la receta.' })
   @IsNotEmpty({ message: 'La URL de la imagen es obligatoria' })

@@ -1,92 +1,80 @@
 <script setup lang="ts">
-import type { Compra, CreateCompraDto, CreateDetalleCompraDto } from '@/models/compra'
+import type { Compra, CreateCompraDto, DetalleCompra } from '@/models/compra'
 import type { Proveedor } from '@/models/Proveedor'
 import type { Producto } from '@/models/producto'
 
-import { useAuthStore } from '@/stores'
 import http from '@/plugins/axios'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Button, Dialog, InputNumber, Dropdown, Panel, InputText } from 'primevue'
 import { useToast } from 'primevue/usetoast'
+import { useAuthStore } from '@/stores'
 
-import { computed, ref, watch, onMounted } from 'vue'
+// Eventos que se emitirán al padre
+const emit = defineEmits(['guardar', 'close'])
 
-const ENDPOINT = 'compras'
+// Props
+const props = defineProps<{
+  mostrar: boolean
+}>()
+
+// Control desde el padre
+const dialogVisible = ref(props.mostrar)
+watch(
+  () => props.mostrar,
+  (value) => (dialogVisible.value = value),
+)
+
+// Store y toast
 const authStore = useAuthStore()
 const toast = useToast()
 
-function getUserId(): number {
-  const u: any = authStore.user
-  if (!u) return 1
-
-  if (typeof u === 'number') return u
-
-  if (typeof u === 'string') {
-    const numeric = parseInt(u)
-    if (!isNaN(numeric)) return numeric
-
-    try {
-      const json = JSON.parse(u)
-      return json?.id || 1
-    } catch {}
-    return 1
-  }
-
-  if (typeof u === 'object') {
-    return u.id || 1
-  }
-
-  return 1
-}
-
-function getUserDisplay(): string {
-  const u: any = authStore.user
-  if (!u) return ''
-
-  if (typeof u === 'string') {
-    try {
-      return JSON.parse(u)?.usuario || u
-    } catch {}
-    return u
-  }
-
-  if (typeof u === 'object') return u.usuario || String(u.id)
-
-  return String(u)
-}
-
-const props = defineProps({
-  mostrar: Boolean,
-  compra: {
-    type: Object as () => Compra,
-    default: () => ({}) as Compra,
-  },
-  modoEdicion: Boolean,
+// Datos compra
+const localCompra = ref<Compra>({
+  idProveedor: 0,
+  idUsuario: 0,
+  numeroFactura: '',
+  fechaRecepcion: new Date().toISOString().slice(0, 10),
 })
 
-const emit = defineEmits(['guardar', 'close'])
+const detallesCompra = ref<DetalleCompra[]>([])
 
-const dialogVisible = computed({
-  get: () => props.mostrar,
-  set: (value) => {
-    if (!value) emit('close')
-  },
-})
-
-const localCompra = ref<Compra>({ ...(props.compra as Compra) })
-const detallesCompra = ref<CreateDetalleCompraDto[]>([])
-const nuevoDetalleItem = ref<CreateDetalleCompraDto>({
-  idProducto: 0,
-  cantidad: 1,
-  precioUnitarioCompra: 0,
-})
-
+// Proveedores y productos
 const proveedores = ref<Proveedor[]>([])
 const productos = ref<Producto[]>([])
-
 const proveedorSeleccionado = ref<Proveedor | null>(null)
 const productoSeleccionado = ref<Producto | null>(null)
 
+// Detalle temporal
+const nuevoDetalleItem = ref<DetalleCompra>({
+  idProducto: 0,
+  cantidad: 1,
+  precioUnitario: 0,
+})
 
+// Total
+const totalCalculado = computed(() =>
+  detallesCompra.value
+    .reduce((sum, d) => sum + d.cantidad * d.precioUnitario, 0)
+    .toFixed(2),
+)
+
+// Obtener usuario logueado
+function getUserId(): number {
+  const u: any = authStore.user
+  if (!u) return 1
+  if (typeof u === 'number') return u
+  if (typeof u === 'string') {
+    const parsed = parseInt(u)
+    if (!isNaN(parsed)) return parsed
+    try {
+      return JSON.parse(u)?.id || 1
+    } catch {}
+  }
+  if (typeof u === 'object') return u.id || 1
+  return 1
+}
+
+// Cargar proveedores y productos
 onMounted(async () => {
   try {
     const [resProv, resProd] = await Promise.all([
@@ -97,335 +85,218 @@ onMounted(async () => {
     proveedores.value = resProv.data
     productos.value = resProd.data
 
-    if (props.modoEdicion && localCompra.value.idProveedor) {
-      proveedorSeleccionado.value =
-        proveedores.value.find((p) => p.id === localCompra.value.idProveedor) || null
-    }
+    proveedorSeleccionado.value = proveedores.value[0] ?? null
+    if (proveedorSeleccionado.value)
+      localCompra.value.idProveedor = proveedorSeleccionado.value.id
   } catch (e) {
-    console.error('Error cargando proveedores/productos', e)
+    console.error('Error cargando datos', e)
   }
 })
 
-watch(
-  () => props.mostrar,
-  (visible) => {
-    if (!visible) return
-
-    if (!props.modoEdicion) {
-      if (!localCompra.value.fechaCompra) {
-        localCompra.value.fechaCompra = new Date().toISOString().slice(0, 10)
-      }
-
-      if (!proveedorSeleccionado.value && proveedores.value.length > 0) {
-        proveedorSeleccionado.value = proveedores.value[0]
-      }
-    }
-  },
-)
-
-watch(
-  () => props.compra,
-  (newVal) => {
-    localCompra.value = { ...(newVal as Compra) }
-
-    detallesCompra.value = newVal?.detalles
-      ? newVal.detalles.map((d) => ({
-          idProducto: d.idProducto,
-          cantidad: d.cantidad,
-          precioUnitarioCompra: d.precioUnitarioCompra,
-        }))
-      : []
-
-    if (newVal?.idProveedor) {
-      proveedorSeleccionado.value =
-        proveedores.value.find((p) => p.id === newVal.idProveedor) || null
-    }
-  },
-  { immediate: true },
-)
-
-watch(proveedorSeleccionado, (n) => {
-  if (n) localCompra.value.idProveedor = n.id
+// Sincronizar proveedor
+watch(proveedorSeleccionado, (p) => {
+  if (p) localCompra.value.idProveedor = p.id
 })
 
-watch(productoSeleccionado, (n) => {
-  if (n) nuevoDetalleItem.value.idProducto = n.id
+// Sincronizar producto
+watch(productoSeleccionado, (p) => {
+  if (p) nuevoDetalleItem.value.idProducto = p.id
 })
 
+// Agregar detalle
 function agregarDetalle() {
-  if (!nuevoDetalleItem.value.idProducto || nuevoDetalleItem.value.cantidad <= 0) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Validación',
-      detail: 'Seleccione un producto y cantidad válida.',
-    })
+  if (!nuevoDetalleItem.value.idProducto) {
+    toast.add({ severity: 'warn', summary: 'Validación', detail: 'Seleccione un producto.' })
     return
   }
 
-  const idx = detallesCompra.value.findIndex(
+  const index = detallesCompra.value.findIndex(
     (d) => d.idProducto === nuevoDetalleItem.value.idProducto,
   )
 
-  if (idx !== -1) {
-    detallesCompra.value[idx].cantidad += nuevoDetalleItem.value.cantidad
-
-    toast.add({
-      severity: 'info',
-      summary: 'Actualizado',
-      detail: 'Cantidad sumada al producto.',
-    })
+  if (index !== -1) {
+    detallesCompra.value[index].cantidad += nuevoDetalleItem.value.cantidad
   } else {
     detallesCompra.value.push({ ...nuevoDetalleItem.value })
-
-    toast.add({
-      severity: 'success',
-      summary: 'Agregado',
-      detail: 'Producto añadido al detalle.',
-    })
   }
 
-  nuevoDetalleItem.value = { idProducto: 0, cantidad: 1, precioUnitarioCompra: 0 }
+  toast.add({ severity: 'success', summary: 'Agregado', detail: 'Producto añadido.' })
+
+  nuevoDetalleItem.value = { idProducto: 0, cantidad: 1, precioUnitario: 0 }
   productoSeleccionado.value = null
 }
 
+// Eliminar detalle
 function eliminarDetalle(index: number) {
   detallesCompra.value.splice(index, 1)
 }
 
-const totalCalculado = computed(() =>
-  detallesCompra.value.reduce((sum, d) => sum + d.cantidad * d.precioUnitarioCompra, 0).toFixed(2),
-)
-
+// Guardar compra
 async function handleSave() {
+  if (!localCompra.value.idProveedor) {
+    toast.add({ severity: 'warn', summary: 'Proveedor requerido', detail: 'Seleccione un proveedor.' })
+    return
+  }
+
+  if (detallesCompra.value.length === 0) {
+    toast.add({ severity: 'warn', summary: 'Detalle vacío', detail: 'Agregue al menos un producto.' })
+    return
+  }
+
   try {
-    if (!localCompra.value.idProveedor) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Proveedor requerido',
-        detail: 'Seleccione un proveedor.',
-      })
-      return
-    }
-
-    if (!props.modoEdicion && detallesCompra.value.length === 0) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Detalle vacío',
-        detail: 'Agregue al menos un producto.',
-      })
-      return
-    }
-
-    const fechaCompra =
-      localCompra.value.fechaCompra instanceof Date
-        ? localCompra.value.fechaCompra.toISOString().slice(0, 10)
-        : localCompra.value.fechaCompra
-
-    const fechaRecepcion =
-      localCompra.value.fechaRecepcion instanceof Date
-        ? localCompra.value.fechaRecepcion.toISOString().slice(0, 10)
-        : localCompra.value.fechaRecepcion
-
     const body: CreateCompraDto = {
       idProveedor: localCompra.value.idProveedor,
       idUsuario: getUserId(),
-      fechaCompra,
-      numeroFactura: localCompra.value.numeroFactura || '',
-      fechaRecepcion: fechaRecepcion || '',
+      numeroFactura: localCompra.value.numeroFactura,
+      fechaRecepcion: localCompra.value.fechaRecepcion,
       detalles: detallesCompra.value,
     }
 
-    if (props.modoEdicion) {
-      await http.patch(`${ENDPOINT}/${localCompra.value.id}`, body)
-    } else {
-      await http.post(ENDPOINT, body)
-    }
+    await http.post('compras', body)
 
-    toast.add({
-      severity: 'success',
-      summary: props.modoEdicion ? 'Actualizado' : 'Registrado',
-      detail: props.modoEdicion ? 'Compra actualizada.' : 'Compra registrada.',
-    })
+    toast.add({ severity: 'success', summary: 'Registrado', detail: 'Compra creada.' })
 
-    emit('guardar')
-    dialogVisible.value = false
+    emit('guardar') // notifica al padre
+    emit('close') // cierra modal en el padre
 
-    localCompra.value = {} as Compra
-    detallesCompra.value = []
+    cerrarDialogo()
   } catch (error: any) {
-    const msg = error?.response?.data?.message || error?.message || 'Error al guardar la compra.'
-
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: msg,
-      life: 6000,
+      detail: error?.response?.data?.message || 'Error al registrar.',
     })
   }
+}
+
+function cerrarDialogo() {
+  dialogVisible.value = false
+  resetForm()
+}
+
+function resetForm() {
+  localCompra.value = {
+    idProveedor: 0,
+    idUsuario: 0,
+    numeroFactura: '',
+    fechaRecepcion: new Date().toISOString().slice(0, 10),
+  }
+  detallesCompra.value = []
+  proveedorSeleccionado.value = proveedores.value[0] ?? null
 }
 </script>
 
 <template>
-  <div class="card d-flex justify-content-center">
-    <Dialog
-      v-model:visible="dialogVisible"
-      :header="props.modoEdicion ? 'Editar Compra' : 'Registrar Compra'"
-      :style="{ width: '90vw', maxWidth: '55rem' }"
-      modal
-      class="compra-dialog p-fluid"
-    >
-      <div class="grid p-fluid form-layout">
-        <div class="col-12 md:col-6">
-          <label class="block font-medium mb-2">Número Factura</label>
-          <InputText v-model="localCompra.numeroFactura" placeholder="Ingrese número de factura" />
-        </div>
+  <Dialog
+    v-model:visible="dialogVisible"
+    header="Registrar Compra"
+    :modal="true"
+    :style="{ width: '90vw', maxWidth: '55rem' }"
+    @hide="emit('close')"
+  >
+    <div class="grid p-fluid form-layout">
+      <div class="col-12 md:col-6">
+        <label>Número Factura</label>
+        <InputText v-model="localCompra.numeroFactura" placeholder="Ingrese número de factura" />
+      </div>
 
-        <div class="col-12 md:col-6">
-          <label class="block font-medium mb-2">Fecha Recepción</label>
-          <input
-            type="date"
-            class="p-inputtext p-component w-full"
-            :value="localCompra.fechaRecepcion"
-            @input="localCompra.fechaRecepcion = $event.target.value"
-          />
-        </div>
+      <div class="col-12 md:col-6">
+        <label>Fecha Recepción</label>
+        <input type="date" v-model="localCompra.fechaRecepcion" class="p-inputtext w-full" />
+      </div>
 
-        <div class="col-12 md:col-6">
-          <label class="block font-medium mb-2">Proveedor</label>
+      <div class="col-12 md:col-6">
+        <label>Proveedor</label>
+        <Dropdown
+          v-model="proveedorSeleccionado"
+          :options="proveedores"
+          optionLabel="nombreEmpresa"
+          class="w-full"
+          filter
+        />
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label>Total</label>
+        <InputNumber
+          :modelValue="Number(totalCalculado)"
+          mode="currency"
+          currency="BOB"
+          locale="es-BO"
+          readonly
+          class="w-full"
+        />
+      </div>
+    </div>
+
+    <Panel header="Añadir Producto" class="mb-4 mt-3">
+      <div class="grid p-fluid">
+        <div class="col-12 md:col-5">
+          <label>Producto</label>
           <Dropdown
-            v-model="proveedorSeleccionado"
-            :options="proveedores"
-            optionLabel="nombreEmpresa"
-            placeholder="Proveedor"
-            class="w-full"
+            v-model="productoSeleccionado"
+            :options="productos"
+            optionLabel="nombre"
+            placeholder="Selecciona un producto"
             filter
+            class="w-full"
           />
         </div>
 
-        <div class="col-12 md:col-6">
-          <label class="block font-medium mb-2">Total</label>
+        <div class="col-6 md:col-2">
+          <label>Cantidad</label>
+          <InputNumber v-model="nuevoDetalleItem.cantidad" :min="1" class="w-full" />
+        </div>
+
+        <div class="col-6 md:col-3">
+          <label>Precio Unitario</label>
           <InputNumber
-            :modelValue="Number(totalCalculado)"
+            v-model="nuevoDetalleItem.precioUnitario"
+            :min="0"
+            :step="0.01"
             mode="currency"
             currency="BOB"
             locale="es-BO"
-            readonly
             class="w-full"
           />
         </div>
-      </div>
 
-      <h4 class="mt-4">Detalles de la Compra</h4>
-
-      <Panel header="Añadir Producto" class="mb-4">
-        <div class="grid p-fluid">
-          <div class="col-12 md:col-5">
-            <label class="block font-medium mb-2">Producto</label>
-            <Dropdown
-              v-model="productoSeleccionado"
-              :options="productos"
-              optionLabel="nombre"
-              placeholder="Selecciona un producto"
-              filter
-              class="w-full"
-            />
-          </div>
-
-          <div class="col-6 md:col-2">
-            <label class="block font-medium mb-2">Cantidad</label>
-            <InputNumber
-              v-model="nuevoDetalleItem.cantidad"
-              :min="1"
-              :showButtons="true"
-              class="w-full"
-            />
-          </div>
-
-          <div class="col-6 md:col-3">
-            <label class="block font-medium mb-2">Precio Unitario</label>
-            <InputNumber
-              v-model="nuevoDetalleItem.precioUnitarioCompra"
-              mode="currency"
-              currency="BOB"
-              locale="es-BO"
-              :min="0"
-              :step="0.01"
-              class="w-full"
-            />
-          </div>
-
-          <div class="col-12 md:col-2 flex align-items-end">
-            <Button
-              icon="pi pi-plus"
-              label="Agregar"
-              class="w-full p-button-sm"
-              @click="agregarDetalle"
-            />
-          </div>
+        <div class="col-12 md:col-2 flex align-items-end">
+          <Button label="Agregar" icon="pi pi-plus" class="w-full" @click="agregarDetalle" />
         </div>
-      </Panel>
-
-      <div class="card p-0 overflow-auto">
-        <table class="p-datatable-table w-full compra-details-table">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th class="text-right">Cantidad</th>
-              <th class="text-right">Costo Unitario</th>
-              <th class="text-right">Subtotal</th>
-              <th class="text-center">Acción</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="(detalle, index) in detallesCompra" :key="index">
-              <td>
-                {{ productos.find((p) => p.id === detalle.idProducto)?.nombre }}
-              </td>
-              <td class="text-right">{{ detalle.cantidad }}</td>
-              <td class="text-right">
-                {{ detalle.precioUnitarioCompra.toFixed(2) }}
-              </td>
-              <td class="text-right">
-                {{ (detalle.cantidad * detalle.precioUnitarioCompra).toFixed(2) }}
-              </td>
-              <td class="text-center">
-                <Button icon="pi pi-trash" text severity="danger" @click="eliminarDetalle(index)" />
-              </td>
-            </tr>
-
-            <tr v-if="detallesCompra.length === 0">
-              <td colspan="5" class="text-center p-3 text-color-secondary">
-                No hay productos en esta compra.
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
+    </Panel>
 
-      <div class="flex justify-content-end mt-4">
-        <h3 class="font-bold text-xl">Total Compra: {{ totalCalculado }} BOB</h3>
-      </div>
+    <table class="p-datatable-table w-full compra-details-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th class="text-right">Cantidad</th>
+          <th class="text-right">Costo Unitario</th>
+          <th class="text-right">Subtotal</th>
+          <th class="text-center">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(detalle, index) in detallesCompra" :key="index">
+          <td>{{ productos.find((p) => p.id === detalle.idProducto)?.nombre }}</td>
+          <td class="text-right">{{ detalle.cantidad }}</td>
+          <td class="text-right">{{ detalle.precioUnitario.toFixed(2) }}</td>
+          <td class="text-right">
+            {{ (detalle.cantidad * detalle.precioUnitario).toFixed(2) }}
+          </td>
+          <td class="text-center">
+            <Button icon="pi pi-trash" text severity="danger" @click="eliminarDetalle(index)" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-      <template #footer>
-        <div class="flex justify-content-end gap-2">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            severity="secondary"
-            outlined
-            @click="dialogVisible = false"
-          ></Button>
-
-          <Button
-            :label="props.modoEdicion ? 'Actualizar' : 'Registrar'"
-            icon="pi pi-save"
-            @click="handleSave"
-          ></Button>
-        </div>
-      </template>
-    </Dialog>
-  </div>
+    <template #footer>
+      <Button label="Cancelar" icon="pi pi-times" outlined @click="cerrarDialogo" />
+      <Button label="Registrar" icon="pi pi-save" @click="handleSave" />
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>
@@ -435,29 +306,9 @@ async function handleSave() {
   gap: 1rem;
 }
 
-.compra-details-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
 .compra-details-table th,
 .compra-details-table td {
   padding: 0.75rem;
   border-bottom: 1px solid var(--surface-border);
-}
-
-.compra-details-table th {
-  background: var(--surface-ground);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-}
-
-@media screen and (max-width: 576px) {
-  .compra-dialog {
-    width: 100vw !important;
-    height: 100vh;
-    border-radius: 0;
-  }
 }
 </style>

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { Categoria } from '@/models/Categoria'
 import type { Producto } from '@/models/producto'
+import type { UnidadMedida } from '@/models/UnidadMedida'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputText, InputNumber, Dropdown } from 'primevue'
 import { computed, ref, watch } from 'vue'
 
 const ENDPOINT = 'productos'
+
 const props = defineProps({
   mostrar: Boolean,
   producto: {
@@ -14,10 +16,11 @@ const props = defineProps({
   },
   modoEdicion: Boolean,
 })
+
 const emit = defineEmits(['guardar', 'close'])
 
 const categorias = ref<Categoria[]>([])
-const UNIDADES = ['Litro', 'Kilo', 'Unidad', 'g', 'ml']
+const unidadesMedida = ref<UnidadMedida[]>([])
 
 const dialogVisible = computed({
   get: () => props.mostrar,
@@ -26,29 +29,43 @@ const dialogVisible = computed({
   },
 })
 
+/* -----------------------------------------------
+   Default producto ALINEADO con tu backend
+-------------------------------------------------- */
 const defaultProducto = (): Producto => ({
   id: 0,
-  idCategoria: 0,
   nombre: '',
   descripcion: '',
-  unidadMedida: '',
+  urlImagen: '',
   stockActual: 0,
+  stockMinimo: 0,
   costoUnitarioPromedio: 0,
   perecedero: false,
-  categoria: {
-    id: 0,
-    nombre: '',
-    descripcion: '',
-  },
+  esVendible: false,
+
+  categoria: { id: 0, nombre: '' },
+  unidadMedida: { id: 0, nombre: '', simbolo: '' },
+
+  // IDs para el form
+  idCategoria: 0 as any,
+  idUnidadMedida: 0 as any,
 })
 
 const productos = ref<Producto>(defaultProducto())
 
+/* -----------------------------------------------
+   CARGAR PRODUCTO EN MODO EDICIÓN
+-------------------------------------------------- */
 watch(
   () => props.producto,
-  (newVal) => {
-    if (newVal) {
-      productos.value = { ...defaultProducto(), ...(newVal as Producto) }
+  (nuevo) => {
+    if (props.modoEdicion && nuevo) {
+      productos.value = {
+        ...defaultProducto(),
+        ...nuevo,
+        idCategoria: nuevo.categoria?.id ?? 0,
+        idUnidadMedida: nuevo.unidadMedida?.id ?? 0,
+      }
     } else {
       productos.value = defaultProducto()
     }
@@ -56,19 +73,32 @@ watch(
   { immediate: true },
 )
 
+/* -----------------------------------------------
+   CARGAR LISTAS DEL BACKEND
+-------------------------------------------------- */
 async function obtenerCategorias() {
-  categorias.value = await http.get('categorias').then((response) => response.data)
+  categorias.value = await http.get('categorias').then((res) => res.data)
 }
 
+async function obtenerUnidades() {
+  // AJUSTADO AL BACKEND ACTUAL
+  unidadesMedida.value = await http.get('unidad-medidas').then((res) => res.data)
+}
+
+/* -----------------------------------------------
+   GUARDAR PRODUCTO
+-------------------------------------------------- */
 async function handleSave() {
   try {
     const body = {
       idCategoria: productos.value.idCategoria,
-      nombre: productos.value.nombre,
-      descripcion: productos.value.descripcion,
-      unidadMedida: productos.value.unidadMedida,
+      nombre: productos.value.nombre.trim(),
+      descripcion: productos.value.descripcion.trim(),
+      urlImagen: productos.value.urlImagen,
+      idUnidadMedida: productos.value.idUnidadMedida,
       costoUnitarioPromedio: productos.value.costoUnitarioPromedio,
       perecedero: productos.value.perecedero,
+      esVendible: productos.value.esVendible,
     }
 
     if (props.modoEdicion) {
@@ -80,17 +110,21 @@ async function handleSave() {
     emit('guardar')
     productos.value = defaultProducto()
     dialogVisible.value = false
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto'
-    console.error('Error al guardar:', error)
-    alert(errorMessage)
+  } catch (err) {
+    console.error(err)
+    alert('Error al guardar producto')
   }
 }
+
+/* -----------------------------------------------
+   CUANDO SE ABRE EL MODAL, CARGAR DATOS
+-------------------------------------------------- */
 watch(
   () => props.mostrar,
-  (nuevoValor) => {
-    if (nuevoValor) {
+  (nuevo) => {
+    if (nuevo) {
       obtenerCategorias()
+      obtenerUnidades()
     }
   },
 )
@@ -101,46 +135,69 @@ watch(
     <Dialog
       v-model:visible="dialogVisible"
       :header="props.modoEdicion ? 'Editar Producto' : 'Crear Producto'"
-      style="width: 25rem"
+      style="width: 28rem"
     >
+      <!-- NOMBRE -->
       <div class="flex items-center gap-4 mb-4">
-        <label for="nombre" class="font-semibold w-3">Nombre</label>
-        <InputText
-          id="nombre"
-          v-model="productos.nombre"
-          class="flex-auto"
-          autocomplete="off"
-          autofocus
-        />
+        <label class="font-semibold w-4">Nombre</label>
+        <InputText v-model="productos.nombre" class="flex-auto" />
       </div>
 
+      <!-- CATEGORÍA -->
       <div class="flex items-center gap-4 mb-4">
-        <label for="categoria" class="font-semibold w-3">Categoria</label>
+        <label class="font-semibold w-4">Categoría</label>
         <Dropdown
-          id="categoria"
           v-model="productos.idCategoria"
           :options="categorias"
           optionLabel="nombre"
           optionValue="id"
           class="flex-auto"
-          placeholder="Seleccione una categoría"
+          placeholder="Seleccione categoría"
         />
       </div>
 
+      <!-- DESCRIPCIÓN -->
       <div class="flex items-center gap-4 mb-4">
-        <label for="descripcion" class="font-semibold w-3">Descripción</label>
+        <label class="font-semibold w-4">Descripción</label>
+        <InputText v-model="productos.descripcion" class="flex-auto" />
+      </div>
+
+      <!-- URL IMAGEN -->
+      <div class="flex items-center gap-4 mb-4">
+        <label class="font-semibold w-4">URL Imagen</label>
         <InputText
-          id="descripcion"
-          v-model="productos.descripcion"
+          v-model="productos.urlImagen"
           class="flex-auto"
-          autocomplete="off"
+          placeholder="https://ejemplo.com/imagen.jpg"
         />
       </div>
 
+      <!-- PREVIEW -->
+      <div v-if="productos.urlImagen" class="mb-3 text-center">
+        <img
+          :src="productos.urlImagen"
+          alt="preview"
+          style="max-width: 150px; border-radius: 8px"
+        />
+      </div>
+
+      <!-- UNIDAD MEDIDA -->
       <div class="flex items-center gap-4 mb-4">
-        <label for="costoPromedio" class="font-semibold w-3">Costo Promedio</label>
+        <label class="font-semibold w-4">Unidad</label>
+        <Dropdown
+          v-model="productos.idUnidadMedida"
+          :options="unidadesMedida"
+          optionLabel="nombre"
+          optionValue="id"
+          class="flex-auto"
+          placeholder="Seleccione unidad"
+        />
+      </div>
+
+      <!-- COSTO PROMEDIO -->
+      <div class="flex items-center gap-4 mb-4">
+        <label class="font-semibold w-4">Costo Prom.</label>
         <InputNumber
-          id="costoPromedio"
           v-model="productos.costoUnitarioPromedio"
           mode="currency"
           currency="BOB"
@@ -149,33 +206,23 @@ watch(
         />
       </div>
 
+      <!-- PERECEDERO -->
       <div class="flex items-center gap-4 mb-4">
-        <label for="unidadMedida" class="font-semibold w-3">Unidad Medida</label>
-        <Dropdown
-          id="unidadMedida"
-          v-model="productos.unidadMedida"
-          :options="UNIDADES"
-          class="flex-auto"
-          placeholder="Seleccione unidad"
-        />
+        <label class="font-semibold w-4">Perecedero</label>
+        <input type="checkbox" v-model="productos.perecedero" />
       </div>
 
+      <!-- ES VENDIBLE -->
       <div class="flex items-center gap-4 mb-4">
-        <label for="perecedero" class="font-semibold w-3">Perecedero</label>
-        <input id="perecedero" type="checkbox" v-model="productos.perecedero" />
+        <label class="font-semibold w-4">Vendible</label>
+        <input type="checkbox" v-model="productos.esVendible" />
       </div>
+
+      <!-- BOTONES -->
       <div class="flex justify-end gap-2">
-        <Button
-          type="button"
-          label="Cancelar"
-          icon="pi pi-times"
-          severity="secondary"
-          @click="dialogVisible = false"
-        />
-        <Button type="button" label="Guardar" icon="pi pi-save" @click="handleSave" />
+        <Button label="Cancelar" severity="secondary" @click="dialogVisible = false" />
+        <Button label="Guardar" @click="handleSave" />
       </div>
     </Dialog>
   </div>
 </template>
-
-<style scoped></style>

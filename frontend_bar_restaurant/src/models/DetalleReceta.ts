@@ -6,7 +6,6 @@ export interface DetalleReceta {
   idReceta: number
   idProducto: number
   cantidadConsumida: number
-  unidadConsumo: string
 
   receta: Receta
   producto: Producto

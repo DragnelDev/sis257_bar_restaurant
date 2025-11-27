@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from '../../plugins/axios'
 import { useAuth } from '../../composables/useAuth'
 
 const ENDPOINT = 'ventas'
-// --- 1. INTERFACES (Adaptadas de tu backend) ---
+
+// -------------------- TIPOS / INTERFACES --------------------
 interface Receta {
   id: number
   nombreReceta: string
@@ -13,50 +15,83 @@ interface Receta {
   urlImagen: string
 }
 
+interface Producto {
+  id: number
+  nombre: string
+  costoUnitarioPromedio: number
+  esVendible: boolean
+  urlImagen?: string
+}
+
+type MenuUnifiedItem = {
+  type: 'receta' | 'producto'
+  id: number
+  nombre: string
+  precio: number
+  categoria: string
+  urlImagen: string
+}
+
 interface DetalleVentaItem {
-  idReceta: number
+  type: 'receta' | 'producto'
+  id: number
   name: string
   price: number
   quantity: number
   subtotal: number
 }
 
-// --- 2. PROPS y EMITS ---
+// -------------------- PROPS / EMITS --------------------
 const props = defineProps<{
-  initialMesaId: number // ID de la mesa actual
-  initialVentaId?: number | null // ID de la venta si se está editando una orden existente
+  initialMesaId: number
+  initialVentaId?: number | null
 }>()
 
-const emit = defineEmits(['close']) // Para que el botón "Volver" funcione
+const emit = defineEmits(['close'])
 
-// --- 3. ESTADO LOCAL DE LA VENTA ---
-const currentOrder = ref<DetalleVentaItem[]>([]) // El carrito
+// -------------------- ESTADO LOCAL --------------------
+const currentOrder = ref<DetalleVentaItem[]>([])
 const mesaId = ref(props.initialMesaId)
-const ventaId = ref(props.initialVentaId || null)
+const ventaId = ref<number | null>(props.initialVentaId ?? null)
 
 // Auth
 const { user, checkAuth } = useAuth()
 checkAuth()
 
-// ESTADO DE FILTROS Y BÚSQUEDA
+// Router
+const router = useRouter()
+
+const goToMesas = async () => {
+  try {
+    await router.push({ name: 'admin-mesas' })
+  } catch (e) {
+    emit('close')
+  }
+}
+
+// filtros y búsqueda
 const selectedCategory = ref('all')
 const searchQuery = ref('')
 
-// ESTADO DE PAGO
+// pago y facturación
 const tipoPago = ref('EFECTIVO')
 const montoRecibido = ref<number | null>(null)
-
-// ESTADO DE FACTURACIÓN (NUEVOS CAMPOS)
 const requiereFactura = ref(false)
 const nitCI = ref('')
 const nombreFiscal = ref('')
 
-// --- 4. DATOS DEL MENÚ (serán cargados desde /recetas y normalizados) ---
+// datos cargados
 const menuItems = ref<Receta[]>([])
+const menuProductos = ref<Producto[]>([])
 
-// Normaliza posibles estructuras de la API a la forma que usa el componente
-const normalizeReceta = (r: unknown): Receta => {
-  const obj: any = r as any
+// -------------------- UTILIDADES --------------------
+const formatPrice = (v: unknown) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? n.toFixed(2) : '0.00'
+}
+
+// -------------------- LOADERS --------------------
+const normalizeReceta = (obj: any): Receta => {
   const precioRaw = obj.precioVentaActual ?? obj.price ?? 0
   let precioNum = 0
   if (typeof precioRaw === 'string') {
@@ -70,7 +105,6 @@ const normalizeReceta = (r: unknown): Receta => {
     id: obj.id,
     nombreReceta: obj.nombreReceta || obj.name || 'Sin nombre',
     precioVentaActual: precioNum,
-    // Soporta `categoria` como string o como objeto { nombre }
     categoria:
       typeof obj.categoria === 'string'
         ? obj.categoria
@@ -79,35 +113,19 @@ const normalizeReceta = (r: unknown): Receta => {
   }
 }
 
-// Formatea precios de forma segura para la plantilla
-const formatPrice = (v: unknown) => {
-  const n = Number(v)
-  return Number.isFinite(n) ? n.toFixed(2) : '0.00'
-}
-
 const loadMenu = async () => {
   try {
     const res = await axios.get('/recetas')
-    // Manejar varias envolturas comunes: res.data, res.data.data, res.data.items
-    let data: unknown = res?.data
-    if (data && (data as any).data) data = (data as any).data
-    if (data && (data as any).items) data = (data as any).items
-
+    let data: any = res?.data
+    if (data && data.data) data = data.data
+    if (data && data.items) data = data.items
     if (!Array.isArray(data)) {
       console.warn('Respuesta de /recetas inesperada:', res)
       menuItems.value = []
       return
     }
-
-    const normalized = (data as unknown[]).map((r) => normalizeReceta(r))
-    menuItems.value = normalized
-    console.debug(
-      `Menú cargado: ${menuItems.value.length} recetas. Categorías:`,
-      Array.from(new Set(menuItems.value.map((m) => m.categoria))),
-    )
-    // Si está vacío en desarrollo, opcionalmente poblar con ejemplo para visualización
+    menuItems.value = (data as any[]).map((r) => normalizeReceta(r))
     if (menuItems.value.length === 0 && import.meta.env.DEV) {
-      console.info('Falló carga de recetas; usando datos de ejemplo en modo DEV')
       menuItems.value = [
         {
           id: 999,
@@ -127,7 +145,6 @@ const loadMenu = async () => {
     }
   } catch (err) {
     console.warn('No se pudo cargar el menú desde /recetas:', err)
-    // Fallback en modo desarrollo para facilitar pruebas
     if (import.meta.env.DEV) {
       menuItems.value = [
         {
@@ -137,13 +154,6 @@ const loadMenu = async () => {
           categoria: 'principal',
           urlImagen: '/img/hamburguesa.jpg',
         },
-        {
-          id: 998,
-          nombreReceta: 'Ejemplo - Papas',
-          precioVentaActual: 15,
-          categoria: 'acompañamiento',
-          urlImagen: '/img/papas.jpg',
-        },
       ]
     } else {
       menuItems.value = []
@@ -151,69 +161,177 @@ const loadMenu = async () => {
   }
 }
 
-// Cargar una venta existente y poblar el carrito
+const loadProductosVendibles = async () => {
+  try {
+    const res = await axios.get('/productos')
+    let data: any = res?.data
+    if (data && data.data) data = data.data
+    if (!Array.isArray(data)) {
+      menuProductos.value = []
+      return
+    }
+    menuProductos.value = (data as any[])
+      .filter((p) => p.esVendible === true)
+      .map((p) => ({
+        id: p.id,
+        nombre: p.nombre || p.name || 'Sin nombre',
+        costoUnitarioPromedio: Number(p.costoUnitarioPromedio ?? p.costo ?? 0) || 0,
+        esVendible: true,
+        urlImagen: p.urlImagen ?? p.image ?? '/img/default-product.jpg',
+      }))
+  } catch (err) {
+    console.warn('Error cargando productos vendibles:', err)
+    menuProductos.value = []
+  }
+}
+
+// -------------------- VENTAS EXISTENTES --------------------
 const loadVenta = async (vId: number) => {
   try {
     const res = await axios.get(`/${ENDPOINT}/${vId}`)
-    let data = res?.data
-    if (data && (data as any).data) data = (data as any).data
+    let data: any = res?.data
+    if (data && data.data) data = data.data
 
-    if (!data || !Array.isArray(data.detalles)) {
-      console.warn('Venta no encontrada o sin detalles:', res)
+    if (!data) {
+      console.warn('Venta no encontrada:', res)
       return
     }
 
-    // Poblar currentOrder con los detalles existentes
-    currentOrder.value = (data.detalles as any[]).map((d: any) => ({
-      idReceta: d.idReceta,
-      name: d.name || d.nombreReceta || 'Sin nombre',
-      price: Number(d.price ?? d.precioUnitarioVenta ?? 0),
-      quantity: Number(d.quantity ?? d.cantidad ?? 0),
-      subtotal:
-        Number(d.quantity ?? d.cantidad ?? 0) * Number(d.price ?? d.precioUnitarioVenta ?? 0),
-    }))
+    // Mapear detalles (acepta idProducto o idReceta)
+    if (Array.isArray(data.detalles)) {
+      currentOrder.value = (data.detalles as any[]).map((d) => {
+        const isProducto = d.idProducto != null && d.idProducto !== undefined
+        const isReceta = d.idReceta != null && d.idReceta !== undefined
+        const id = isProducto ? d.idProducto : d.idReceta
+        const type = isProducto ? 'producto' : 'receta'
+        const name =
+          d.name ||
+          d.nombre ||
+          d.nombreReceta ||
+          (type === 'producto' ? `Producto #${id}` : `Receta #${id}`)
 
-    // Cargar otros datos de la venta
+        const price = Number(d.precioUnitario ?? d.precioUnitarioVenta ?? d.price ?? 0) || 0
+        const quantity = Number(d.cantidad ?? d.quantity ?? 0) || 0
+
+        return {
+          type,
+          id,
+          name,
+          price,
+          quantity,
+          subtotal: price * quantity,
+        } as DetalleVentaItem
+      })
+    } else {
+      currentOrder.value = []
+    }
+
     tipoPago.value = data.tipoPago || 'EFECTIVO'
     requiereFactura.value = data.requiereFactura || false
     nitCI.value = data.nitCI || ''
     nombreFiscal.value = data.nombreFiscal || ''
 
-    console.debug(`Venta #${vId} cargada: ${currentOrder.value.length} ítems`)
+    console.debug(`Venta #${vId} cargada con ${currentOrder.value.length} ítems`)
   } catch (err) {
     console.warn(`No se pudo cargar la venta #${vId}:`, err)
   }
 }
 
+// -------------------- ON MOUNT --------------------
 onMounted(() => {
   loadMenu()
-  // Si hay una venta existente, cargarla
+  loadProductosVendibles()
   if (props.initialVentaId) {
     loadVenta(props.initialVentaId)
   }
 })
 
-// Sincronizar cambios en props (en caso de que las props cambien)
+// -------------------- WATCHERS --------------------
 watch(
   () => props.initialMesaId,
-  (newMesaId) => {
-    mesaId.value = newMesaId
+  (n) => {
+    mesaId.value = n
   },
 )
 
 watch(
   () => props.initialVentaId,
-  (newVentaId) => {
-    if (newVentaId) {
-      ventaId.value = newVentaId
-      loadVenta(newVentaId)
+  (n) => {
+    if (n) {
+      ventaId.value = n
+      loadVenta(n)
     }
   },
 )
 
-// --- 5. PROPIEDADES COMPUTADAS ---
+// -------------------- UNIFIED MENU & FILTRADO --------------------
+const allItems = computed<MenuUnifiedItem[]>(() => {
+  const recetas = menuItems.value.map((r) => ({
+    type: 'receta' as const,
+    id: r.id,
+    nombre: r.nombreReceta,
+    precio: r.precioVentaActual,
+    categoria: r.categoria,
+    urlImagen: r.urlImagen,
+  }))
+  const productos = menuProductos.value.map((p) => ({
+    type: 'producto' as const,
+    id: p.id,
+    nombre: p.nombre,
+    precio: p.costoUnitarioPromedio,
+    categoria: 'producto',
+    urlImagen: p.urlImagen ?? '/img/default-product.jpg',
+  }))
+  return [...recetas, ...productos]
+})
+
+const filteredItems = computed(() => {
+  return allItems.value.filter((item) => {
+    const matchesCategory =
+      selectedCategory.value === 'all' || item.categoria === selectedCategory.value
+    const matchesSearch = item.nombre.toLowerCase().includes(searchQuery.value.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+})
+
+const uniqueCategories = computed(() => {
+  const set = new Set<string>()
+  allItems.value.forEach((i) => set.add(i.categoria || 'producto'))
+  return ['all', ...Array.from(set)]
+})
+
+// -------------------- CARRITO --------------------
+const addItemToOrder = (item: MenuUnifiedItem) => {
+  const existing = currentOrder.value.find((i) => i.type === item.type && i.id === item.id)
+  if (existing) {
+    existing.quantity += 1
+    existing.subtotal = existing.price * existing.quantity
+    return
+  }
+  currentOrder.value.push({
+    type: item.type,
+    id: item.id,
+    name: item.nombre,
+    price: Number(item.precio) || 0,
+    quantity: 1,
+    subtotal: Number(item.precio) || 0,
+  })
+}
+
+const updateItemQuantity = (id: number, change: number, type: 'receta' | 'producto') => {
+  const item = currentOrder.value.find((i) => i.id === id && i.type === type)
+  if (!item) return
+  item.quantity += change
+  if (item.quantity <= 0) {
+    currentOrder.value = currentOrder.value.filter((i) => !(i.id === id && i.type === type))
+  } else {
+    item.subtotal = item.quantity * item.price
+  }
+}
+
+// -------------------- CALCULOS --------------------
 const totalPagar = computed(() => {
-  return currentOrder.value.reduce((sum, item) => sum + item.subtotal, 0)
+  return currentOrder.value.reduce((sum, it) => sum + (Number(it.subtotal) || 0), 0)
 })
 
 const vuelto = computed(() => {
@@ -227,68 +345,7 @@ const vuelto = computed(() => {
   return 0
 })
 
-const filteredItems = computed(() => {
-  return menuItems.value.filter((item) => {
-    const matchesCategory =
-      selectedCategory.value === 'all' || item.categoria === selectedCategory.value
-    const matchesSearch = item.nombreReceta.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
-})
-
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    principal: 'primary',
-    acompañamiento: 'success',
-    bebidas: 'info',
-    postres: 'warning',
-  }
-  return colors[category] || 'secondary'
-}
-
-// Lista dinámica de categorías (incluye 'all')
-const uniqueCategories = computed(() => {
-  const set = new Set<string>()
-  menuItems.value.forEach((m) => set.add(m.categoria || 'principal'))
-  return ['all', ...Array.from(set)]
-})
-
-const formatCategoryLabel = (c: string) => {
-  if (c === 'all') return 'Todas las Categorias'
-  return c.charAt(0).toUpperCase() + c.slice(1)
-}
-
-// --- 6. LÓGICA DE CARRITO (ÍDEM ANTERIOR) ---
-const addItemToOrder = (item: Receta) => {
-  const existingItem = currentOrder.value.find((i) => i.idReceta === item.id)
-
-  if (existingItem) {
-    existingItem.quantity += 1
-    existingItem.subtotal = existingItem.quantity * existingItem.price
-  } else {
-    currentOrder.value.push({
-      idReceta: item.id,
-      name: item.nombreReceta,
-      price: Number(item.precioVentaActual) || 0,
-      quantity: 1,
-      subtotal: Number(item.precioVentaActual) || 0,
-    })
-  }
-}
-
-const updateItemQuantity = (idReceta: number, change: number) => {
-  const item = currentOrder.value.find((i) => i.idReceta === idReceta)
-  if (item) {
-    item.quantity += change
-    if (item.quantity <= 0) {
-      currentOrder.value = currentOrder.value.filter((i) => i.idReceta !== idReceta)
-    } else {
-      item.subtotal = item.quantity * item.price
-    }
-  }
-}
-
-// --- 7. LÓGICA DE PAGO/CIERRE DE VENTA (EL PUNTO CLAVE) ---
+// -------------------- CHECKOUT / POST --------------------
 const checkout = async () => {
   if (currentOrder.value.length === 0) {
     alert('La orden está vacía. No se puede procesar la venta.')
@@ -303,20 +360,11 @@ const checkout = async () => {
     return
   }
 
-  // VALIDACIÓN DE FACTURA
   if (requiereFactura.value && (!nitCI.value || !nombreFiscal.value)) {
     alert('Debe ingresar el NIT/CI y la Razón Social para emitir la factura.')
     return
   }
 
-  // 1. Mapear la orden al DTO de tu backend
-  const detallesVenta = currentOrder.value.map((item) => ({
-    idReceta: item.idReceta,
-    cantidad: item.quantity,
-    precioUnitarioVenta: item.price,
-  }))
-
-  // Validaciones de integridad (evitar FK violations)
   if (!mesaId.value || Number(mesaId.value) === 0) {
     alert('La venta debe estar asociada a una mesa válida. Verifique la mesa asignada.')
     return
@@ -328,45 +376,50 @@ const checkout = async () => {
     return
   }
 
-  // 2. Construir el objeto de Venta con DATOS FISCALES
+  // Mapear detalles al esquema esperado por el backend
+  const detallesVenta = currentOrder.value.map((item) => ({
+    idProducto: item.type === 'producto' ? item.id : null,
+    idReceta: item.type === 'receta' ? item.id : null,
+    cantidad: item.quantity,
+    precioUnitario: item.price,
+  }))
+
   const ventaPayload: any = {
     idMesa: Number(mesaId.value),
     idUsuario: idUsuario,
     total: totalPagar.value,
-    estado: 'PAGADA', // CRÍTICO: Activa descuento de stock
+    estado: 'PAGADA',
     tipoPago: tipoPago.value,
     detalles: detallesVenta,
     requiereFactura: requiereFactura.value,
-    // El backend suele esperar strings para nit/nombre; enviar cadena vacía si no aplica
     nitCI: requiereFactura.value ? nitCI.value : '',
     nombreFiscal: requiereFactura.value ? nombreFiscal.value : '',
   }
+
   try {
-    // --- 3. ENVÍO AL BACKEND (NestJS) ---
     const endpoint = ventaId.value ? `/${ENDPOINT}/${ventaId.value}/pagar` : `/${ENDPOINT}`
-
-    console.debug(`Enviando venta a ${endpoint}:`, ventaPayload)
+    console.debug('Enviando venta:', ventaPayload)
     const res = await axios.post(endpoint, ventaPayload)
-
-    console.info('Respuesta del servidor al crear/pagar venta:', res?.data)
-    alert(`✅ Venta procesada con éxito. Total: $${totalPagar.value.toFixed(2)}.`)
-
-    // 4. Limpiar y Emitir evento para volver
-    currentOrder.value = []
-    montoRecibido.value = null
-    // Opcional: actualizar ventaId si backend devuelve el id
-    if (res?.data?.id) ventaId.value = res.data.id
-    emit('close')
-  } catch (error) {
+    console.info('Venta procesada:', res?.data)
+      alert(`✅ Venta procesada con éxito. Total: $${totalPagar.value.toFixed(2)}.`)
+      currentOrder.value = []
+      montoRecibido.value = null
+      if (res?.data?.id) ventaId.value = res.data.id
+      // Navegar automáticamente a la vista de Mesas
+      try {
+        await router.push({ name: 'admin-mesas' })
+      } catch (e) {
+        // si falla la navegación, emitir el evento de cierre como fallback
+        emit('close')
+      }
+  } catch (error: any) {
     console.error('Error al procesar la venta:', error)
-    // Mostrar detalles si la respuesta del servidor provee información
-    const err: any = error
-    if (err.response && err.response.data) {
-      const serverData = err.response.data
+    if (error.response && error.response.data) {
+      const serverData = error.response.data
       const msg = serverData.message || serverData.error || JSON.stringify(serverData)
       alert(`❌ Error al procesar la venta: ${msg}`)
-    } else if (err.message) {
-      alert(`❌ Error al procesar la venta: ${err.message}`)
+    } else if (error.message) {
+      alert(`❌ Error al procesar la venta: ${error.message}`)
     } else {
       alert('❌ Error al procesar la venta. Intente de nuevo.')
     }
@@ -380,10 +433,10 @@ const checkout = async () => {
       <div>
         <h2 class="mb-1">Punto de Venta (POS)</h2>
         <p class="text-muted">
-          Mesa Asignada: **{{ mesaId }}** | Venta ID: {{ ventaId || 'Nueva' }}
+          Mesa Asignada: <strong>{{ mesaId }}</strong> | Venta ID: {{ ventaId || 'Nueva' }}
         </p>
       </div>
-      <button class="btn btn-secondary" @click="emit('close')">
+      <button class="btn btn-secondary" @click="goToMesas">
         <i class="fa fa-arrow-left me-1"></i> Volver a Mesas
       </button>
     </div>
@@ -397,14 +450,14 @@ const checkout = async () => {
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Buscar plato..."
+                  placeholder="Buscar plato o producto..."
                   v-model="searchQuery"
                 />
               </div>
               <div class="col-md-5">
                 <select class="form-select" v-model="selectedCategory">
                   <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
-                    {{ formatCategoryLabel(cat) }}
+                    {{ cat === 'all' ? 'Todas las Categorías' : (cat.charAt(0).toUpperCase() + cat.slice(1)) }}
                   </option>
                 </select>
               </div>
@@ -413,21 +466,21 @@ const checkout = async () => {
         </div>
 
         <div class="row g-3 menu-grid scrollable-menu">
-          <div v-for="item in filteredItems" :key="item.id" class="col-lg-3 col-md-4 col-sm-6">
+          <div v-for="item in filteredItems" :key="item.type + '-' + item.id" class="col-lg-3 col-md-4 col-sm-6">
             <div class="menu-item-card text-center" @click="addItemToOrder(item)">
               <img
                 :src="item.urlImagen"
-                :alt="item.nombreReceta"
+                :alt="item.nombre"
                 class="img-fluid rounded mb-2"
                 style="height: 100px; object-fit: cover"
               />
               <div class="mb-1">
-                <span :class="['badge', 'bg-' + getCategoryColor(item.categoria)]">
-                  {{ item.categoria }}
+                <span :class="['badge', item.type === 'receta' ? 'bg-primary' : 'bg-secondary']">
+                  {{ item.type === 'receta' ? item.categoria : 'producto' }}
                 </span>
               </div>
-              <h6 class="mb-0">{{ item.nombreReceta }}</h6>
-              <span class="price fw-bold">${{ formatPrice(item.precioVentaActual) }}</span>
+              <h6 class="mb-0">{{ item.nombre }}</h6>
+              <span class="price fw-bold">${{ formatPrice(item.precio) }}</span>
             </div>
           </div>
         </div>
@@ -441,32 +494,31 @@ const checkout = async () => {
 
           <div class="card-body p-0 order-list-body">
             <ul class="list-group list-group-flush order-list">
-              <li
-                v-if="currentOrder.length === 0"
-                class="list-group-item text-muted text-center py-4"
-              >
+              <li v-if="currentOrder.length === 0" class="list-group-item text-muted text-center py-4">
                 Agregue ítems del menú.
               </li>
+
               <li
                 v-for="item in currentOrder"
-                :key="item.idReceta"
+                :key="item.type + '-' + item.id"
                 class="list-group-item d-flex align-items-center justify-content-between"
               >
                 <div>
                   <span class="badge bg-primary me-2">{{ item.quantity }}x</span>
                   <strong>{{ item.name }}</strong>
+                  <small class="text-muted ms-2">({{ item.type }})</small>
                 </div>
                 <div class="d-flex align-items-center">
                   <div class="btn-group btn-group-sm me-3" role="group">
                     <button
                       class="btn btn-outline-danger"
-                      @click="updateItemQuantity(item.idReceta, -1)"
+                      @click="updateItemQuantity(item.id, -1, item.type)"
                     >
                       <i class="fa fa-minus"></i>
                     </button>
                     <button
                       class="btn btn-outline-success"
-                      @click="updateItemQuantity(item.idReceta, 1)"
+                      @click="updateItemQuantity(item.id, 1, item.type)"
                     >
                       <i class="fa fa-plus"></i>
                     </button>
@@ -523,9 +575,7 @@ const checkout = async () => {
                 id="requiereFactura"
                 v-model="requiereFactura"
               />
-              <label class="form-check-label" for="requiereFactura"
-                >El cliente requiere Factura</label
-              >
+              <label class="form-check-label" for="requiereFactura">El cliente requiere Factura</label>
             </div>
 
             <div v-if="requiereFactura">
@@ -581,17 +631,18 @@ const checkout = async () => {
 }
 
 .scrollable-menu {
-  max-height: 70vh; /* Altura máxima del menú */
+  max-height: 70vh;
   overflow-y: auto;
 }
 
 .sticky-top-card {
   position: sticky;
   top: 20px;
+  z-index: 5;
 }
 
 .order-list-body {
-  max-height: 40vh; /* Altura máxima para la lista de ítems */
+  max-height: 40vh;
   overflow-y: auto;
 }
 </style>

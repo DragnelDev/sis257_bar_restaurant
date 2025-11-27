@@ -18,12 +18,4 @@ export class ItemRecetaDto {
   )
   @Min(0.001, { message: 'La cantidad consumida debe ser mayor a cero' })
   readonly cantidadConsumida: number;
-
-  // Se asume que la unidadConsumo se obtiene del Producto, o se añade aquí si es necesario.
-  @ApiProperty({
-    description: 'Unidad de medida en la que se expresa la cantidad consumida.',
-  })
-  @IsDefined({ message: 'El campo idUnidadConsumo debe estar definido' })
-  @IsInt({ message: 'El campo idUnidadConsumo debe ser un número entero' })
-  readonly idUnidadConsumo: number;
 }

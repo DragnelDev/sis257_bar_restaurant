@@ -1,6 +1,5 @@
 import { Producto } from 'src/productos/entities/producto.entity';
 import { Receta } from 'src/recetas/entities/receta.entity';
-import { UnidadMedida } from 'src/unidad-medidas/entities/unidad-medida.entity';
 import {
   Column,
   CreateDateColumn,
@@ -22,9 +21,6 @@ export class DetalleReceta {
 
   @Column('integer', { name: 'id_producto' })
   idProducto: number;
-
-  @Column('integer', { name: 'id_unidad_consumo' })
-  idUnidadConsumo: number;
 
   @Column({
     type: 'numeric',
@@ -53,9 +49,4 @@ export class DetalleReceta {
   @ManyToOne(() => Producto, (producto) => producto.detallesReceta)
   @JoinColumn({ name: 'id_producto', referencedColumnName: 'id' })
   producto: Producto;
-
-  // Relación N:1 con UnidadMedida (Unidad de Consumo)
-  @ManyToOne(() => UnidadMedida, (unidad) => unidad.detallesConsumo)
-  @JoinColumn({ name: 'id_unidad_consumo', referencedColumnName: 'id' })
-  unidadConsumo: UnidadMedida;
 }

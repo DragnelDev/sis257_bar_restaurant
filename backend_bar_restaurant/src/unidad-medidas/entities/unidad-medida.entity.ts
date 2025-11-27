@@ -1,4 +1,3 @@
-import { DetalleReceta } from 'src/detalle-recetas/entities/detalle-receta.entity';
 import { Producto } from 'src/productos/entities/producto.entity';
 import {
   Column,
@@ -33,12 +32,8 @@ export class UnidadMedida {
   // --- Relaciones inversas ---
 
   // 1. Relación inversa con Producto (Unidad de Almacenamiento)
-  @OneToMany(() => Producto, (producto) => producto.unidadAlmacenamiento)
-  productosAlmacenados: Producto[];
-
-  // 2. Relación inversa con DetalleReceta (Unidad de Consumo)
-  @OneToMany(() => DetalleReceta, (detalle) => detalle.unidadConsumo)
-  detallesConsumo: DetalleReceta[];
+  @OneToMany(() => Producto, (producto) => producto.unidadMedida)
+  producto: Producto[];
 
   // --- Auditoría ---
   @CreateDateColumn({ name: 'fecha_creacion' })

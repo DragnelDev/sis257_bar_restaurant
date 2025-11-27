@@ -1,42 +1,91 @@
-import type { Proveedor } from './Proveedor'
-import type { Usuario } from './Usuario'
+// ================================
+// PRODUCTO
+// ================================
+export interface Producto {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  urlImagen: string;
+  stockActual: number;
+  stockMinimo: number;
+  costoUnitarioPromedio: number;
+  perecedero: boolean;
 
+  categoria?: {
+    id: number;
+    nombre: string;
+  };
+
+  unidadAlmacenamiento?: {
+    id: number;
+    nombre: string;
+    simbolo: string;
+  };
+}
+
+// ================================
+// DETALLE DE COMPRA
+// ================================
+export interface DetalleCompra {
+  id: number;
+  idCompra: number;
+  idProducto: number;
+  cantidad: number;
+  precioUnitario: number;
+  subTotal: number;
+  producto?: Producto;
+}
+
+// ================================
+// PROVEEDOR
+// ================================
+export interface Proveedor {
+  id: number;
+  nombre: string;
+  nit: string;
+  telefono: string;
+  direccion: string;
+  correo: string;
+}
+
+// ================================
+// USUARIO
+// ================================
+export interface Usuario {
+  id: number;
+  nombre: string;
+  rol: string;
+}
+
+// ================================
+// COMPRA (Cabecera)
+// ================================
 export interface Compra {
-  id: number
-  idProveedor: number
-  idUsuario: number
-  fechaCompra: Date | string // Tipo fecha
-  numeroFactura: string
-  fechaRecepcion: Date | string
-  total: number
+  id: number;
+  fechaCreacion: string;
+  numeroFactura: string;
+  tipoComprobante: string;
 
-  // Detalles de la compra
-  detalles: [
-    {
-      idProducto: number
-      cantidad: number
-      precioUnitarioCompra: number
-    },
-  ]
+  proveedor: Proveedor;
+  usuario: Usuario;
 
-  // Relaciones opcionales
-  proveedor?: Proveedor
-  usuario?: Usuario
+  detallesCompra: DetalleCompra[];
 }
 
-// Para el cuerpo de cada item de la compra
+// ================================
+// DTO para crear compras
+// ================================
 export interface CreateDetalleCompraDto {
-  idProducto: number
-  cantidad: number
-  precioUnitarioCompra: number
+  idProducto: number;
+  cantidad: number;
+  precioUnitario: number;
 }
 
-// Para el cuerpo principal de la compra (POST /compras)
 export interface CreateCompraDto {
-  idProveedor: number
-  idUsuario: number
-  fechaCompra: string | Date
-  numeroFactura: string
-  fechaRecepcion: string | Date
-  detalles: CreateDetalleCompraDto[]
+  idProveedor?: number;
+  idUsuario: number;
+  numeroFactura: string;
+  fechaRecepcion: string;
+  tipoComprobante: string;
+  detallesCompra: CreateDetalleCompraDto[];
 }

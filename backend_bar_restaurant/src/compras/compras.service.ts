@@ -70,10 +70,13 @@ export class ComprasService {
 
   async findAll(): Promise<Compra[]> {
     return this.comprasRepository.find({
-      relations: ['proveedor', 'usuario'],
-      order: {
-        fechaCreacion: 'DESC',
-      },
+      relations: [
+        'proveedor',
+        'usuario',
+        'detalleCompras',
+        'detalleCompras.producto',
+      ],
+      order: { fechaCreacion: 'DESC' },
     });
   }
 

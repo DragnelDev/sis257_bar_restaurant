@@ -24,7 +24,7 @@ export class Producto {
   idCategoria: number;
 
   @Column('integer', { name: 'id_unidad_almacenamiento' })
-  idUnidadAlmacenamiento: number;
+  idUnidadMedida: number;
 
   @Column('varchar', { length: 50 })
   nombre: string;
@@ -92,7 +92,7 @@ export class Producto {
   @OneToMany(() => DetalleVenta, (detalleVenta) => detalleVenta.producto)
   detalleVentas: DetalleVenta[];
 
-  @ManyToOne(() => UnidadMedida, (unidad) => unidad.productosAlmacenados)
+  @ManyToOne(() => UnidadMedida, (unidad) => unidad.producto)
   @JoinColumn({ name: 'id_unidad_almacenamiento', referencedColumnName: 'id' })
-  unidadAlmacenamiento: UnidadMedida;
+  unidadMedida: UnidadMedida;
 }

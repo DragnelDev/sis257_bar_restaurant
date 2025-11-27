@@ -17,14 +17,14 @@ export class ProductosService {
   ) {}
 
   async create(createProductoDto: CreateProductoDto): Promise<Producto> {
-    const { nombre, descripcion, idUnidadAlmacenamiento, idCategoria } =
+    const { nombre, descripcion, idUnidadMedida, idCategoria } =
       createProductoDto;
 
     const productoExistente = await this.productosRepository.findOne({
       where: {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
-        idUnidadAlmacenamiento,
+        idUnidadMedida,
         idCategoria,
       },
     });
@@ -36,25 +36,12 @@ export class ProductosService {
   }
 
   async findAll(): Promise<Producto[]> {
-    return this.productosRepository.find({
-      relations: { categoria: true },
-      select: {
-        id: true,
-        nombre: true,
-        urlImagen: true,
-        descripcion: true,
-        idUnidadAlmacenamiento: true,
-        stockActual: true,
-        stockMinimo: true,
-        costoUnitarioPromedio: true,
-        perecedero: true,
-        categoria: {
-          id: true,
-          nombre: true,
-        },
-      },
-      order: { nombre: 'ASC' },
-    });
+    return this.productosRepository
+      .createQueryBuilder('producto')
+      .leftJoinAndSelect('producto.categoria', 'categoria')
+      .leftJoinAndSelect('producto.unidadMedida', 'unidadMedida')
+      .orderBy('producto.nombre', 'ASC')
+      .getMany();
   }
 
   async findOne(id: number): Promise<Producto> {

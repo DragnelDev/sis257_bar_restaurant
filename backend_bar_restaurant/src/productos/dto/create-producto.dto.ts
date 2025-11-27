@@ -53,7 +53,7 @@ export class CreateProductoDto {
   @IsInt({
     message: 'El campo idUnidadAlmacenamiento debe ser de tipo numérico',
   })
-  readonly idUnidadAlmacenamiento: number;
+  readonly idUnidadMedida: number;
 
   @ApiProperty()
   @IsDefined({ message: 'El campo costoUnitarioPromedio debe estar definido' })

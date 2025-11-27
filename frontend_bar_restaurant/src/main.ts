@@ -9,6 +9,10 @@ import Aura from '@primevue/themes/aura'
 import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.min.css'
 
+// Syle main - Personalizado
+import './assets/styles/main.css'
+import './assets/styles/forms-light.css'
+
 // Import Bootstrap CSS and JS
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'

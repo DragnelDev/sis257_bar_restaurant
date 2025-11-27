@@ -49,9 +49,7 @@ export class UnidadMedidasService {
   }
 
   async findAll(): Promise<UnidadMedida[]> {
-    return this.unidadMedidasRepository.find({
-      order: { nombre: 'ASC' },
-    });
+    return await this.unidadMedidasRepository.find();
   }
 
   async findOne(id: number): Promise<UnidadMedida> {

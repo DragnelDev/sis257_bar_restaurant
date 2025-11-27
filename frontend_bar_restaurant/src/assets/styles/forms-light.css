@@ -1,0 +1,63 @@
+/* FORMULARIOS (inputs, textarea, number, search) */
+.p-inputtext,
+.p-dropdown,
+.p-dropdown-label,
+.p-dropdown-panel,
+.p-dialog,
+.p-card,
+.p-table {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* INPUTS */
+.p-inputtext {
+  border: 1px solid #ccc !important;
+}
+
+/* DROPDOWN (select PrimeVue) */
+.p-dropdown {
+  background-color: #ffffff !important;
+  color: #000 !important;
+  border: 1px solid #ccc !important;
+}
+
+/* Label del dropdown */
+.p-dropdown-label {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Panel desplegado */
+.p-dropdown-panel {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Elementos de la lista del Dropdown */
+.p-dropdown-items-wrapper,
+.p-dropdown-items,
+.p-dropdown-item {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Hover de elementos */
+.p-dropdown-item:hover {
+  background-color: #f0f0f0 !important;
+  color: #000 !important;
+}
+
+/* Item seleccionado */
+.p-dropdown-item.p-highlight {
+  background-color: #e0e0e0 !important;
+  color: #000 !important;
+}
+
+/* SCROLLBAR */
+.p-dropdown-items-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+.p-dropdown-items-wrapper::-webkit-scrollbar-thumb {
+  background: #999;
+}

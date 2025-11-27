@@ -2,13 +2,18 @@
 import RecetaList from '@/components/receta/RecetaList.vue'
 import RecetaSave from '@/components/receta/RecetaSave.vue'
 import type { Receta } from '@/models/Receta'
+import type { Producto } from '@/models/producto'
+import http from '@/plugins/axios'
 import Button from 'primevue/button'
-import { ref, type ComponentPublicInstance } from 'vue'
+import { ref, type ComponentPublicInstance, onMounted } from 'vue'
 
 const mostrarDialog = ref(false)
 type RecetaListInstance = ComponentPublicInstance & { obtenerLista?: () => void }
 const recetaListRef = ref<RecetaListInstance | null>(null)
 const recetaEdit = ref<Receta | null>(null)
+
+// Productos disponibles para usar en la receta
+const productos = ref<Producto[]>([])
 
 function handleCreate() {
   recetaEdit.value = null
@@ -25,9 +30,25 @@ function handleCloseDialog() {
 }
 
 function handleGuardar() {
-  // cuando se guarda, refrescamos la lista
+  // refrescar lista de recetas
   recetaListRef.value?.obtenerLista?.()
 }
+
+// ======================
+// Cargar productos
+// ======================
+async function cargarProductos() {
+  try {
+    const { data } = await http.get('productos')
+    productos.value = data
+  } catch (error) {
+    console.error('Error al cargar productos', error)
+  }
+}
+
+onMounted(() => {
+  cargarProductos()
+})
 </script>
 
 <template>
@@ -48,6 +69,7 @@ function handleGuardar() {
       :mostrar="mostrarDialog"
       :receta="recetaEdit ?? ({} as Receta)"
       :modoEdicion="!!recetaEdit"
+      :productos="productos"
       @guardar="handleGuardar"
       @close="handleCloseDialog"
     />

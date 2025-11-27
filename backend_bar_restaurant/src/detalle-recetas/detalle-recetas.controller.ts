@@ -1,5 +1,5 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { DetalleRecetasService } from './detalle-recetas.service';
+import { DetalleRecetaService } from './detalle-recetas.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -7,7 +7,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('detalle-recetas')
 export class DetalleRecetasController {
-  constructor(private readonly detalleRecetasService: DetalleRecetasService) {}
+  constructor(private readonly detalleRecetasService: DetalleRecetaService) {}
 
   @Get()
   findAll() {

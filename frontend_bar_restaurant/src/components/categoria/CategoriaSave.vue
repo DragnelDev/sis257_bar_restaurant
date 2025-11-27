@@ -1,110 +1,156 @@
 <script setup lang="ts">
 import type { Categoria } from '@/models/Categoria'
 import http from '@/plugins/axios'
-import { Button, Dialog, InputText } from 'primevue'
-import { computed, ref, watch } from 'vue'
+import { Button, Dialog, InputText, Dropdown } from 'primevue'
+import { ref, computed, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
 
 const ENDPOINT = 'categorias'
+const toast = useToast()
+
 const props = defineProps({
   mostrar: Boolean,
-  categoria: {
-    type: Object as () => Categoria,
-    default: () => ({}) as Categoria,
-  },
+  categoria: { type: Object as () => Categoria, default: () => ({}) as Categoria },
   modoEdicion: Boolean,
 })
+
 const emit = defineEmits(['guardar', 'close'])
 
 const dialogVisible = computed({
   get: () => props.mostrar,
-  set: (value) => {
-    if (!value) emit('close')
+  set: (v) => {
+    if (!v) emit('close')
   },
 })
 
-const categoria = ref<Categoria>({ ...props.categoria })
+const categoria = ref<Categoria>({
+  id: undefined,
+  nombre: '',
+  descripcion: '',
+  tipoCategoria: '',
+})
+
 watch(
   () => props.categoria,
-  (newVal) => {
-    categoria.value = { ...newVal }
+  (n) => {
+    if (n) categoria.value = { ...n }
   },
 )
 
+const opcionesTipo = [
+  { label: 'Inventario', value: 'INVENTARIO' },
+  { label: 'Menú', value: 'MENÚ' },
+]
+
+function limpiarFormulario() {
+  categoria.value = { nombre: '', descripcion: '', tipoCategoria: '' }
+}
+
 async function handleSave() {
+  if (!categoria.value.nombre.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Nombre requerido',
+      detail: 'Ingrese un nombre para la categoría',
+      life: 3000,
+    })
+    return
+  }
+  if (!categoria.value.tipoCategoria) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Tipo requerido',
+      detail: 'Seleccione un tipo de categoría',
+      life: 3000,
+    })
+    return
+  }
+
+  const body = {
+    nombre: categoria.value.nombre,
+    descripcion: categoria.value.descripcion,
+    tipoCategoria: categoria.value.tipoCategoria,
+  }
+
   try {
-    const body = {
-      nombre: categoria.value.nombre,
-      descripcion: categoria.value.descripcion,
-    }
-    if (props.modoEdicion) {
+    if (props.modoEdicion && categoria.value.id) {
       await http.patch(`${ENDPOINT}/${categoria.value.id}`, body)
+      toast.add({
+        severity: 'success',
+        summary: 'Categoría actualizada',
+        detail: `La categoría "${categoria.value.nombre}" se actualizó correctamente`,
+        life: 4000,
+      })
     } else {
       await http.post(ENDPOINT, body)
+      toast.add({
+        severity: 'success',
+        summary: 'Categoría creada',
+        detail: `La categoría "${categoria.value.nombre}" se creó correctamente`,
+        life: 4000,
+      })
     }
+
     emit('guardar')
-    categoria.value = {} as Categoria
+    limpiarFormulario()
     dialogVisible.value = false
-  } catch (error) {
-    let msg = 'Ocurrió un error'
-    if (typeof error === 'object' && error !== null) {
-      const e = error as Record<string, unknown>
-      const response = e['response'] as Record<string, unknown> | undefined
-      const data = response?.['data'] as Record<string, unknown> | undefined
-      const message = data?.['message']
-      if (typeof message === 'string') msg = message
-      else if (typeof e['message'] === 'string') msg = e['message'] as string
-      else {
-        try {
-          msg = JSON.stringify(e)
-        } catch {
-          msg = 'Ocurrió un error'
-        }
-      }
-    } else {
-      msg = String(error)
-    }
-    alert(msg)
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || error?.message || 'Error al guardar categoría'
+    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
   }
 }
 </script>
 
 <template>
-  <div class="card flex justify-center">
-    <Dialog
-      v-model:visible="dialogVisible"
-      :header="props.modoEdicion ? 'Editar Categoria' : 'Crear Categoria'"
-      style="width: 25rem"
-    >
-      <div class="flex items-center gap-4 mb-4">
-        <label for="nombre" class="font-semibold w-3">Nombre</label>
-        <InputText
-          id="nombre"
-          v-model="categoria.nombre"
-          class="flex-auto"
-          placeholder="Ingrese el nombre de la categoría"
-        />
-      </div>
-      <div class="flex items-center gap-4 mb-4">
-        <label for="descripcion" class="font-semibold w-3">Descripción</label>
-        <InputText
-          id="descripcion"
-          v-model="categoria.descripcion"
-          class="flex-auto"
-          placeholder="Ingrese la descripción de la categoría"
-        />
-      </div>
-      <div class="flex justify-end gap-2">
-        <Button
-          type="button"
-          label="Cancelar"
-          icon="pi pi-times"
-          severity="secondary"
-          @click="dialogVisible = false"
-        />
-        <Button type="button" label="Guardar" icon="pi pi-save" @click="handleSave" />
-      </div>
-    </Dialog>
-  </div>
+  <Dialog
+    v-model:visible="dialogVisible"
+    :header="props.modoEdicion ? 'Editar Categoría' : 'Crear Categoría'"
+    style="width: 25rem"
+    modal
+  >
+    <div class="flex items-center gap-4 mb-4">
+      <label for="nombre" class="font-semibold w-3">Nombre</label>
+      <InputText
+        id="nombre"
+        v-model="categoria.nombre"
+        class="flex-auto"
+        placeholder="Ingrese el nombre"
+      />
+    </div>
+
+    <div class="flex items-center gap-4 mb-4">
+      <label for="descripcion" class="font-semibold w-3">Descripción</label>
+      <InputText
+        id="descripcion"
+        v-model="categoria.descripcion"
+        class="flex-auto"
+        placeholder="Ingrese la descripción"
+      />
+    </div>
+
+    <div class="flex items-center gap-4 mb-4">
+      <label for="tipo" class="font-semibold w-3">Tipo</label>
+      <Dropdown
+        id="tipo"
+        v-model="categoria.tipoCategoria"
+        :options="opcionesTipo"
+        optionLabel="label"
+        optionValue="value"
+        class="flex-auto"
+        placeholder="Seleccione un tipo"
+      />
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        @click="dialogVisible = false"
+      />
+      <Button label="Guardar" icon="pi pi-save" @click="handleSave" />
+    </div>
+  </Dialog>
 </template>
 
 <style scoped></style>

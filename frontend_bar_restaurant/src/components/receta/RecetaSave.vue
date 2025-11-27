@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import type { Producto } from '@/models/producto'
 import http from '@/plugins/axios'
-import { Button, Dialog, InputNumber, Dropdown } from 'primevue'
-import { computed, ref, watch, onMounted } from 'vue'
+import { Button, Dialog, InputNumber, InputText, Textarea, Dropdown } from 'primevue'
+import { useToast } from 'primevue/usetoast'
+import { computed, ref, watch, onMounted, PropType } from 'vue'
 
+const toast = useToast()
 const ENDPOINT = 'recetas'
 
-// Tipos locales para el DTO de receta
+interface Categoria {
+  id: number
+  nombre: string
+  tipoCategoria: 'INVENTARIO' | 'MENÚ'
+}
+
 interface CreateDetalleRecetaDto {
   idProducto: number
   cantidadConsumida: number
-  unidadConsumo: string
 }
 
 interface CreateRecetaDto {
@@ -18,17 +24,18 @@ interface CreateRecetaDto {
   descripcion: string
   precioVentaActual: number
   urlImagen: string
-  categoria: string
+  idCategoria: number
   detalles: CreateDetalleRecetaDto[]
 }
 
 const props = defineProps({
   mostrar: Boolean,
-  receta: {
-    type: Object,
-    default: () => ({}),
-  },
+  receta: { type: Object, default: () => ({}) },
   modoEdicion: Boolean,
+  productos: {
+    type: Array as PropType<Producto[]>,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['guardar', 'close'])
@@ -40,154 +47,249 @@ const dialogVisible = computed({
   },
 })
 
-// Estado del formulario
-const nombreReceta = ref<string>(props.receta?.nombreReceta || '')
-const descripcion = ref<string>(props.receta?.descripcion || '')
-const precioVentaActual = ref<number>(props.receta?.precioVentaActual || 0)
-const urlImagen = ref<string>(props.receta?.urlImagen || '')
-const categoria = ref<string>(props.receta?.categoria || '')
+/* ---------------- ESTADOS ---------------- */
+const nombreReceta = ref('')
+const descripcion = ref('')
+const precioVentaActual = ref(0)
+const urlImagen = ref('')
+const categoria = ref<Categoria | null>(null)
 
-// Detalles
 const productos = ref<Producto[]>([])
+const categorias = ref<Categoria[]>([])
 const detalles = ref<CreateDetalleRecetaDto[]>([])
+
+const productoSeleccionado = ref<Producto | null>(null)
+const unidadSeleccionada = ref('')
+
 const nuevoDetalle = ref<CreateDetalleRecetaDto>({
   idProducto: 0,
   cantidadConsumida: 1,
-  unidadConsumo: '',
 })
-const productoSeleccionado = ref<Producto | null>(null)
+
 const saving = ref(false)
-// Categorías y unidades (enums/locales)
-const CATEGORIAS = ['Bebida', 'Comida', 'Postre', 'Entrada', 'Otro']
-const UNIDADES = ['Litro', 'Kilo', 'Unidad', 'g', 'ml']
-const categoriaSeleccionada = ref<string>(props.receta?.categoria || '')
-const categorias = ref<string[]>(CATEGORIAS)
+const imagenPreview = computed(() =>
+  urlImagen.value && urlImagen.value.trim() !== '' ? urlImagen.value : null,
+)
 
-// Mejora: estado derivado para habilitar botón y mostrar stock
-const canAddDetalle = computed(() => {
-  if (!nuevoDetalle.value.idProducto) return false
-  const cantidad = Number(nuevoDetalle.value.cantidadConsumida) || 0
-  if (cantidad <= 0) return false
-  if (!nuevoDetalle.value.unidadConsumo) return false
-  if (props.modoEdicion) return false
-
-  // Si existe stock conocido, la cantidad no debe excederlo
-  const stock = selectedProductStock.value
-  if (stock !== null && !isNaN(stock)) {
-    return cantidad <= stock
-  }
-
-  return true
-})
-
-const selectedProductStock = computed(() => {
-  const p = productoSeleccionado.value
-  if (!p) return null
-  // stock puede venir como string desde backend
-  const s = (p as any).stockActual
-  const n = typeof s === 'string' ? parseFloat(s) : Number(s)
-  return isNaN(n) ? null : n
-})
-
+/* ---------------- CARGA DE DATOS ---------------- */
 onMounted(async () => {
   try {
-    const res = await http.get<Producto[]>('productos')
-    productos.value = res.data
+    const [prodRes, catRes] = await Promise.all([
+      http.get<Producto[]>('productos'),
+      http.get<Categoria[]>('categorias'),
+    ])
+    productos.value = prodRes.data.filter((p) => !p.esVendible)
+    categorias.value = catRes.data.filter((c) => c.tipoCategoria === 'MENÚ')
   } catch (err) {
-    console.error('Error cargando productos:', err)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar los datos.',
+      life: 2500,
+    })
   }
 })
 
+/* ---------------- WATCH EDICIÓN ---------------- */
 watch(
   () => props.receta,
   (r) => {
-    if (r) {
-      nombreReceta.value = r.nombreReceta || ''
-      descripcion.value = r.descripcion || ''
-      precioVentaActual.value = r.precioVentaActual || 0
-      urlImagen.value = r.urlImagen || ''
-      categoria.value = r.categoria || ''
-      categoriaSeleccionada.value = r.categoria || ''
-      // Mapear detalles si vienen (compatibilidad)
-      detalles.value = (r as any).detalles
-        ? (r as any).detalles.map((d: any) => ({
-            idProducto: d.idProducto,
-            cantidadConsumida: d.cantidadConsumida || d.cantidad || 0,
-            unidadConsumo: d.unidadConsumo || d.unidad || '',
-          }))
-        : []
-    }
+    if (!r) return
+    nombreReceta.value = r.nombreReceta || ''
+    descripcion.value = r.descripcion || ''
+    precioVentaActual.value = r.precioVentaActual || 0
+    urlImagen.value = r.urlImagen || ''
+    categoria.value = r.categoria || null
+    detalles.value = r.detalles
+      ? r.detalles.map((d: any) => ({
+          idProducto: d.idProducto,
+          cantidadConsumida: d.cantidadConsumida,
+        }))
+      : []
   },
   { immediate: true },
 )
 
+/* ---------------- WATCH PRODUCTO ---------------- */
+watch(productoSeleccionado, (p) => {
+  if (p) {
+    nuevoDetalle.value.idProducto = p.id
+    unidadSeleccionada.value = p.unidadMedida?.nombre || 'unidad'
+  } else {
+    nuevoDetalle.value.idProducto = 0
+    unidadSeleccionada.value = ''
+  }
+})
+
+/* ---------------- VALIDACIONES ---------------- */
+const canAdd = computed(() => {
+  if (!productoSeleccionado.value) return false
+  if (nuevoDetalle.value.cantidadConsumida <= 0) return false
+  // CORREGIDO: Removida validación de stock que puede no aplicar en recetas
+  return true
+})
+
 function agregarDetalle() {
-  if (!canAddDetalle.value) return
+  if (!canAdd.value) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Cantidad inválida',
+      detail: 'Debe seleccionar un producto y una cantidad válida.',
+      life: 2500,
+    })
+    return
+  }
+
+  // Verificar si el producto ya existe en los detalles
+  const yaExiste = detalles.value.find((d) => d.idProducto === nuevoDetalle.value.idProducto)
+  if (yaExiste) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Producto duplicado',
+      detail: 'Este producto ya está en la lista.',
+      life: 2500,
+    })
+    return
+  }
 
   detalles.value.push({ ...nuevoDetalle.value })
-  // reset
-  nuevoDetalle.value = { idProducto: 0, cantidadConsumida: 1, unidadConsumo: '' }
   productoSeleccionado.value = null
+  unidadSeleccionada.value = ''
+  nuevoDetalle.value = {
+    idProducto: 0,
+    cantidadConsumida: 1,
+  }
+
+  toast.add({ severity: 'success', summary: 'Agregado', detail: 'Detalle añadido.', life: 1800 })
 }
 
 function eliminarDetalle(i: number) {
   detalles.value.splice(i, 1)
+  toast.add({ severity: 'warn', summary: 'Eliminado', detail: 'Producto eliminado.', life: 1800 })
 }
 
-watch(productoSeleccionado, (p) => {
-  if (p) nuevoDetalle.value.idProducto = p.id
-})
-
-const totalCosto = computed(() => {
-  return detalles.value.reduce((s, d) => s + d.cantidadConsumida, 0)
-})
-
+/* ---------------- GUARDAR (CORREGIDO) ---------------- */
 async function handleSave() {
+  // Validaciones
+  if (!nombreReceta.value.trim()) {
+    return toast.add({
+      severity: 'warn',
+      summary: 'Faltan datos',
+      detail: 'El nombre es obligatorio.',
+      life: 2500,
+    })
+  }
+  if (!categoria.value) {
+    return toast.add({
+      severity: 'warn',
+      summary: 'Faltan datos',
+      detail: 'Seleccione una categoría.',
+      life: 2500,
+    })
+  }
+  if (detalles.value.length === 0) {
+    return toast.add({
+      severity: 'warn',
+      summary: 'Sin detalles',
+      detail: 'Debe añadir al menos un producto.',
+      life: 2500,
+    })
+  }
+
+  // CORREGIDO: Asegurarse de enviar el ID de la categoría, no el objeto
+  const body: CreateRecetaDto = {
+    nombreReceta: nombreReceta.value.trim(),
+    descripcion: descripcion.value.trim(),
+    precioVentaActual: Number(precioVentaActual.value) || 0,
+    urlImagen: urlImagen.value.trim(),
+    idCategoria: categoria.value.id, // ✅ Enviar solo el ID
+    detalles: detalles.value.map((d) => ({
+      idProducto: Number(d.idProducto),
+      cantidadConsumida: Number(d.cantidadConsumida),
+    })),
+  }
+
+  console.log('📤 Body a enviar:', JSON.stringify(body, null, 2))
+
   try {
-    if (!nombreReceta.value.trim()) {
-      alert('El nombre de la receta es obligatorio.')
-      return
-    }
-    if (detalles.value.length === 0) {
-      alert('Agregue al menos un detalle a la receta.')
-      return
-    }
-
-    const body: CreateRecetaDto = {
-      nombreReceta: nombreReceta.value,
-      descripcion: descripcion.value,
-      precioVentaActual: precioVentaActual.value || 0,
-      urlImagen: urlImagen.value,
-      categoria: categoriaSeleccionada.value || categoria.value,
-      detalles: detalles.value,
-    }
-
-    console.debug('Receta request body:', body)
     saving.value = true
+    let savedReceta: any = null
 
-    let res
-    if (props.modoEdicion && (props.receta as any)?.id) {
-      res = await http.patch(`${ENDPOINT}/${(props.receta as any).id}`, body)
+    if (props.modoEdicion && props.receta?.id) {
+      const res = await http.patch(`${ENDPOINT}/${props.receta.id}`, body)
+      savedReceta = res?.data
+      console.log('✅ Receta actualizada:', savedReceta)
     } else {
-      res = await http.post(ENDPOINT, body)
+      const res = await http.post(ENDPOINT, body)
+      savedReceta = res?.data
+      console.log('✅ Receta creada:', savedReceta)
     }
 
-    console.debug('Receta response:', res && res.data)
-    emit('guardar')
-    // reset
-    nombreReceta.value = ''
-    descripcion.value = ''
-    precioVentaActual.value = 0
-    urlImagen.value = ''
-    categoria.value = ''
-    detalles.value = []
-    nuevoDetalle.value = { idProducto: 0, cantidadConsumida: 1, unidadConsumo: '' }
+    // Intentar recuperar la receta completa si no vienen los detalles
+    try {
+      const hasProducto =
+        savedReceta &&
+        Array.isArray(savedReceta.detalles) &&
+        savedReceta.detalles[0] &&
+        savedReceta.detalles[0].producto
+
+      if (!hasProducto && savedReceta?.id) {
+        console.log('🔄 Recuperando receta completa...')
+        const fullRes = await http.get(`${ENDPOINT}/${savedReceta.id}`)
+        savedReceta = fullRes?.data
+      }
+    } catch (e) {
+      console.warn('⚠️ No fue posible recuperar receta completa:', e)
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: 'Guardado',
+      detail: 'Receta guardada correctamente.',
+      life: 2500,
+    })
+
+    emit('guardar', savedReceta)
     dialogVisible.value = false
   } catch (err: any) {
-    console.error('Error guardando receta:', err)
-    const serverMsg =
-      err?.response?.data?.message || err?.response?.data || err?.message || String(err)
-    alert(`Error guardando la receta: ${serverMsg}`)
+    console.error('❌ Error guardando receta:', err)
+    console.error('📋 Response status:', err?.response?.status)
+    console.error('📋 Response data:', err?.response?.data)
+    console.error('📋 Response headers:', err?.response?.headers)
+    console.error('📋 Request data:', err?.config?.data)
+
+    const serverMsg = err?.response?.data?.message
+    const serverErrors = err?.response?.data?.errors
+    const serverError = err?.response?.data?.error
+    const serverStatusCode = err?.response?.data?.statusCode
+
+    let errDetail = 'Error al guardar la receta.'
+
+    // Manejo detallado de errores del backend
+    if (serverErrors && Array.isArray(serverErrors)) {
+      errDetail = serverErrors.join(', ')
+    } else if (serverMsg) {
+      errDetail = serverMsg
+    } else if (serverError) {
+      errDetail = serverError
+    } else if (err?.response?.data) {
+      try {
+        errDetail = JSON.stringify(err.response.data, null, 2)
+      } catch {
+        errDetail = String(err.response.data)
+      }
+    } else if (err?.message) {
+      errDetail = err.message
+    }
+
+    console.error('🔴 Error detallado:', errDetail)
+
+    toast.add({
+      severity: 'error',
+      summary: `Error ${serverStatusCode || err?.response?.status || ''}`,
+      detail: errDetail,
+      life: 10000,
+    })
   } finally {
     saving.value = false
   }
@@ -195,252 +297,167 @@ async function handleSave() {
 </script>
 
 <template>
-  <div class="card d-flex justify-content-center">
-    <Dialog
-      v-model:visible="dialogVisible"
-      :header="props.modoEdicion ? 'Editar Receta' : 'Nueva Receta'"
-      :style="{ width: '95vw', maxWidth: '900px' }"
-      :modal="true"
-    >
-      <div class="container-fluid">
-        <form class="row g-3">
-          <div class="col-12 col-md-7">
-            <label for="nombreReceta" class="form-label fw-bold">Nombre Receta</label>
-            <input
-              id="nombreReceta"
-              name="nombreReceta"
-              v-model="nombreReceta"
-              type="text"
-              class="form-control"
-            />
-          </div>
+  <Dialog
+    v-model:visible="dialogVisible"
+    modal
+    :header="props.modoEdicion ? 'Editar Receta' : 'Registrar Receta'"
+    style="width: 45rem"
+    scrollable
+  >
+    <form class="row g-3">
+      <div class="col-12">
+        <label for="nombreReceta" class="form-label">Nombre Receta *</label>
+        <InputText id="nombreReceta" v-model="nombreReceta" class="form-control" autofocus />
+      </div>
 
-          <div class="col-12 col-md-5">
-            <label for="categoria" class="form-label fw-bold">Categoria</label>
-            <Dropdown
-              id="categoria"
-              name="categoria"
-              v-model="categoriaSeleccionada"
-              :options="categorias"
-              placeholder="Seleccione categoria"
-              class="w-100"
-            />
-          </div>
+      <div class="col-md-6">
+        <label for="categoria" class="form-label">Categoría *</label>
+        <Dropdown
+          id="categoria"
+          v-model="categoria"
+          :options="categorias"
+          optionLabel="nombre"
+          placeholder="Seleccione"
+          class="form-control"
+        />
+      </div>
 
-          <div class="col-12 col-md-6">
-            <label for="precioVentaActual" class="form-label fw-bold">Precio Venta</label>
+      <div class="col-md-6">
+        <label for="precioVenta" class="form-label">Precio Venta</label>
+        <InputNumber
+          id="precioVenta"
+          v-model="precioVentaActual"
+          mode="currency"
+          currency="BOB"
+          locale="es-BO"
+          :min="0"
+          :step="0.01"
+          class="form-control"
+        />
+      </div>
+
+      <div class="col-12">
+        <label for="urlImagen" class="form-label">URL Imagen</label>
+        <InputText
+          id="urlImagen"
+          v-model="urlImagen"
+          placeholder="https://..."
+          class="form-control"
+        />
+      </div>
+
+      <div class="col-12">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <Textarea id="descripcion" v-model="descripcion" autoResize rows="3" class="form-control" />
+      </div>
+
+      <div v-if="imagenPreview" class="col-12 text-center">
+        <img
+          :src="imagenPreview"
+          class="mx-auto w-40 h-40 object-cover rounded shadow"
+          alt="Previsualización de imagen"
+        />
+      </div>
+
+      <div class="col-12 mt-3 border-top pt-3">
+        <h4 class="font-bold">Ingredientes Necesarios *</h4>
+      </div>
+
+      <div class="col-12 d-flex gap-2 align-items-end">
+        <div class="flex-grow-1">
+          <label for="productoSeleccionado" class="form-label">Producto/Ingrediente</label>
+          <Dropdown
+            id="productoSeleccionado"
+            v-model="productoSeleccionado"
+            :options="productos"
+            optionLabel="nombre"
+            placeholder="Seleccionar"
+            class="form-control"
+            filter
+          />
+        </div>
+
+        <div class="d-flex align-items-center" style="width: 150px">
+          <div class="flex-grow-1">
+            <label for="cantidadConsumida" class="form-label">
+              Cant. / <span class="fw-semibold">{{ unidadSeleccionada || 'Unid.' }}</span>
+            </label>
             <InputNumber
-              id="precioVentaActual"
-              name="precioVentaActual"
-              v-model="precioVentaActual"
-              mode="currency"
-              currency="BOB"
-              locale="es-BO"
+              id="cantidadConsumida"
+              v-model="nuevoDetalle.cantidadConsumida"
+              :min="0.001"
+              :step="0.01"
+              :maxFractionDigits="3"
               class="form-control"
-              :min="0"
             />
           </div>
+        </div>
 
-          <div class="col-12 col-md-6">
-            <label for="urlImagen" class="form-label fw-bold">URL Imagen</label>
-            <input id="urlImagen" v-model="urlImagen" class="form-control" type="text" />
-          </div>
+        <Button
+          icon="pi pi-plus"
+          class="p-button-success p-button-sm mt-3"
+          :disabled="!canAdd"
+          @click="agregarDetalle"
+        />
+      </div>
 
-          <div class="col-12">
-            <label for="descripcion" class="form-label fw-bold">Descripción</label>
-            <textarea
-              id="descripcion"
-              name="descripcion"
-              v-model="descripcion"
-              class="form-control"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="col-12">
-            <h5 class="mt-2">
-              Detalles de la Receta <small class="text-muted">(Total qty: {{ totalCosto }})</small>
-            </h5>
-            <div class="border rounded p-3 mb-2">
-              <div class="row align-items-end detail-controls">
-                <div class="col-12 col-md-6 mb-3">
-                  <label for="productoDetalle" class="form-label">Producto</label>
-                  <Dropdown
-                    id="productoDetalle"
-                    name="productoDetalle"
-                    v-model="productoSeleccionado"
-                    :options="productos"
-                    optionLabel="nombre"
-                    placeholder="Seleccione producto"
-                    filter
-                    class="w-100"
-                  />
-                  <div v-if="selectedProductStock !== null" class="small text-muted mt-1">
-                    Stock: {{ selectedProductStock }}
-                    <span
-                      v-if="
-                        selectedProductStock !== null &&
-                        nuevoDetalle.cantidadConsumida > selectedProductStock
-                      "
-                      class="text-danger"
-                    >
-                      — insuficiente stock</span
-                    >
-                  </div>
-                </div>
-
-                <div class="col-6 col-md-3 mb-3">
-                  <label for="cantidadConsumida" class="form-label">Cantidad</label>
-                  <InputNumber
-                    id="cantidadConsumida"
-                    name="cantidadConsumida"
-                    v-model="nuevoDetalle.cantidadConsumida"
-                    :min="0.001"
-                    class="form-control"
-                    :step="0.1"
-                  />
-                </div>
-
-                <div class="col-6 col-md-3 mb-3">
-                  <label for="unidadConsumo" class="form-label">Unidad</label>
-                  <Dropdown
-                    id="unidadConsumo"
-                    name="unidadConsumo"
-                    v-model="nuevoDetalle.unidadConsumo"
-                    :options="UNIDADES"
-                    placeholder="Seleccione unidad"
-                    class="w-100"
-                  />
-                </div>
-
-                <div class="col-12 col-md-2 mb-3 d-flex align-items-end ms-auto">
-                  <Button
-                    icon="pi pi-plus"
-                    label="Agregar"
-                    class="p-button-sm w-100"
-                    @click="agregarDetalle"
-                    :disabled="!canAddDetalle"
-                    severity="success"
-                  />
-                </div>
-              </div>
-
-              <div class="table-responsive mt-3">
-                <table class="table table-sm table-striped w-100">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th class="text-end">Cantidad</th>
-                      <th class="text-center">Unidad</th>
-                      <th class="text-center">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(d, i) in detalles" :key="i">
-                      <td>
-                        {{
-                          (productos.find((p) => p.id === d.idProducto) || {}).nombre ||
-                          d.idProducto
-                        }}
-                      </td>
-                      <td class="text-end">{{ d.cantidadConsumida }}</td>
-                      <td class="text-center">{{ d.unidadConsumo }}</td>
-                      <td class="text-center">
-                        <Button
-                          icon="pi pi-trash"
-                          class="p-button-text p-button-sm text-danger"
-                          @click="eliminarDetalle(i)"
-                        />
-                      </td>
-                    </tr>
-                    <tr v-if="detalles.length === 0">
-                      <td colspan="4" class="text-center">No hay detalles agregados.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+      <div
+        v-if="detalles.length > 0"
+        class="col-12 mt-3 border rounded p-3"
+        style="max-height: 250px; overflow-y: auto"
+      >
+        <div
+          v-for="(d, i) in detalles"
+          :key="i"
+          class="d-flex justify-content-between align-items-center border-bottom py-2"
+        >
+          <div>
+            <strong>{{ productos.find((p) => p.id === d.idProducto)?.nombre }}</strong>
+            <div class="text-sm text-muted">
+              Cantidad: {{ d.cantidadConsumida }} ({{
+                productos.find((p) => p.id === d.idProducto)?.unidadMedida?.nombre || 'Unidad'
+              }})
             </div>
           </div>
-
-          <div class="col-12 d-flex justify-content-end gap-2 mt-2">
-            <Button
-              type="button"
-              label="Cancelar"
-              icon="pi pi-times"
-              severity="secondary"
-              class="p-button-sm"
-              @click="dialogVisible = false"
-            />
-            <Button
-              type="button"
-              label="Guardar Receta"
-              icon="pi pi-save"
-              class="p-button-sm p-button-primary"
-              @click="handleSave"
-              :loading="saving"
-              :disabled="saving"
-            />
-          </div>
-        </form>
+          <Button
+            icon="pi pi-trash"
+            class="p-button-danger p-button-text p-button-sm"
+            @click="eliminarDetalle(i)"
+          />
+        </div>
       </div>
-    </Dialog>
-  </div>
+
+      <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+        <Button
+          type="button"
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          class="p-button-sm p-button-text"
+          @click="dialogVisible = false"
+        />
+        <Button
+          type="submit"
+          label="Guardar"
+          icon="pi pi-save"
+          class="p-button-sm"
+          :loading="saving"
+          @click.prevent="handleSave"
+        />
+      </div>
+    </form>
+  </Dialog>
 </template>
 
 <style scoped>
-.table-responsive {
-  overflow-x: auto;
+:deep(.p-dropdown.form-control),
+:deep(.p-inputnumber.form-control),
+:deep(.p-inputtext.form-control),
+:deep(.p-textarea.form-control) {
+  width: 100%;
 }
 
-/* Responsive tweaks for the detalle row */
-.detail-controls {
-  gap: 0.5rem;
-}
-
-@media (max-width: 576px) {
-  /* Force each control to full width on small screens */
-  .detail-controls .col-md-5,
-  .detail-controls .col-md-3,
-  .detail-controls .col-md-1 {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
-
-  /* Make inputnumber and dropdown full width */
-  .detail-controls .w-full,
-  .detail-controls .w-100 {
-    width: 100% !important;
-  }
-
-  /* Hide the button label on small screens to save space */
-  .btn-add .p-button-label {
-    display: none;
-  }
-
-  .btn-add {
-    padding: 0.35rem 0.5rem;
-  }
-}
-
-@media (min-width: 577px) {
-  .btn-add .p-button-icon {
-    margin-right: 0.5rem;
-  }
-}
-
-.imagen-receta-preview {
-  max-width: 160px;
-  max-height: 120px;
-  object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-.detail-controls {
-  gap: 0.75rem;
-}
-
-.p-button-sm {
-  padding: 0.45rem 0.6rem;
+:deep(.p-inputnumber.form-control) input {
+  width: 100%;
 }
 </style>
