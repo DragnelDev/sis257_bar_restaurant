@@ -14,8 +14,8 @@ import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+//@ApiBearerAuth()
+//@UseGuards(JwtAuthGuard)
 @Controller('empleados')
 export class EmpleadosController {
   constructor(private readonly empleadosService: EmpleadosService) {}
