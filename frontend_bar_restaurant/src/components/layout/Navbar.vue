@@ -15,9 +15,15 @@ const isActive = (routeName: string) => {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
+<nav class="navbar navbar-expand-lg px-4 px-lg-5 py-3 py-lg-0 header-top">
+
     <RouterLink to="/" class="navbar-brand p-0">
-      <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>Restaurante</h1>
+      <h1 class="brand-logo m-0">
+        <i class="fa fa-utensils me-2" aria-hidden="true"></i>
+        <i class="fa fa-microphone me-2" aria-hidden="true"></i>
+        <i class="fa fa-cocktail me-3" aria-hidden="true"></i>
+        RESET
+      </h1>
     </RouterLink>
 
     <button class="navbar-toggler" type="button" @click="toggleMenu" :aria-expanded="isMenuOpen">
@@ -79,11 +85,42 @@ const isActive = (routeName: string) => {
 </template>
 
 <style scoped>
-.navbar-brand h1 {
-  font-family: 'Pacifico', cursive;
+.header-top {
+  background: linear-gradient(90deg, #2f4250 0%, #22303a 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
-.nav-link.active {
-  color: var(--primary) !important;
+.brand-logo {
+  font-family: 'Pacifico', cursive;
+  color: #ffffff !important;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* small logo icon is inline with text (no icon bubbles) */
+.brand-logo i { color: #ffffff; font-size: 20px; }
+.brand-logo .fa-microphone,
+.brand-logo .fa-cocktail { font-size: 18px; opacity: 0.95; }
+
+/* Nav links in header should not be blue; use soft white and pink accent on hover/active */
+.header-top .nav-link {
+  color: rgba(255,255,255,0.9);
+}
+
+.header-top .nav-link:hover,
+.header-top .nav-link.active {
+  color: #ff4081 !important;
+}
+
+.header-top .btn-outline-light {
+  border-color: rgba(255,255,255,0.12) !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+.header-top .btn-primary {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
+  border-color: transparent;
 }
 </style>

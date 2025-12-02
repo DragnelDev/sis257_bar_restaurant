@@ -480,7 +480,7 @@ const checkout = async () => {
                 </span>
               </div>
               <h6 class="mb-0">{{ item.nombre }}</h6>
-              <span class="price fw-bold">${{ formatPrice(item.precio) }}</span>
+              <span class="price fw-bold">Bs {{ formatPrice(item.precio) }}</span>
             </div>
           </div>
         </div>
@@ -524,7 +524,7 @@ const checkout = async () => {
                     </button>
                   </div>
                   <div class="fs-5 fw-bold text-end" style="width: 80px">
-                    ${{ formatPrice(item.subtotal) }}
+                    Bs {{ formatPrice(item.subtotal) }}
                   </div>
                 </div>
               </li>
@@ -535,7 +535,7 @@ const checkout = async () => {
             <hr class="my-2" />
             <div class="d-flex justify-content-between align-items-center mb-3 text-primary">
               <h4>TOTAL A PAGAR:</h4>
-              <h3 class="fw-bolder">${{ totalPagar.toFixed(2) }}</h3>
+              <h3 class="fw-bolder">Bs {{ totalPagar.toFixed(2) }}</h3>
             </div>
 
             <div class="mb-3">
@@ -562,7 +562,7 @@ const checkout = async () => {
               class="mb-4 d-flex justify-content-between text-success fw-bold fs-5"
             >
               <span>Vuelto:</span>
-              <span>${{ vuelto.toFixed(2) }}</span>
+              <span>Bs {{ vuelto.toFixed(2) }}</span>
             </div>
 
             <hr class="my-3" />

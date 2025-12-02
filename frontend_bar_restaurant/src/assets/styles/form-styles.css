@@ -1,0 +1,141 @@
+/* ============================================
+   FORM STYLES - Light Mode for All Components
+   ============================================ */
+
+/* Form Container */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Form Row - Grid Layout for multiple fields */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form Field */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Form Label */
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333333;
+  display: block;
+}
+
+/* Form Input - Light Mode */
+.form-input {
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d9df !important;
+  color: #333333 !important;
+  padding: 0.65rem 0.875rem !important;
+  border-radius: 6px !important;
+  font-size: 0.95rem !important;
+  transition: all 0.2s ease !important;
+  font-family: inherit !important;
+}
+
+.form-input:focus {
+  border-color: #ff4081 !important;
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
+  outline: none !important;
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Error Text */
+.error-text {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e8ed;
+}
+
+/* Save Button */
+.btn-save {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 12px rgba(255, 64, 129, 0.25) !important;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f50057 0%, #e60065 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(255, 64, 129, 0.35) !important;
+}
+
+.btn-save:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.btn-save:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Cancel Button */
+.btn-cancel {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border: 2px solid #d1d9df !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.btn-cancel:hover {
+  background-color: #f8f9fa !important;
+  border-color: #c1c7cd !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.btn-cancel:active {
+  transform: translateY(0) !important;
+}

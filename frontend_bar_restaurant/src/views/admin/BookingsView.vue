@@ -80,7 +80,7 @@ const getStatusClass = (status: string) => {
         <button class="btn btn-primary"><i class="fa fa-plus me-2"></i>New Booking</button>
       </div>
       <div class="card-body p-0">
-        <div class="table-responsive">
+        <div class="table-container">
           <table class="table table-hover mb-0">
             <thead>
               <tr>

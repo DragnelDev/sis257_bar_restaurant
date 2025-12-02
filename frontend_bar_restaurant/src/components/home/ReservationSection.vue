@@ -49,7 +49,8 @@ const closeVideoModal = () => {
         </div>
       </div>
 
-      <div class="col-md-6 bg-dark d-flex align-items-center">
+     <div class="col-md-6 d-flex align-items-center" style="background-color: var(--primary); color: var(--light);">
+
         <div class="p-5 wow fadeInUp" data-wow-delay="0.2s" style="width: 100%">
           <h5 class="section-title ff-secondary text-start text-primary fw-normal">
             Reservaciones

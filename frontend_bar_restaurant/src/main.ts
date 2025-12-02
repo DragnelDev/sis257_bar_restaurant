@@ -11,7 +11,10 @@ import 'primeflex/primeflex.min.css'
 
 // Syle main - Personalizado
 import './assets/styles/main.css'
+import './assets/styles/custom.css'
 import './assets/styles/forms-light.css'
+import './assets/styles/form-styles.css'
+import './assets/styles/dialogs.css'
 
 // Import Bootstrap CSS and JS
 import 'bootstrap/dist/css/bootstrap.min.css'

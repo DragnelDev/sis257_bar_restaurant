@@ -1,0 +1,167 @@
+/* === Global Dialog Styles === */
+/* All dialogs will inherit these styles from custom.css */
+
+/* Button Classes for Dialogs */
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 0.7rem 1.3rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  line-height: 1;
+}
+
+/* Primary Button - SAVE (Rosa del template #ff4081) */
+.btn-success,
+.btn-primary {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(255, 64, 129, 0.25);
+}
+
+.btn-success:hover,
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 129, 0.35);
+  background: linear-gradient(135deg, #f50057 0%, #e60065 100%);
+}
+
+.btn-success:active,
+.btn-success:focus,
+.btn-primary:active,
+.btn-primary:focus {
+  transform: translateY(0);
+}
+
+/* Secondary Button - CANCEL (Blanco limpio) */
+.btn-secondary {
+  background-color: #ffffff;
+  color: #333333;
+  border: 2px solid #d1d9df;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+  border-color: #c1c7cd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Legacy aliases for compatibility */
+.btn-custom-save {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(255, 64, 129, 0.25);
+}
+
+.btn-custom-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 129, 0.35);
+  background: linear-gradient(135deg, #f50057 0%, #e60065 100%);
+}
+
+.btn-custom-cancel {
+  background-color: #ffffff;
+  color: #333333;
+  border: 2px solid #d1d9df;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-custom-cancel:hover {
+  background-color: #f8f9fa;
+  border-color: #c1c7cd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Accessible focus styles */
+.btn:focus {
+  outline: 3px solid rgba(255, 64, 129, 0.25);
+  outline-offset: 2px;
+}
+
+/* Dialog specific helpers */
+.p-dialog .dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.p-dialog .dialog-actions .btn {
+  min-width: 110px;
+}
+
+/* === PrimeVue Button Overrides for Dialogs === */
+.p-button.p-button-success {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(255, 64, 129, 0.25) !important;
+  color: white !important;
+  padding: 0.7rem 1.3rem !important;
+  min-height: 40px !important;
+  font-weight: 700 !important;
+}
+
+.p-button.p-button-success:hover {
+  background: linear-gradient(135deg, #f50057 0%, #e60065 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 64, 129, 0.35) !important;
+}
+
+.p-button.p-button-primary {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(255, 64, 129, 0.25) !important;
+  color: white !important;
+  padding: 0.7rem 1.3rem !important;
+  min-height: 40px !important;
+  font-weight: 700 !important;
+}
+
+.p-button.p-button-primary:hover {
+  background: linear-gradient(135deg, #f50057 0%, #e60065 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 64, 129, 0.35) !important;
+}
+
+.p-button.p-button-secondary {
+  background-color: #ffffff !important;
+  border: 2px solid #d1d9df !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  color: #333333 !important;
+  padding: 0.7rem 1.3rem !important;
+  min-height: 40px !important;
+  font-weight: 700 !important;
+}
+
+.p-button.p-button-secondary:hover {
+  background-color: #f8f9fa !important;
+  border-color: #c1c7cd !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Legacy selectors for button actions */
+.p-dialog .dialog-actions .btn[aria-label="save"],
+.p-dialog .dialog-actions .btn.btn-custom-save {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
+  color: #fff;
+}
+
+.p-dialog .dialog-actions .btn[aria-label="cancel"],
+.p-dialog .dialog-actions .btn.btn-custom-cancel {
+  background: #fff;
+  color: #333333;
+  border: 2px solid #d1d9df;
+}

@@ -111,22 +111,25 @@ onMounted(() => obtenerLista())
     </div>
 
     <!-- Filtro de Búsqueda -->
-    <div class="col-7 pl-0 mt-3">
-      <InputGroup>
-        <InputGroupAddon><i class="pi pi-search"></i></InputGroupAddon>
-        <InputText
-          v-model="filtroProveedor"
-          type="text"
-          placeholder="Buscar por proveedor, producto o factura"
-          @input="onBusqueda"
-        />
-      </InputGroup>
+    <div class="search-container">
+      <div>
+        <InputGroup>
+          <InputGroupAddon><i class="pi pi-search"></i></InputGroupAddon>
+          <InputText
+            v-model="filtroProveedor"
+            type="text"
+            placeholder="Buscar por proveedor, producto o factura"
+            @input="onBusqueda"
+            class="w-100"
+          />
+        </InputGroup>
+      </div>
     </div>
 
     <div v-if="loading" class="alert alert-info mt-3">Cargando detalles de compras...</div>
 
     <!-- Tabla -->
-    <div v-if="!loading" class="table-responsive mt-3">
+    <div v-if="!loading" class="table-container mt-3">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>
@@ -404,35 +407,112 @@ onMounted(() => obtenerLista())
   padding: 1rem;
 }
 
-.page-header h2 {
-  color: #2c3e50;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
+.page-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
 }
 
-.table-responsive {
+.page-header h2 {
+  color: #2c3e50;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 1.75rem;
+}
+
+.page-header p {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Buscador mejorado */
+.search-container {
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.search-container > div {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Tabla con mejor responsividad */
+.table-container {
   overflow-x: auto;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
 }
 
 table {
-  min-width: 1000px;
+  margin-bottom: 0;
   border-collapse: collapse;
+  width: 100%;
 }
 
-table th,
-table td {
-  padding: 0.75rem;
+table thead {
+  background-color: #2c3e50;
+  color: white;
+}
+
+table thead th {
+  padding: 1rem 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #dee2e6;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid #1a2332;
+}
+
+table tbody td {
+  padding: 0.9rem 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+table tbody tr {
+  transition: all 0.2s ease;
+}
+
+table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+}
+
+.pagination {
+  margin-top: 1.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .pagination .page-link {
   cursor: pointer;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  color: var(--primary);
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover:not(.disabled) {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 .pagination .page-item.disabled .page-link {
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Detalle de Compra */
@@ -470,6 +550,7 @@ table td {
 .info-card:hover {
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .info-card.border-success {
@@ -486,6 +567,7 @@ table td {
   font-size: 1.25rem;
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .info-icon.bg-primary {
@@ -529,9 +611,144 @@ table td {
   font-weight: 500;
 }
 
+/* Media Queries Responsivas */
+@media (max-width: 1024px) {
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+
+  table thead th {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  table tbody td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .compras-view {
+    padding: 0.75rem;
+  }
+
+  .page-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .page-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .page-header p {
+    font-size: 0.85rem;
+  }
+
+  .search-container {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .search-container > div {
+    width: 100%;
+  }
+
+  .table-container {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  table thead th {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.8rem;
+    white-space: normal;
+  }
+
+  table tbody td {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .pagination {
+    margin-top: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .pagination ul {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .page-link {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.8rem;
+  }
+
   .info-card {
+    flex-direction: column;
+    text-align: center;
     margin-bottom: 0.75rem;
+  }
+
+  .info-icon {
+    margin: 0 auto 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .compras-view {
+    padding: 0.5rem;
+  }
+
+  .page-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .page-header p {
+    font-size: 0.8rem;
+  }
+
+  .table-container {
+    font-size: 0.8rem;
+  }
+
+  table thead th {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  table tbody td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .badge {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.4rem;
+  }
+
+  .pagination {
+    margin-top: 0.75rem;
+  }
+
+  .page-link {
+    padding: 0.3rem 0.4rem !important;
+    font-size: 0.7rem;
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.4rem !important;
+    font-size: 0.7rem !important;
   }
 }
 </style>

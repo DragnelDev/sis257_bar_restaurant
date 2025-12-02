@@ -6,32 +6,42 @@
 .p-dialog,
 .p-card,
 .p-table {
-  background-color: #ffffff !important;
-  color: #000000 !important;
+  background-color: #ffffff !important; /* fondo blanco limpio */
+  color: #212529 !important;            /* texto base */
 }
 
 /* INPUTS */
 .p-inputtext {
-  border: 1px solid #ccc !important;
+  border: 1px solid #ced4da !important;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.p-inputtext:focus {
+  border-color: #ff4081 !important; /* rosa vibrante */
+  box-shadow: 0 0 0 0.2rem rgba(255, 64, 129, 0.25);
 }
 
 /* DROPDOWN (select PrimeVue) */
 .p-dropdown {
   background-color: #ffffff !important;
-  color: #000 !important;
-  border: 1px solid #ccc !important;
+  color: #212529 !important;
+  border: 1px solid #ced4da !important;
+}
+.p-dropdown:focus {
+  border-color: #fea116 !important; /* naranja cálido */
+  box-shadow: 0 0 0 0.2rem rgba(254, 161, 22, 0.25);
 }
 
 /* Label del dropdown */
 .p-dropdown-label {
   background-color: #ffffff !important;
-  color: #000000 !important;
+  color: #212529 !important;
 }
 
 /* Panel desplegado */
 .p-dropdown-panel {
   background-color: #ffffff !important;
-  color: #000000 !important;
+  color: #212529 !important;
+  border: 1px solid #dee2e6 !important;
 }
 
 /* Elementos de la lista del Dropdown */
@@ -39,19 +49,19 @@
 .p-dropdown-items,
 .p-dropdown-item {
   background-color: #ffffff !important;
-  color: #000000 !important;
+  color: #212529 !important;
 }
 
 /* Hover de elementos */
 .p-dropdown-item:hover {
-  background-color: #f0f0f0 !important;
-  color: #000 !important;
+  background-color: #f8f9fa !important; /* gris claro */
+  color: #0f172b !important;            /* azul oscuro */
 }
 
 /* Item seleccionado */
 .p-dropdown-item.p-highlight {
-  background-color: #e0e0e0 !important;
-  color: #000 !important;
+  background-color: #ff4081 !important; /* rosa vibrante */
+  color: #ffffff !important;            /* texto blanco */
 }
 
 /* SCROLLBAR */
@@ -59,5 +69,6 @@
   width: 6px;
 }
 .p-dropdown-items-wrapper::-webkit-scrollbar-thumb {
-  background: #999;
+  background: #fea116; /* naranja cálido */
+  border-radius: 3px;
 }

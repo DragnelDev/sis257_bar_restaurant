@@ -173,7 +173,7 @@ defineExpose({ obtenerLista })
       </InputGroup>
     </div>
 
-    <div class="table-responsive mt-3">
+    <div class="table-container mt-3">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>
@@ -349,7 +349,7 @@ defineExpose({ obtenerLista })
         <hr />
 
         <h6 class="mb-3">Ingredientes</h6>
-        <div class="table-responsive">
+        <div class="table-container">
           <table class="table table-sm table-bordered">
             <thead class="table-light">
               <tr>

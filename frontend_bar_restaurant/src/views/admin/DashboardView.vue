@@ -189,7 +189,7 @@ const translateStatus = (status: string) => {
             </RouterLink>
           </div>
           <div class="card-body p-0">
-            <div class="table-responsive">
+            <div class="table-container">
               <table class="table table-hover mb-0">
                 <thead class="table-dark">
                   <tr>

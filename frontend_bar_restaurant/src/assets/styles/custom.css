@@ -1,46 +1,173 @@
-/* src/assets/styles/custom.css */
-
 :root {
-  --primary: #fea116;
-  --light: #f1f8ff;
-  --dark: #0f172b;
+  /* Paleta principal */
+  --primary: #ff4081;   /* Rosa vibrante */
+  --secondary: #fea116; /* Naranja cálido */
+  --accent: #140CAB;    /* Azul eléctrico */
+  --dark: #0f172b;      /* Azul oscuro */
+  --light: #ffffff;     /* Blanco */
+  --gray: #f8f9fa;      /* Fondo claro */
+  --text: #212529;      /* Texto base */
+
+  /* Escalas */
+  --radius: 8px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.1);
+  --transition: 0.3s ease;
+}
+
+/* Mapear variables de Bootstrap a nuestra paleta para evitar azules por defecto */
+:root {
+  --bs-primary: var(--primary);
+  --bs-secondary: var(--secondary);
+  --bs-body-bg: var(--gray);
 }
 
 body {
   font-family: 'Heebo', sans-serif;
+  background-color: var(--gray);
+  color: var(--text);
+  margin: 0;
+  overflow-y: scroll;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: var(--dark);
 }
 
 .ff-secondary {
   font-family: 'Pacifico', cursive !important;
+  color: var(--primary);
+}
+
+/* Botones */
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
 .btn-primary {
   background-color: var(--primary);
   border-color: var(--primary);
+  color: var(--light);
+}
+.btn-primary:hover {
+  background-color: #d93670;
+  border-color: #d93670;
 }
 
-.btn-primary:hover {
+/* Forzar variantes 'primary' a la paleta definida para eliminar azules Bootstrap */
+.text-primary, .text-primary i, .text-primary svg {
+  color: var(--primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary) !important;
+  color: var(--light) !important;
+}
+
+.border-primary {
+  border-color: var(--primary) !important;
+}
+
+.btn-outline-primary {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background: linear-gradient(135deg, rgba(255,64,129,0.08), rgba(245,0,87,0.08));
+  color: var(--light) !important;
+}
+
+.badge.bg-primary {
+  background-color: var(--primary) !important;
+}
+
+/* Spinner primary */
+.spinner-border.text-primary {
+  border-color: rgba(0,0,0,0.08);
+  border-top-color: var(--primary) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  color: var(--light);
+}
+.btn-secondary:hover {
   background-color: #d98a0b;
   border-color: #d98a0b;
 }
 
-.text-primary {
-  color: var(--primary) !important;
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: var(--light);
+}
+.btn-danger:hover {
+  background-color: #b02a37;
+  border-color: #b02a37;
 }
 
+.btn-text {
+  background: transparent;
+  color: var(--primary);
+  border: none;
+}
+.btn-text:hover {
+  color: var(--secondary);
+}
+
+/* Utilidades */
+.text-primary { color: var(--primary) !important; }
+.text-secondary { color: var(--secondary) !important; }
 .bg-dark {
-  background-color: var(--dark) !important;
+  background-color: #f1f3f5 !important; /* blanco suave */
+  color: var(--text) !important;
+  border: 1px solid #dee2e6;
 }
 
+
+.shadow { box-shadow: var(--shadow); }
+.rounded { border-radius: var(--radius); }
+
+/* === Tablas Responsivas === */
+/* === Table responsive helpers === */
+/* Ensure table wrappers keep horizontal scroll inside the container */
+.table-responsive,
+.table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius);
+}
+
+/* Tables inside these wrappers should size to content and scroll inside the wrapper */
+.table-responsive .table,
+.table-container .table {
+  margin-bottom: 0;
+  white-space: nowrap;
+  min-width: max-content;
+}
+
+/* Keep thead visible when scrolling vertically inside the page */
+.table-responsive .table thead,
+.table-container .table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-clip: padding-box;
+}
+
+/* Back to top */
 .back-to-top {
   position: fixed;
   bottom: 30px;
@@ -48,10 +175,740 @@ h6 {
   z-index: 99;
   opacity: 0;
   visibility: hidden;
-  transition: 0.5s;
+  transition: var(--transition);
 }
-
 .back-to-top.show {
   opacity: 1;
   visibility: visible;
+}
+
+/* === Formularios === */
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  background-color: #ffffff;
+  color: var(--text);
+  border: 1px solid var(--dark);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  transition: var(--transition);
+  font-size: 1rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(255, 64, 129, 0.25);
+  outline: none;
+}
+
+label {
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 0.875rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Botones dentro de formularios */
+.form-actions .btn-primary {
+  background-color: #28a745; /* verde éxito */
+  border-color: #28a745;
+  color: var(--light);
+}
+.form-actions .btn-primary:hover {
+  background-color: #218838;
+  border-color: #218838;
+}
+
+.form-actions .btn-secondary {
+  background-color: var(--primary); /* rosa vibrante */
+  border-color: var(--primary);
+  color: var(--light);
+}
+.form-actions .btn-secondary:hover {
+  background-color: #d93670;
+  border-color: #d93670;
+}
+
+/* === Cards y modales === */
+.card {
+  background-color: var(--light);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  font-family: 'Pacifico', cursive;
+  color: var(--primary);
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+}
+
+/* === Tablas === */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.table th {
+  background-color: var(--secondary);
+  color: var(--light);
+  font-weight: 600;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background-color: var(--gray);
+}
+
+/* === Navbar / Sidebar === */
+.navbar {
+  background-color: var(--dark);
+  color: var(--light);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar {
+  background-color: var(--gray); /* fondo claro */
+  color: var(--dark); /* texto azul oscuro */
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+.sidebar a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--text); /* texto base */
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+
+.sidebar a:hover {
+  background-color: var(--primary); /* rosa vibrante */
+  color: var(--light); /* texto blanco */
+}
+
+
+/* === Badges === */
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background-color: #28a745;
+  color: var(--light);
+}
+
+.badge-warning {
+  background-color: var(--secondary);
+  color: var(--light);
+}
+
+.badge-danger {
+  background-color: #dc3545;
+  color: var(--light);
+}
+
+/* === PrimeVue Dialog Styling === */
+.p-dialog {
+  border-radius: var(--radius) !important;
+  overflow: hidden !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border-left: 5px solid var(--primary) !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding: 1.5rem !important;
+  color: var(--dark) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+  color: var(--dark) !important;
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  margin-left: 0.5rem !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icons {
+  margin-left: auto !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icons .p-dialog-header-close {
+  color: var(--dark) !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--radius) !important;
+  transition: var(--transition) !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icons .p-dialog-header-close:hover {
+  background-color: rgba(255, 64, 129, 0.1) !important;
+  color: var(--primary) !important;
+}
+
+.p-dialog .p-dialog-content {
+  background-color: var(--light) !important;
+  padding: 2rem !important;
+}
+
+.p-dialog .p-dialog-footer {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #dee2e6 !important;
+  padding: 1rem !important;
+  /* use flex to layout buttons consistently */
+  display: flex !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
+
+/* === PrimeVue Form Controls === */
+.p-inputtext,
+.p-inputnumber .p-inputtext,
+.p-inputtextarea,
+.p-dropdown {
+  background-color: var(--light) !important;
+  border: 2px solid #dee2e6 !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  transition: var(--transition) !important;
+}
+
+.p-inputtext:focus,
+.p-inputnumber .p-inputtext:focus,
+.p-inputtextarea:focus,
+.p-dropdown.p-focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
+  outline: none !important;
+}
+
+.p-dropdown .p-dropdown-label {
+  color: var(--text) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+  background-color: var(--primary) !important;
+  color: var(--light) !important;
+}
+
+/* === PrimeVue Calendar === */
+.p-calendar .p-inputtext {
+  border-radius: var(--radius) 0 0 var(--radius) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.p-calendar .p-icon-button {
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0 var(--radius) var(--radius) 0 !important;
+  width: auto !important;
+  height: 2.75rem !important;
+  padding: 0 1.2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.3rem !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(255, 64, 129, 0.25) !important;
+  font-weight: 600 !important;
+}
+
+.p-calendar .p-icon-button:hover {
+  background: linear-gradient(135deg, #f50057 0%, #e60065 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 64, 129, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+.p-calendar .p-icon-button:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(255, 64, 129, 0.3) !important;
+}
+
+/* === Date Input Native === */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  background-color: var(--light) !important;
+  border: 2px solid #dee2e6 !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  transition: var(--transition) !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+}
+
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
+  outline: none !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer !important;
+  opacity: 0.7 !important;
+  filter: invert(0.2) !important;
+}
+
+/* === PrimeVue Checkbox === */
+.p-checkbox .p-checkbox-box {
+  border: 2px solid #dee2e6 !important;
+  background-color: var(--light) !important;
+  border-radius: 4px !important;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* === Labels === */
+label,
+.p-label {
+  font-weight: 600 !important;
+  color: var(--dark) !important;
+  margin-bottom: 0.75rem !important;
+  display: block !important;
+  font-size: 0.95rem !important;
+}
+
+/* ========================================
+   LIGHT MODE - Modales y Componentes
+   ======================================== */
+
+/* === Modal Content - Light Theme === */
+.modal-content {
+  background-color: #ffffff !important;
+  border: 1px solid #e1e8ed !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border-bottom: 2px solid #e1e8ed !important;
+  padding: 1.5rem !important;
+}
+
+.modal-header .modal-title {
+  color: var(--dark) !important;
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+}
+
+.modal-body {
+  background-color: #ffffff !important;
+  color: var(--text) !important;
+  padding: 1.5rem !important;
+}
+
+.modal-footer {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e1e8ed !important;
+  padding: 1rem 1.5rem !important;
+  display: flex !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+}
+
+/* === PrimeVue Dialog - Light Theme === */
+.p-dialog {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border-left: 5px solid var(--primary) !important;
+  border-bottom: 2px solid #e1e8ed !important;
+  padding: 1.5rem !important;
+  color: var(--dark) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+  color: var(--dark) !important;
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  margin-left: 0.5rem !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-close {
+  color: var(--dark) !important;
+  opacity: 0.6;
+  transition: var(--transition) !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-close:hover {
+  opacity: 1;
+  color: var(--primary) !important;
+}
+
+.p-dialog .p-dialog-content {
+  background-color: #ffffff !important;
+  color: var(--text) !important;
+  padding: 1.5rem !important;
+}
+
+.p-dialog .p-dialog-footer {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e1e8ed !important;
+  padding: 1rem 1.5rem !important;
+  display: flex !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
+
+/* === Form Controls - Light Theme === */
+.form-control {
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d9df !important;
+  border-radius: 8px !important;
+  color: #333333 !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset !important;
+}
+
+.form-control:focus {
+  background-color: #ffffff !important;
+  border-color: var(--primary) !important;
+  color: #333333 !important;
+  box-shadow: 0 0 0 4px rgba(255, 64, 129, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05) inset !important;
+  outline: none !important;
+}
+
+.form-control::placeholder {
+  color: #9ca3af !important;
+}
+
+/* === PrimeVue Input Fields - Light Theme === */
+.p-inputtext,
+.p-inputnumber .p-inputtext,
+.p-inputtextarea,
+.p-textarea,
+.p-dropdown,
+.p-multiselect {
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d9df !important;
+  border-radius: 8px !important;
+  color: #333333 !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset !important;
+}
+
+.p-inputtext::placeholder,
+.p-inputnumber .p-inputtext::placeholder,
+.p-inputtextarea::placeholder,
+.p-textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.p-inputtext:focus,
+.p-inputnumber .p-inputtext:focus,
+.p-inputtextarea:focus,
+.p-textarea:focus,
+.p-dropdown:focus,
+.p-multiselect:focus,
+.p-dropdown.p-focus,
+.p-multiselect.p-focus {
+  background-color: #ffffff !important;
+  border-color: var(--primary) !important;
+  color: #333333 !important;
+  box-shadow: 0 0 0 4px rgba(255, 64, 129, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05) inset !important;
+  outline: none !important;
+}
+
+.p-dropdown .p-dropdown-label,
+.p-multiselect .p-multiselect-label {
+  color: #333333 !important;
+}
+
+.p-dropdown .p-dropdown-trigger,
+.p-multiselect .p-multiselect-trigger {
+  background-color: #f8f9fa !important;
+  color: var(--primary) !important;
+  border-left: 1px solid #d1d9df !important;
+}
+
+/* === Date Picker / Calendar - Light Theme === */
+.p-calendar .p-inputtext {
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d9df !important;
+  color: #333333 !important;
+}
+
+.p-calendar .p-icon-button {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--primary) !important;
+  border-radius: 0 8px 8px 0 !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.65rem 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.1rem !important;
+  transition: var(--transition) !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(255, 64, 129, 0.2) !important;
+}
+
+.p-calendar .p-icon-button:hover {
+  background: linear-gradient(135deg, var(--primary) 0%, #e60065 100%) !important;
+  box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3) !important;
+}
+
+.p-datepicker {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d9df !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.p-datepicker .p-datepicker-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%) !important;
+  border-bottom: 1px solid #d1d9df !important;
+  color: var(--dark) !important;
+}
+
+.p-datepicker .p-datepicker-header .p-link {
+  color: var(--primary) !important;
+}
+
+.p-datepicker table td {
+  padding: 0.5rem !important;
+  color: var(--text) !important;
+}
+
+.p-datepicker table td > span {
+  border-radius: 6px !important;
+}
+
+.p-datepicker table td > span.p-highlight {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.p-datepicker table td > span:hover {
+  background-color: rgba(255, 64, 129, 0.1) !important;
+  color: var(--dark) !important;
+}
+
+/* === Checkboxes y Switches - Light Theme === */
+.p-checkbox {
+  margin: 0.5rem 0;
+}
+
+.p-checkbox .p-checkbox-box {
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d9df !important;
+  border-radius: 6px !important;
+}
+
+.p-checkbox .p-checkbox-box:hover {
+  border-color: var(--primary) !important;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight .p-checkbox-icon {
+  color: #ffffff !important;
+}
+
+/* === Action Buttons - Light Theme === */
+.btn-primary,
+.p-button.p-button-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #e60065 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  padding: 0.65rem 1.2rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(255, 64, 129, 0.2) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  min-height: 40px !important;
+}
+
+.btn-primary:hover,
+.p-button.p-button-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(255, 64, 129, 0.3) !important;
+}
+
+.btn-primary:active,
+.p-button.p-button-primary:active {
+  transform: translateY(0) !important;
+}
+
+.btn-secondary,
+.p-button.p-button-secondary {
+  background-color: #7f8c8d !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  padding: 0.65rem 1.2rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(127, 140, 141, 0.2) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  min-height: 40px !important;
+}
+
+.btn-secondary:hover,
+.p-button.p-button-secondary:hover {
+  background-color: #6a7778 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(127, 140, 141, 0.3) !important;
+}
+
+.btn-secondary:active,
+.p-button.p-button-secondary:active {
+  transform: translateY(0) !important;
+}
+
+.btn-success,
+.p-button.p-button-success {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  padding: 0.65rem 1.2rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  min-height: 40px !important;
+}
+
+.btn-success:hover,
+.p-button.p-button-success:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(39, 174, 96, 0.3) !important;
+}
+
+.btn-danger,
+.p-button.p-button-danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  padding: 0.65rem 1.2rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  min-height: 40px !important;
+}
+
+.btn-danger:hover,
+.p-button.p-button-danger:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(231, 76, 60, 0.3) !important;
+}
+
+/* Focus states for accessibility */
+.btn-primary:focus,
+.btn-secondary:focus,
+.btn-success:focus,
+.btn-danger:focus,
+.p-button:focus {
+  outline: 3px solid rgba(255, 64, 129, 0.3) !important;
+  outline-offset: 2px !important;
+}
+
+/* === Disabled States === */
+.form-control:disabled,
+.p-inputtext:disabled,
+.p-dropdown:disabled,
+.p-textarea:disabled {
+  background-color: #f5f5f5 !important;
+  border-color: #d1d9df !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-success:disabled,
+.btn-danger:disabled,
+.p-button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* === Form Groups === */
+.form-group {
+  margin-bottom: 1.5rem !important;
+}
+
+.form-group label {
+  color: var(--dark) !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+  font-size: 0.9rem !important;
+}
+
+/* === Help Text === */
+.form-text,
+.help-text,
+small.text-muted {
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
 }

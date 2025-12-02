@@ -1,29 +1,126 @@
-/******* Customized Bootstrap ********/
+/******* Customized Bootstrap para bar-restaurante ********/
 
-$primary: #fea116;
-$light: #f1f8ff;
-$dark: #0f172b;
+/* === COLORES PRINCIPALES === */
+$primary: #4a90e2;    // azul principal para botones y foco
+$secondary: #6c757d;  // gris suave para botones secundarios
+$success: #28a745;    // verde confirmación
+$danger: #dc3545;     // rojo para eliminar
+$light: #f1f3f5;      // gris humo, fondos de cuadros de texto y formularios
+$dark: #212529;       // texto oscuro legible
+$white: #ffffff;      // blanco puro para contraste
 
+/* === TIPOGRAFÍA === */
 $font-family-base: 'Heebo', sans-serif;
-
 $headings-font-family: 'Nunito', sans-serif;
-
 $body-bg: $light;
-
 $body-color: #666565;
-
 $headings-color: $dark;
-
 $headings-font-weight: 800;
-
 $display-font-weight: 800;
-
 $enable-responsive-font-sizes: true;
 
-$border-radius: 2px;
-
+/* === ESTILO GENERAL === */
+$border-radius: 5px;
 $link-decoration: none;
-
 $enable-negative-margins: true;
 
+/* === IMPORTAR BOOTSTRAP === */
 @import 'bootstrap/scss/bootstrap';
+
+/* === ESTILOS PERSONALIZADOS DE FORMULARIOS === */
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+  background-color: $light;       // gris humo
+  color: $dark;                   // texto legible
+  border: 1px solid #ced4da;      // borde suave
+  border-radius: $border-radius;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  border-color: $primary;         // azul al enfocar
+  box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+  outline: none;
+}
+
+/* === BOTONES PERSONALIZADOS === */
+.btn {
+  border-radius: $border-radius;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+/* Hover suave para botones */
+.btn-primary {
+  background-color: $primary;
+  border-color: $primary;
+  color: $white;
+}
+
+.btn-primary:hover {
+  background-color: darken($primary, 10%);
+  border-color: darken($primary, 10%);
+}
+
+.btn-secondary {
+  background-color: $secondary;
+  border-color: $secondary;
+  color: $white;
+}
+
+.btn-secondary:hover {
+  background-color: darken($secondary, 10%);
+  border-color: darken($secondary, 10%);
+}
+
+.btn-success {
+  background-color: $success;
+  border-color: $success;
+  color: $white;
+}
+
+.btn-success:hover {
+  background-color: darken($success, 10%);
+  border-color: darken($success, 10%);
+}
+
+.btn-danger {
+  background-color: $danger;
+  border-color: $danger;
+  color: $white;
+}
+
+.btn-danger:hover {
+  background-color: darken($danger, 10%);
+  border-color: darken($danger, 10%);
+}
+
+/* === TARJETAS Y CUADROS DE FORMULARIO === */
+.card,
+.modal-content {
+  background-color: $white;
+  border-radius: $border-radius;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* === LINKS LIMPIOS === */
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+a:hover {
+  color: darken($primary, 10%);
+  text-decoration: none;
+}

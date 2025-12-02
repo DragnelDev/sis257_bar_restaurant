@@ -10,7 +10,7 @@ const handleNewsletterSubmit = () => {
 </script>
 
 <template>
-  <div class="container-fluid bg-dark text-light footer pt-5 mt-5">
+  <div class="container-fluid bg-light text-dark footer pt-5 mt-5">
     <div class="container py-5">
       <div class="row g-5">
         <div class="col-lg-3 col-md-6">
@@ -28,7 +28,7 @@ const handleNewsletterSubmit = () => {
           <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">
             Contacto
           </h4>
-          <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Calle Loa 123, Sucre, Bolivia</p>
+          <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Calle Loa 70, Sucre, Bolivia</p>
           <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+591 67854890</p>
           <p class="mb-2"><i class="fa fa-envelope me-3"></i>reset@gmail.com</p>
           <div class="d-flex pt-2">

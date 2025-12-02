@@ -49,8 +49,11 @@ const menuItems = [
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="sidebar-header">
-        <h3 v-if="!sidebarCollapsed"><i class="fa fa-utensils me-2"></i>Restoran</h3>
-        <i v-else class="fa fa-utensils fa-2x text-primary"></i>
+        <h3 v-if="!sidebarCollapsed"><i class="fa fa-utensils me-2"></i><i class="fa fa-glass-martini me-2"></i>Reset</h3>
+        <div v-else class="sidebar-icons">
+          <i class="fa fa-utensils fa-lg"></i>
+          <i class="fa fa-glass-martini fa-lg"></i>
+        </div>
       </div>
 
       <nav class="sidebar-nav">
@@ -182,19 +185,52 @@ const menuItems = [
 }
 
 .sidebar-header {
-  padding: 20px;
+  padding: 15px 12px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  height: 70px;
+  border-bottom: 2px solid rgba(255, 64, 129, 0.15);
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 64, 129, 0.08) 0%, rgba(254, 161, 22, 0.04) 100%);
+  min-height: 70px;
 }
 
 .sidebar-header h3 {
   margin: 0;
   font-family: 'Pacifico', cursive;
   color: var(--primary);
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.sidebar-header h3 i {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Sidebar collapsed icons */
+.sidebar-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--primary);
+  font-size: 1.5rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 .sidebar-nav {
@@ -254,6 +290,16 @@ const menuItems = [
   color: white;
 }
 
+/* Sidebar collapsed icons */
+.sidebar-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--primary);
+  font-size: 1.3rem;
+}
+
 /* Main Content */
 .main-content {
   flex: 1;
@@ -261,6 +307,8 @@ const menuItems = [
   transition: margin-left 0.3s ease;
   display: flex;
   flex-direction: column;
+  /* main content should not scroll vertically on its own; the body handles page scrolling */
+  overflow-y: hidden;
 }
 
 .sidebar.collapsed ~ .main-content {
@@ -351,6 +399,7 @@ const menuItems = [
 .content {
   flex: 1;
   padding: 30px;
+  overflow: visible;
 }
 
 /* Responsive */

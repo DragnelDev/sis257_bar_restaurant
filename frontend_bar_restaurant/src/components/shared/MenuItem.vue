@@ -19,12 +19,13 @@ defineProps<Props>()
     <div class="w-100 d-flex flex-column text-start ps-4">
       <h5 class="d-flex justify-content-between border-bottom pb-2">
         <span>{{ item.name }}</span>
-        <span class="text-primary">${{ item.price }}</span>
+        <span class="text-primary">Bs {{ item.price }}</span>
       </h5>
       <small class="fst-italic">{{ item.description }}</small>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .img-fluid {

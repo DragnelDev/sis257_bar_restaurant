@@ -324,7 +324,7 @@ onMounted(async () => {
     </div>
 
     <!-- Tabla de Usuarios -->
-    <div class="table-responsive">
+    <div class="table-container">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>

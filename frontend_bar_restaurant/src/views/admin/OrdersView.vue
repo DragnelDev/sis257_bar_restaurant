@@ -98,7 +98,6 @@ const updateOrderStatus = async (id: number, newStatus: string) => {
   }
 }
 
-
 const finalizeSale = (id: number) => {
   updateOrderStatus(id, STATUS.ARCHIVADA)
 }
@@ -202,8 +201,8 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        <div class="table-responsive">
-          <table class="table table-striped table-hover mb-0 align-middle">
+        <div class="table-container">
+          <table class="table table-striped table-hover align-middle">
             <thead>
               <tr class="text-secondary">
                 <th>Orden #</th>
@@ -222,10 +221,12 @@ onMounted(() => {
                 </td>
                 <td>{{ order.customer }}</td>
                 <td>
-                  <span class="badge bg-dark">Mesa {{ order.idMesa }}</span>
+                  <span class="badge" style="background-color: var(--primary); color: var(--light)">
+                    Mesa {{ order.idMesa }}
+                  </span>
                 </td>
                 <td>
-                  <strong class="text-success">${{ order.total.toFixed(2) }}</strong>
+                  <strong class="text-success">Bs {{ order.total.toFixed(2) }}</strong>
                 </td>
                 <td>{{ order.orderTime }}</td>
                 <td>
@@ -314,7 +315,10 @@ onMounted(() => {
             <p><strong>Cliente:</strong> {{ selectedOrder.customer }}</p>
             <p>
               <strong>Mesa Asignada:</strong>
-              <span class="badge bg-dark fs-6">Mesa {{ selectedOrder.idMesa }}</span>
+              <span class="badge fs-6" style="background-color: var(--primary); color: var(--light);">
+  Mesa {{ selectedOrder.idMesa }}
+</span>
+
             </p>
             <p>
               <strong>Estado Actual:</strong>
@@ -339,16 +343,18 @@ onMounted(() => {
                 <tr v-for="(item, index) in selectedOrder.itemDetails" :key="index">
                   <td>{{ item.quantity }}</td>
                   <td>{{ item.name }}</td>
-                  <td class="text-end">${{ item.price.toFixed(2) }}</td>
+                  <td class="text-end">Bs {{ item.price.toFixed(2) }}</td>
                   <td class="text-end">
-                    <strong>${{ (item.quantity * item.price).toFixed(2) }}</strong>
+                    <strong>Bs {{ (item.quantity * item.price).toFixed(2) }}</strong>
                   </td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr>
                   <th colspan="3" class="text-end">TOTAL DE LA ORDEN:</th>
-                  <th class="text-end text-success fs-5">${{ selectedOrder.total.toFixed(2) }}</th>
+                  <th class="text-end text-success fs-5">
+                    Bs {{ selectedOrder.total.toFixed(2) }}
+                  </th>
                 </tr>
               </tfoot>
             </table>

@@ -218,7 +218,7 @@ defineExpose({ obtenerLista })
     </div>
 
     <!-- Tabla -->
-    <div class="table-responsive">
+    <div class="table-container">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>
@@ -547,11 +547,30 @@ defineExpose({ obtenerLista })
   gap: 1.25rem;
   transition: all 0.3s ease;
   border-left: 4px solid;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -50px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  transition: all 0.3s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-left-width: 6px;
+}
+
+.stat-card:hover::before {
+  right: -20px;
 }
 
 .stat-ingresos {
@@ -567,15 +586,16 @@ defineExpose({ obtenerLista })
 }
 
 .stat-icon {
-  width: 55px;
-  height: 55px;
-  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 28px;
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .stat-ingresos .stat-icon {
@@ -590,18 +610,25 @@ defineExpose({ obtenerLista })
   background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
 }
 
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .stat-label {
   color: #6c757d;
   font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
 }
 
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
   color: #2c3e50;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 /* Tabla */
@@ -751,24 +778,204 @@ table {
   font-weight: 500;
 }
 
+@media (max-width: 1024px) {
+  .row.g-3 {
+    row-gap: 1rem !important;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 24px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .venta-header {
-    flex-direction: column;
-    text-align: center;
+  .ventas-view {
+    padding: 0 !important;
+  }
+
+  .page-header {
+    margin-bottom: 1.5rem !important;
+    padding: 0 1rem;
+  }
+
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .page-header p {
+    font-size: 0.9rem;
+  }
+
+  .row {
+    margin-left: -0.5rem !important;
+    margin-right: -0.5rem !important;
+  }
+
+  .col-md-4 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    margin-bottom: 0.5rem;
   }
 
   .stat-card {
     padding: 1rem;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .stat-card::before {
+    display: none;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .stat-content {
+    flex: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .row.mb-3 {
+    margin-bottom: 1rem !important;
+  }
+
+  .col-md-6,
+  .col-md-3 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    margin-bottom: 0.75rem;
+  }
+
+  .table-container {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .table thead th {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.8rem;
+  }
+
+  .table tbody td {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.9rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem !important;
+  }
+
+  .pagination {
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+
+  .page-link {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.85rem;
+  }
+
+  .venta-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem;
+  }
+
+  .header-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+  }
+
+  .info-card {
+    flex-direction: column;
+    text-align: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .info-icon {
+    margin: 0 auto 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem;
+    gap: 0.75rem;
   }
 
   .stat-icon {
     width: 45px;
     height: 45px;
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
   }
 
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .table-container {
+    font-size: 0.8rem;
+  }
+
+  .table thead th {
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0.7rem;
+  }
+
+  .table tbody td {
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0.8rem;
+  }
+
+  .btn-sm {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  .pagination {
+    font-size: 0.8rem;
+  }
+
+  .page-link {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.75rem;
   }
 }
 </style>

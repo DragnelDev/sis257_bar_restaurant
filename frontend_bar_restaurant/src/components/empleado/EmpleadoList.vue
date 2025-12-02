@@ -338,173 +338,149 @@ defineExpose({ obtenerLista })
 </template>
 
 <style scoped>
-/* Contenedor principal para aplicar padding general */
+/* === CONTENEDOR PRINCIPAL === */
 .p-datatable-list {
-  background-color: #f8f9fa; /* Fondo suave para destacar la tabla */
+  background-color: var(--gray); /* Fondo claro */
   min-height: 80vh;
 }
 
-/* Estilo de la tabla completa (p-datatable) */
+/* === TABLA === */
 .p-datatable {
   border: 1px solid #e9ecef;
 }
 
-/* Encabezado de la tabla */
+/* Encabezado */
 .p-datatable-table thead th {
-  background-color: #f8f9fa; /* Fondo claro */
-  color: #6c757d; /* Texto gris oscuro */
-  font-weight: 700;
+  background-color: var(--secondary); /* naranja cálido */
+  color: var(--light); /* texto blanco */
   text-transform: uppercase;
-  font-size: 0.8rem;
-  padding: 1rem;
-  border-bottom: 2px solid #e9ecef;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
-/* Filas y celdas se mantienen con excelente contraste */
+/* Filas */
 .p-datatable-table tbody tr {
   transition: background-color 0.3s;
 }
-
 .p-datatable-table tbody tr:hover {
-  background-color: #f1f5f9;
+  background-color: rgba(254,161,22,0.1); /* hover naranja suave */
 }
-
 .p-datatable-table td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #dee2e6;
   vertical-align: middle;
 }
 
-/* --- ZONA DE CAMBIO SOLICITADO (Fondo Blanco, Letras Negras) --- */
-
-/* 1. Botón de Búsqueda (InputGroupAddon) */
-/* Fondo blanco/claro y texto/ícono negro. */
-.input-group-addon {
-  background-color: #f8f9fa; /* Fondo blanco muy ligero */
-  color: #343a40; /* <-- CAMBIO: Ícono a Negro */
-  border-color: #ced4da; /* Borde gris claro */
-}
-
-/* 2. Botón "Nuevo Empleado" (Severity Success - Verde) */
-/* Fondo de acento de color claro y texto negro. */
+/* === BOTONES === */
+/* Botón "Nuevo Empleado" → verde éxito */
 .p-button.p-button-success {
-  /* Usamos un verde/menta más claro para que el texto negro resalte */
-  background-color: #9392df;
-  border-color: #565ed3e5;
-  color: #212529 !important; /* <--- CAMBIO: Color de texto a Negro */
-  font-weight: 600;
+  background-color: #28a745;
+  border-color: #28a745;
+  color: var(--light) !important;
 }
 .p-button.p-button-success:hover {
-  background-color: #79c986;
-  border-color: #79c986;
-  color: #212529 !important;
+  background-color: #218838;
+  border-color: #218838;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* 3. Botones de Paginación (si se usa severity='secondary' o 'primary' con 'text' */
-/* Aseguramos que los botones de paginación sean oscuros sobre fondos claros */
-.p-button[aria-label='Anterior'],
-.p-button[aria-label='Siguiente'] {
-  color: #343a40 !important;
+/* Botón Editar → rosa vibrante */
+.p-button.p-button-warning {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--light);
+}
+.p-button.p-button-warning:hover {
+  background-color: #d93670;
+  border-color: #d93670;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* 4. Selector de Cargo y Paginación (select) */
+/* Botón Eliminar → rojo peligro */
+.p-button.p-button-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: var(--light);
+}
+.p-button.p-button-danger:hover {
+  background-color: #b02a37;
+  border-color: #b02a37;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* === SELECTORES === */
 .p-dropdown {
-  /* Ya estaba con fondo blanco, solo confirmamos color del texto */
-  color: #212529;
-  background-color: white;
+  color: var(--text);
+  background-color: var(--light);
 }
 
-/* --- FIN ZONA DE CAMBIO SOLICITADO --- */
-
-/* Tags de estado (ya tienen buen contraste) */
+/* === TAGS DE ESTADO === */
 .p-tag {
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-
 .p-tag-success {
   background-color: #e6ffed;
   color: #1a7e43;
 }
-
 .p-tag-danger {
   background-color: #fff0f0;
   color: #c81d25;
 }
-
 .p-tag-info {
-  background-color: #e0f2ff;
-  color: #0b79b9;
+  background-color: var(--accent); /* azul eléctrico */
+  color: var(--light);
 }
 
-/* Paginador (Clases PrimeVue) */
+/* === PAGINADOR === */
 .p-paginator {
-  background-color: white;
+  background-color: var(--light);
   border: 1px solid #e9ecef;
 }
-
-/* Las clases de utilidad y otros estilos se mantienen */
-.flex {
-  display: flex;
-}
-.flex-wrap {
-  flex-wrap: wrap;
+.p-paginator .p-paginator-page:hover {
+  background-color: var(--secondary);
+  color: var(--light);
+  border-radius: var(--radius);
 }
 
-/* Clases de utilidad Tailwind (si las usas en tu proyecto): */
-.flex {
-  display: flex;
-}
-.flex-wrap {
-  flex-wrap: wrap;
-}
-.justify-content-between {
-  justify-content: space-between;
-}
-.align-items-center {
-  align-items: center;
-}
-.gap-2 {
-  gap: 0.5rem;
-}
-.gap-3 {
-  gap: 1rem;
-}
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-.mt-4 {
-  margin-top: 1.5rem;
-}
+/* === UTILIDADES === */
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mt-4 { margin-top: 1.5rem; }
 .shadow-1 {
-  box-shadow:
-    0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1),
+              0 1px 2px rgba(0,0,0,0.06);
 }
-.border-round {
-  border-radius: 6px;
-}
+.border-round { border-radius: 6px; }
 
-/* Asegurar que las columnas pequeñas se vean bien */
+/* Columnas centradas */
 .p-datatable-table th:nth-child(1),
-.p-datatable-table td:nth-child(1) {
-  text-align: center;
-}
+.p-datatable-table td:nth-child(1),
 .p-datatable-table th:last-child,
 .p-datatable-table td:last-child {
   text-align: center;
 }
 
-/* Asegurando que la etiqueta 'Cargo:' sea negra */
-label {
-  /* Forzamos el color negro absoluto */
-  color: #000000 !important;
-}
+/* Labels */
+label { color: var(--dark) !important; }
+.text-900 { color: var(--dark) !important; }
 
-/* O, si solo quieres afectar la etiqueta 'Cargo' específica: */
-.text-900 {
-  color: #000000 !important;
+/* Errores */
+.error-text {
+  color: #dc2626;
+  font-size: 0.875rem;
+  display: block;
+  margin-top: 0.25rem;
 }
 </style>
+
+

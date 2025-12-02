@@ -65,9 +65,10 @@ onMounted(() => {
   color: var(--primary) !important;
 }
 
-.bg-dark {
-  background-color: var(--dark) !important;
+:root {
+  --dark: #343a40; /* gris oscuro */
 }
+
 
 .back-to-top {
   position: fixed;

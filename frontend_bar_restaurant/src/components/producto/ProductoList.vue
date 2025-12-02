@@ -126,7 +126,7 @@ defineExpose({ obtenerLista })
     <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
     <div v-if="cargando" class="alert alert-info mt-3">Cargando productos...</div>
 
-    <div v-if="!cargando && !error" class="table-responsive mt-3">
+    <div v-if="!cargando && !error" class="table-container mt-3">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark text-white">
           <tr>

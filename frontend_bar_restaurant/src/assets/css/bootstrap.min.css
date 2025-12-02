@@ -4982,14 +4982,9 @@ fieldset:disabled .btn {
   outline: 0;
 }
 .modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1040;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
+  background-color: rgba(255, 255, 255, 0.6); /* blanco suave */
 }
+
 .modal-backdrop.fade {
   opacity: 0;
 }
@@ -5290,11 +5285,12 @@ fieldset:disabled .btn {
 .tooltip-inner {
   max-width: 200px;
   padding: 0.25rem 0.5rem;
-  color: #fff;
+  color: var(--light); /* texto blanco */
   text-align: center;
-  background-color: #000;
+  background-color: var(--accent); /* azul eléctrico */
   border-radius: 2px;
 }
+
 .popover {
   position: absolute;
   top: 0;
@@ -5608,8 +5604,9 @@ fieldset:disabled .btn {
   filter: invert(1) grayscale(100);
 }
 .carousel-dark .carousel-indicators [data-bs-target] {
-  background-color: #000;
+  background-color: var(--primary); /* rosa vibrante */
 }
+
 .carousel-dark .carousel-caption {
   color: #000;
 }
@@ -6879,7 +6876,8 @@ fieldset:disabled .btn {
   background-color: #f1f8ff !important;
 }
 .bg-dark {
-  background-color: #0f172b !important;
+  background-color: #f8f9fa !important; /* gris claro */
+  color: #212529 !important; /* texto oscuro */
 }
 .bg-body {
   background-color: #f1f8ff !important;
