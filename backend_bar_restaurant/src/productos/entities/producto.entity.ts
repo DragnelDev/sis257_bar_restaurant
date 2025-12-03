@@ -68,6 +68,14 @@ export class Producto {
   @Column('boolean', { default: false, name: 'es_vendible' })
   esVendible: boolean;
 
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'precio_venta_unitario',
+  })
+  precioVentaUnitario: number;
+
   // Columnas de auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;

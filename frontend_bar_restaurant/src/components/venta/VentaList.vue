@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { DetalleVentaItem, Venta } from '@/models/venta'
+import type { DetalleVenta } from '@/models/DetalleVenta'
+import type { Venta } from '@/models/venta'
 import http from '@/plugins/axios'
 import { InputGroup, InputGroupAddon, InputText, Dropdown, Button, Dialog } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
 
 const ENDPOINT = 'ventas'
 const ventas = ref<Venta[]>([])
-const detalleVentas = ref<DetalleVentaItem[]>([])
+const detalleVentas = ref<DetalleVenta[]>([])
 
 const busqueda = ref<string>('')
 
@@ -29,7 +30,7 @@ function calcularCostoTotal(venta: Venta): number {
   }
 
   const costo = venta.detalleVentas.reduce((sum, detalle) => {
-    const costoUnitario = parseFloat(detalle.costo_unitario ?? '0')
+    const costoUnitario = parseFloat(detalle.costoUnitario ?? '0')
     return sum + costoUnitario * detalle.cantidad
   }, 0)
 
@@ -455,7 +456,7 @@ defineExpose({ obtenerLista })
                     {{
                       (
                         parseFloat(d.cantidad ?? d.cantidadVenta ?? 0) *
-                        parseFloat(d.precioUnitarioVenta ?? d.precio_unitario ?? d.precio ?? 0)
+                        parseFloat(d.precioUnitario ?? d.precio_unitario ?? d.precio ?? 0)
                       ).toFixed(2)
                     }}
                   </td>

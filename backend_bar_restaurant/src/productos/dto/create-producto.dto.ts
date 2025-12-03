@@ -70,4 +70,12 @@ export class CreateProductoDto {
   @ApiProperty()
   @IsDefined({ message: 'El campo esVendible debe estar definido' })
   readonly esVendible: boolean;
+
+  @ApiProperty()
+  @IsDefined({ message: 'El campo precioVentaUnitario debe estar definido' })
+  @IsNumber(
+    {},
+    { message: 'El campo precioVentaUnitario debe ser de tipo numérico' },
+  )
+  readonly precioVentaUnitario: number;
 }

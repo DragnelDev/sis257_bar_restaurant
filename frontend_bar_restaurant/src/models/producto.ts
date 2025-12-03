@@ -1,5 +1,7 @@
 export interface Producto {
   id: number
+  idCategoria: number
+  idUnidadMedida: number
   nombre: string
   urlImagen: string
   descripcion: string
@@ -10,6 +12,7 @@ export interface Producto {
 
   perecedero: boolean
   esVendible: boolean
+  precioVentaUnitario?: number
 
   categoria: {
     id: number

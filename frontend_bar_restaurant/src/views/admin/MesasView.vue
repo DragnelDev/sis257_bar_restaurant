@@ -145,16 +145,8 @@ const handleMesaAction = (mesa: Mesa) => {
   }
 
   if (mesa.estado === 'OCUPADA') {
-    // Abrir venta activa (si existe) para editar/pagar
-    if (mesa.idVentaActiva) {
-      router.push({
-        name: 'admin-registrar',
-        query: { mesaId: String(mesa.id), ventaId: String(mesa.idVentaActiva) },
-      })
-      return
-    }
-    // Si no hay venta activa, ir a crear una
-    router.push({ name: 'admin-registrar', query: { mesaId: String(mesa.id) } })
+    // Cuando la mesa está ocupada, redirigir a órdenes
+    router.push({ name: 'admin-orders', query: { mesaId: String(mesa.id) } })
     return
   }
 

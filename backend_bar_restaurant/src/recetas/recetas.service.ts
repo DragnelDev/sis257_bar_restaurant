@@ -59,7 +59,7 @@ export class RecetasService {
   }
 
   async create(createRecetaDto: CreateRecetaDto): Promise<Receta> {
-    console.log('📥 DTO recibido:', JSON.stringify(createRecetaDto, null, 2));
+    //console.log('📥 DTO recibido:', JSON.stringify(createRecetaDto, null, 2));
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -67,9 +67,9 @@ export class RecetasService {
 
     try {
       const { detalles, idCategoria, ...recetaData } = createRecetaDto;
-      console.log('✅ Desestructuración OK');
-      console.log('  - idCategoria:', idCategoria);
-      console.log('  - detalles:', detalles);
+      //console.log('✅ Desestructuración OK');
+      //console.log('  - idCategoria:', idCategoria);
+      //console.log('  - detalles:', detalles);
 
       const existente = await queryRunner.manager.findOneBy(Receta, {
         nombreReceta: recetaData.nombreReceta,
@@ -78,7 +78,7 @@ export class RecetasService {
       if (existente) {
         throw new ConflictException('La receta con ese nombre ya existe.');
       }
-      console.log('✅ No existe receta duplicada');
+      //console.log('✅ No existe receta duplicada');
 
       const categoriaEntity = await queryRunner.manager.findOne(Categoria, {
         where: { id: idCategoria },
@@ -89,7 +89,7 @@ export class RecetasService {
           `La categoría con id ${idCategoria} no existe`,
         );
       }
-      console.log('✅ Categoría encontrada:', categoriaEntity.nombre);
+      //console.log('✅ Categoría encontrada:', categoriaEntity.nombre);
 
       // ... resto del código
 

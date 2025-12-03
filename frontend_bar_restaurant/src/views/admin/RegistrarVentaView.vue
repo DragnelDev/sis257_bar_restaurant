@@ -18,7 +18,7 @@ interface Receta {
 interface Producto {
   id: number
   nombre: string
-  costoUnitarioPromedio: number
+  precioVentaUnitario: number
   esVendible: boolean
   urlImagen?: string
 }
@@ -64,7 +64,7 @@ const router = useRouter()
 const goToMesas = async () => {
   try {
     await router.push({ name: 'admin-mesas' })
-  } catch (e) {
+  } catch {
     emit('close')
   }
 }
@@ -91,8 +91,9 @@ const formatPrice = (v: unknown) => {
 }
 
 // -------------------- LOADERS --------------------
-const normalizeReceta = (obj: any): Receta => {
-  const precioRaw = obj.precioVentaActual ?? obj.price ?? 0
+const normalizeReceta = (obj: unknown): Receta => {
+  const o = obj as Record<string, any>
+  const precioRaw = o['precioVentaActual'] ?? o['price'] ?? 0
   let precioNum = 0
   if (typeof precioRaw === 'string') {
     const cleaned = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '')
@@ -101,15 +102,53 @@ const normalizeReceta = (obj: any): Receta => {
     precioNum = Number(precioRaw)
   }
   if (!Number.isFinite(precioNum)) precioNum = 0
+
+  const idRaw = o['id']
+  const id = typeof idRaw === 'number' ? idRaw : Number(idRaw) || 0
+
+  const nombreReceta =
+    (typeof o['nombreReceta'] === 'string' && o['nombreReceta']) ||
+    (typeof o['nombre'] === 'string' && o['nombre']) ||
+    (typeof o['name'] === 'string' && o['name']) ||
+    'Sin nombre'
+
+  const categoria =
+    (typeof o['categoria'] === 'string' && o['categoria']) || 'principal'
+
+  const urlImagen =
+    (typeof o['urlImagen'] === 'string' && o['urlImagen']) ||
+    (typeof o['imagen'] === 'string' && o['imagen']) ||
+    (typeof o['image'] === 'string' && o['image']) ||
+    '/img/default-recipe.jpg'
+
   return {
-    id: obj.id,
-    nombreReceta: obj.nombreReceta || obj.name || 'Sin nombre',
+    id,
+    nombreReceta,
     precioVentaActual: precioNum,
-    categoria:
-      typeof obj.categoria === 'string'
-        ? obj.categoria
-        : obj.categoria?.nombre || obj.category || 'principal',
-    urlImagen: obj.urlImagen || obj.image || '/img/default.jpg',
+    categoria,
+    urlImagen,
+  }
+}
+
+const normalizeProducto = (obj: any): Producto => {
+  const precioRaw = obj.precioVentaUnitario ?? obj.price ?? obj.costo ?? 0
+  let precioNum = 0
+  if (typeof precioRaw === 'string') {
+    const cleaned = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '')
+    precioNum = parseFloat(cleaned)
+  } else {
+    precioNum = Number(precioRaw)
+  }
+  if (!Number.isFinite(precioNum)) precioNum = 0
+
+  const id = typeof obj.id === 'number' ? obj.id : Number(obj.id) || 0
+
+  return {
+    id,
+    nombre: obj.nombre || obj.name || 'Sin nombre',
+    precioVentaUnitario: precioNum,
+    esVendible: obj.esVendible === true,
+    urlImagen: obj.urlImagen ?? obj.image ?? '/img/default-product.jpg',
   }
 }
 
@@ -172,13 +211,7 @@ const loadProductosVendibles = async () => {
     }
     menuProductos.value = (data as any[])
       .filter((p) => p.esVendible === true)
-      .map((p) => ({
-        id: p.id,
-        nombre: p.nombre || p.name || 'Sin nombre',
-        costoUnitarioPromedio: Number(p.costoUnitarioPromedio ?? p.costo ?? 0) || 0,
-        esVendible: true,
-        urlImagen: p.urlImagen ?? p.image ?? '/img/default-product.jpg',
-      }))
+      .map((p) => normalizeProducto(p))
   } catch (err) {
     console.warn('Error cargando productos vendibles:', err)
     menuProductos.value = []
@@ -278,7 +311,7 @@ const allItems = computed<MenuUnifiedItem[]>(() => {
     type: 'producto' as const,
     id: p.id,
     nombre: p.nombre,
-    precio: p.costoUnitarioPromedio,
+    precio: p.precioVentaUnitario,
     categoria: 'producto',
     urlImagen: p.urlImagen ?? '/img/default-product.jpg',
   }))

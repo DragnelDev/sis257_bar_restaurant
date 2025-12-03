@@ -42,13 +42,14 @@ const defaultProducto = (): Producto => ({
   costoUnitarioPromedio: 0,
   perecedero: false,
   esVendible: false,
+  precioVentaUnitario: 0,
 
   categoria: { id: 0, nombre: '' },
   unidadMedida: { id: 0, nombre: '', simbolo: '' },
 
   // IDs para el form
-  idCategoria: 0 as any,
-  idUnidadMedida: 0 as any,
+  idCategoria: 0 as number,
+  idUnidadMedida: 0 as number,
 })
 
 const productos = ref<Producto>(defaultProducto())
@@ -99,6 +100,7 @@ async function handleSave() {
       costoUnitarioPromedio: productos.value.costoUnitarioPromedio,
       perecedero: productos.value.perecedero,
       esVendible: productos.value.esVendible,
+      precioVentaUnitario: productos.value.precioVentaUnitario,
     }
 
     if (props.modoEdicion) {
@@ -234,6 +236,29 @@ watch(
         </div>
       </div>
 
+      <!-- Row 5: Es Vendible -->
+      <div class="form-field">
+        <label for="esVendible" class="form-label">Es Vendible</label>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="esVendible" v-model="productos.esVendible" />
+          <span class="checkbox-label">Sí, este producto es vendible</span>
+        </div>
+      </div>
+
+      <!-- Row 6: Precio Venta (condicional) -->
+      <div v-if="productos.esVendible" class="form-field">
+        <label for="precioVentaUnitario" class="form-label">Precio Venta Unitario</label>
+        <InputNumber
+          id="precioVentaUnitario"
+          v-model="productos.precioVentaUnitario"
+          class="w-full"
+          mode="currency"
+          currency="BOB"
+          locale="es-BO"
+          placeholder="0.00"
+        />
+      </div>
+
       <!-- Action Buttons -->
       <div class="form-actions">
         <Button
@@ -317,6 +342,7 @@ watch(
   display: flex;
   align-items: center;
   padding: 0.65rem 0;
+  gap: 8px;
 }
 
 .checkbox-wrapper input[type="checkbox"] {
@@ -324,6 +350,11 @@ watch(
   height: 18px;
   cursor: pointer;
   accent-color: #ff4081;
+}
+
+.checkbox-label {
+  color: #555555;
+  font-size: 0.9rem;
 }
 
 /* PrimeVue Dropdown Light Mode */
