@@ -30,8 +30,8 @@ export class Compra {
   @Column('varchar', { name: 'numero_factura', length: 8 })
   numeroFactura: string;
 
-  @Column('date', { name: 'fecha_recepcion' })
-  fechaRecepcion: Date;
+  /*@Column('date', { name: 'fecha_recepcion' })
+  fechaRecepcion: Date;*/
 
   //Columnas de Auditoria
   @CreateDateColumn({ name: 'fecha_creacion' })

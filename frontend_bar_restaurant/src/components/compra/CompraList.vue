@@ -181,7 +181,6 @@ defineExpose({ obtenerLista })
                 <Button
                   icon="pi pi-eye"
                   aria-label="Ver Detalles"
-                  text
                   rounded
                   class="p-button-sm btn-ver"
                   @click="verDetalle(detalle)"
@@ -227,7 +226,6 @@ defineExpose({ obtenerLista })
             @click="prevPage"
             :disabled="pagina <= 1"
             aria-label="Anterior"
-            text
             rounded
             class="btn-pagina"
           />
@@ -235,7 +233,6 @@ defineExpose({ obtenerLista })
             <Button
               :label="p.toString()"
               :severity="pagina === p ? 'primary' : 'secondary'"
-              text
               rounded
               @click="goToPage(p)"
               class="btn-pagina"
@@ -246,7 +243,6 @@ defineExpose({ obtenerLista })
             @click="nextPage"
             :disabled="pagina >= totalPages"
             aria-label="Siguiente"
-            text
             rounded
             class="btn-pagina"
           />
@@ -411,71 +407,61 @@ defineExpose({ obtenerLista })
   --verde-oscuro: #388E3C;
 }
 
-/* === CONTENEDOR PRINCIPAL === */
 .p-datatable-list {
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   min-height: 80vh;
+  padding: 1rem;
 }
 
-/* === TABLA EN NEGRO === */
+/* Mantener compatibilidad con estilos de UsersView: encabezado */
+.page-header h2 {
+  color: #2c3e50;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+/* Tabla y datatable */
 .p-datatable {
-  border: 1px solid #2c2c2c;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  color: #333333;
 }
 
-/* Encabezado de tabla en negro */
 .p-datatable-table thead th {
-  background-color: #212121 !important;
-  color: #ffffff !important;
+  background-color: #f8f9fa !important;
+  color: #333333 !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
-  border-bottom: 2px solid #333333 !important;
+  border-bottom: 2px solid #e0e0e0 !important;
 }
 
-/* Filas de tabla */
 .p-datatable-table tbody tr {
   transition: background-color 0.3s;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #333333;
 }
 
 .p-datatable-table tbody tr:hover {
-  background-color: #2c2c2c !important;
+  background-color: #f8f9fa !important;
 }
 
 .p-datatable-table tbody tr:nth-child(even) {
-  background-color: #222222;
-}
-
-.p-datatable-table tbody tr:nth-child(even):hover {
-  background-color: #2c2c2c !important;
+  background-color: #fafafa;
 }
 
 .p-datatable-table td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #333333 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
   vertical-align: middle;
-  color: #ffffff !important;
+  color: #333333 !important;
 }
 
-/* Texto en la tabla */
-.p-datatable-table .font-semibold,
-.p-datatable-table .text-900 {
-  color: #ffffff !important;
-}
-
-.p-datatable-table .text-muted {
-  color: #b0b0b0 !important;
-}
-
-/* === BOTONES CON COLORES QUE COMBINAN === */
-
-/* Botón VER (Azul vibrante) */
+/* Botón VER (azul) ahora con estilo coherente */
 .btn-ver {
   background: linear-gradient(135deg, var(--azul-vibrante), var(--azul-oscuro)) !important;
-  color: white !important;
+  color: black !important;
   border: none !important;
   padding: 0.5rem !important;
   border-radius: 6px !important;
@@ -490,10 +476,28 @@ defineExpose({ obtenerLista })
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.35) !important;
 }
 
-/* Botones de PAGINACIÓN (Rosa) */
+/* Paginación: usar mismo diseño que UsersView */
+.p-paginator {
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #333333 !important;
+}
+
+.p-paginator .p-paginator-summary {
+  color: #6c757d !important;
+}
+
+.p-paginator select {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  padding: 0.4rem 0.75rem !important;
+}
+
 .btn-pagina {
   background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro)) !important;
-  color: white !important;
+  color: black !important;
   border: none !important;
   padding: 0.5rem 0.75rem !important;
   border-radius: 6px !important;
@@ -515,7 +519,6 @@ defineExpose({ obtenerLista })
   cursor: not-allowed !important;
 }
 
-/* Botón PÁGINA ACTIVA (Verde) */
 .btn-pagina[severity="primary"] {
   background: linear-gradient(135deg, var(--verde-success), var(--verde-oscuro)) !important;
   box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3) !important;
@@ -526,7 +529,30 @@ defineExpose({ obtenerLista })
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4) !important;
 }
 
-/* Botón CERRAR en diálogo (Rosa) */
+/* Asegurar que los botones de PrimeVue con variante text y la clase btn-pagina
+   muestren el fondo y el icono en color visible (no blanco sobre blanco) */
+.p-button.btn-pagina,
+.p-button.btn-pagina.p-button-text,
+.btn-pagina.p-button,
+.btn-pagina.p-button-text {
+  background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro)) !important;
+  color: black !important;
+  border: none !important;
+}
+
+.p-button.btn-pagina .pi,
+.btn-pagina .pi,
+.btn-pagina .p-button-icon {
+  color: black !important;
+  fill: black !important;
+}
+
+/* Iconos dentro del contenedor principal (por ejemplo el icono de la cabecera) */
+.p-datatable-list .pi {
+  color: var(--azul-vibrante) !important;
+}
+
+/* Botón Cerrar coherente */
 .btn-cerrar {
   background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro)) !important;
   color: white !important;
@@ -546,7 +572,7 @@ defineExpose({ obtenerLista })
   box-shadow: 0 6px 16px rgba(255, 64, 129, 0.35) !important;
 }
 
-/* === TAGS === */
+/* Tags */
 .p-tag {
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
@@ -556,61 +582,42 @@ defineExpose({ obtenerLista })
   letter-spacing: 0.5px;
 }
 .p-tag-secondary {
-  background-color: #424242 !important;
+  background-color: #6c757d !important;
   color: #ffffff !important;
-  border: 1px solid #555555 !important;
+  border: 1px solid #5a6268 !important;
 }
 .p-tag-info {
-  background-color: rgba(33, 150, 243, 0.2) !important;
-  color: #64b5f6 !important;
+  background-color: rgba(33, 150, 243, 0.15) !important;
+  color: #1976D2 !important;
   border: 1px solid rgba(33, 150, 243, 0.3) !important;
 }
 
-/* === PAGINADOR === */
-.p-paginator {
-  background-color: #1a1a1a !important;
-  border: 1px solid #333333 !important;
-  color: #ffffff !important;
-}
-
-.p-paginator .p-paginator-summary {
-  color: #b0b0b0 !important;
-}
-
-.p-paginator select {
-  background-color: #2c2c2c !important;
-  color: #ffffff !important;
-  border: 1px solid #444444 !important;
-  border-radius: 6px !important;
-  padding: 0.4rem 0.75rem !important;
-}
-
-/* === DETALLE COMPRA DIALOG === */
+/* Detalle compra */
 .detalle-compra {
   padding: 0.5rem;
 }
 
 .section-title {
-  color: #ffffff;
+  color: #333333;
   font-size: 1.1rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #444444;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .info-card {
   display: flex;
   align-items: center;
-  background: #2c2c2c;
-  border: 1px solid #444444;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
   transition: all 0.3s ease;
-  color: #ffffff;
+  color: #333333;
 }
 .info-card:hover {
-  background: #333333;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
@@ -624,7 +631,7 @@ defineExpose({ obtenerLista })
   font-size: 1.25rem;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 .info-icon.bg-primary {
   background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
@@ -650,82 +657,38 @@ defineExpose({ obtenerLista })
 .info-text label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #b0b0b0;
+  color: #6c757d;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .info-text span {
-  color: #ffffff;
+  color: #333333;
   font-size: 1rem;
   font-weight: 500;
 }
 
-/* === UTILIDADES === */
-.flex {
-  display: flex;
-}
-.flex-wrap {
-  flex-wrap: wrap;
-}
-.justify-content-between {
-  justify-content: space-between;
-}
-.align-items-center {
-  align-items: center;
-}
-.gap-2 {
-  gap: 0.5rem;
-}
-.gap-3 {
-  gap: 1rem;
-}
-.mb-3 {
-  margin-bottom: 1rem;
-}
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-.mt-4 {
-  margin-top: 1.5rem;
-}
-.shadow-1 {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-.border-round {
-  border-radius: 6px;
-}
-.border-2 {
-  border-width: 2px !important;
-}
-.border-success {
-  border-color: #28a745 !important;
-}
+/* Utilidades */
+.flex { display:flex }
+.flex-wrap { flex-wrap:wrap }
+.justify-content-between { justify-content: space-between }
+.align-items-center { align-items: center }
+.gap-2 { gap: 0.5rem }
+.gap-3 { gap: 1rem }
+.mb-3 { margin-bottom: 1rem }
+.mb-4 { margin-bottom: 1.5rem }
+.mt-4 { margin-top: 1.5rem }
+.shadow-1 { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08) }
+.border-round { border-radius: 6px }
+.border-2 { border-width: 2px !important }
+.border-success { border-color: #28a745 !important }
 
-/* Errores */
-.error-text {
-  color: #dc2626;
-  font-size: 0.875rem;
-  display: block;
-  margin-top: 0.25rem;
-}
+.error-text { color: #dc2626; font-size: 0.875rem; display:block; margin-top:0.25rem }
+.text-success { color: #28a745 !important }
+.text-primary { color: #2196F3 !important }
 
-/* Texto en celdas especiales */
-.text-success {
-  color: #4ade80 !important;
-}
-.text-primary {
-  color: #60a5fa !important;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .info-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 1rem;
-  }
-  .info-icon {
-    margin: 0 auto 0.5rem;
-  }
+  .info-card { flex-direction: column; text-align: center; padding:1rem }
+  .info-icon { margin: 0 auto 0.5rem }
 }
+
 </style>

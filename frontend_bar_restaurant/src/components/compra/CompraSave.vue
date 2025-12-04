@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { Button, Dialog, Dropdown, InputNumber, InputText } from 'primevue'
 import { useToast } from 'primevue/usetoast'
-import { Button, Dialog, InputNumber, Dropdown, InputText } from 'primevue'
+import { computed, onMounted, ref, watch } from 'vue'
 
-import type { Compra, CreateCompraDto, CreateDetalleCompraDto } from '@/models/compra'
-import type { Proveedor } from '@/models/Proveedor'
+import type { Compra, CreateDetalleCompraDto } from '@/models/compra'
 import type { Producto } from '@/models/producto'
+import type { Proveedor } from '@/models/Proveedor'
 
-import { useAuthStore } from '@/stores'
 import http from '@/plugins/axios'
+import { useAuthStore } from '@/stores'
 
 const ENDPOINT = 'compras'
 const authStore = useAuthStore()
@@ -37,7 +37,7 @@ const detallesCompra = ref<CreateDetalleCompraDto[]>([])
 const nuevoDetalle = ref<CreateDetalleCompraDto>({
   idProducto: 0,
   cantidad: 1,
-  precioUnitarioCompra: 0,
+  precioUnitario: 0,
 })
 
 const proveedores = ref<Proveedor[]>([])
@@ -71,8 +71,8 @@ watch(
     if (!visible) return
 
     if (!props.modoEdicion) {
-      if (!localCompra.value.fechaCompra) {
-        localCompra.value.fechaCompra = new Date().toISOString().slice(0, 10)
+      if (!localCompra.value.fechaCreacion) {
+        localCompra.value.fechaCreacion = new Date().toISOString().slice(0, 10)
       }
 
       if (!proveedorSeleccionado.value && proveedores.value.length > 0) {
@@ -87,11 +87,15 @@ watch(
   (newVal) => {
     localCompra.value = { ...(newVal as Compra) }
 
-    detallesCompra.value = newVal?.detalles
-      ? newVal.detalles.map((d) => ({
+    // Soporta tanto `detallesCompra` (antiguo) como `detalles` (nuevo)
+    const incomingDetalles = (newVal as any)?.detallesCompra || (newVal as any)?.detalles || []
+
+    detallesCompra.value = incomingDetalles
+      ? incomingDetalles.map((d: any) => ({
           idProducto: d.idProducto,
           cantidad: d.cantidad,
-          precioUnitarioCompra: d.precioUnitarioCompra,
+          // Normalizamos al campo `precioUnitario` que usa el formulario
+          precioUnitario: d.precioUnitario ?? d.precioUnitarioCompra ?? 0,
         }))
       : []
 
@@ -143,7 +147,7 @@ function agregarDetalle() {
     })
   }
 
-  nuevoDetalle.value = { idProducto: 0, cantidad: 1, precioUnitarioCompra: 0 }
+  nuevoDetalle.value = { idProducto: 0, cantidad: 1, precioUnitario: 0 }
   productoSeleccionado.value = null
 }
 
@@ -151,9 +155,14 @@ function eliminarDetalle(index: number) {
   detallesCompra.value.splice(index, 1)
 }
 
-const totalCalculado = computed(() =>
-  detallesCompra.value.reduce((sum, d) => sum + d.cantidad * d.precioUnitarioCompra, 0).toFixed(2),
-)
+const totalCalculado = computed(() => {
+  const total = detallesCompra.value.reduce((sum: number, d: any) => {
+    const precio = d.precioUnitario ?? d.precioUnitarioCompra ?? 0
+    return sum + (d.cantidad || 0) * precio
+  }, 0)
+
+  return total.toFixed(2)
+})
 
 function getUserId(): number {
   const u: any = authStore.user
@@ -199,15 +208,11 @@ async function handleSave() {
       return
     }
 
-    const fechaCompra =
-      localCompra.value.fechaCompra instanceof Date
-        ? localCompra.value.fechaCompra.toISOString().slice(0, 10)
-        : localCompra.value.fechaCompra
 
-    const body: CreateCompraDto = {
+    // Solo los campos requeridos para el POST
+    const body = {
       idProveedor: localCompra.value.idProveedor,
       idUsuario: getUserId(),
-      fechaCompra,
       numeroFactura: localCompra.value.numeroFactura || '',
       detalles: detallesCompra.value,
     }
@@ -270,21 +275,10 @@ async function handleSave() {
             option-label="nombreEmpresa"
             placeholder="Seleccione proveedor"
             class="w-full"
+            filter
+            filterPlaceholder="Buscar proveedor"
           />
         </div>
-      </div>
-
-      <!-- Total Compra -->
-      <div class="form-field">
-        <label class="form-label">Total Compra</label>
-        <InputNumber
-          :model-value="Number(totalCalculado)"
-          mode="currency"
-          currency="BOB"
-          locale="es-BO"
-          readonly
-          class="form-input total"
-        />
       </div>
 
       <!-- Detalles de la Compra -->
@@ -304,6 +298,8 @@ async function handleSave() {
               option-label="nombre"
               placeholder="Seleccione producto"
               class="w-full"
+              filter
+              filterPlaceholder="Buscar producto"
             />
           </div>
 
@@ -320,7 +316,7 @@ async function handleSave() {
           <div class="form-field">
             <label class="form-label">Precio Unitario</label>
             <InputNumber
-              v-model="nuevoDetalle.precioUnitarioCompra"
+              v-model="nuevoDetalle.precioUnitario"
               mode="currency"
               currency="BOB"
               locale="es-BO"
@@ -359,10 +355,10 @@ async function handleSave() {
               </td>
               <td class="text-right">{{ detalle.cantidad }}</td>
               <td class="text-right">
-                {{ detalle.precioUnitarioCompra.toFixed(2) }} BOB
+                {{ (detalle.precioUnitario ?? detalle.precioUnitario ?? 0).toFixed(2) }} BOB
               </td>
               <td class="text-right">
-                {{ (detalle.cantidad * detalle.precioUnitarioCompra).toFixed(2) }} BOB
+                {{ (detalle.cantidad * (detalle.precioUnitario ?? detalle.precioUnitario ?? 0)).toFixed(2) }} BOB
               </td>
               <td class="text-center">
                 <Button
@@ -430,6 +426,7 @@ async function handleSave() {
 
 /* Form Field */
 .form-field {
+  color: #faf8f8;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -439,7 +436,7 @@ async function handleSave() {
 .form-label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #333333;
+  color: #faf4f4;
   display: block;
 }
 
@@ -498,8 +495,12 @@ async function handleSave() {
 }
 
 /* PrimeVue InputNumber Light Mode */
+
+/* PrimeVue InputNumber Light Mode Mejorado */
 :deep(.p-inputnumber) {
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 :deep(.p-inputnumber .p-inputnumber-input) {
@@ -509,6 +510,7 @@ async function handleSave() {
   padding: 0.65rem 0.875rem !important;
   border-radius: 6px !important;
   font-size: 0.95rem !important;
+  flex: 1 1 auto;
 }
 
 :deep(.p-inputnumber .p-inputnumber-input:focus) {
@@ -516,9 +518,25 @@ async function handleSave() {
   box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
 }
 
+
 :deep(.p-inputnumber-button) {
   background: #f8f9fa !important;
   border: 1px solid #d1d9df !important;
+  width: 38px !important;
+  height: 40px !important;
+  color: #333333 !important;
+  border-radius: 6px !important;
+  margin-left: 2px;
+  margin-right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 !important;
+}
+
+:deep(.p-inputnumber-button .pi) {
+  font-size: 1.1rem !important;
 }
 
 .total.form-input {

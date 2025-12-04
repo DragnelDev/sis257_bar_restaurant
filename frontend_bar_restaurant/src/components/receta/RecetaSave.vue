@@ -3,7 +3,8 @@ import type { Producto } from '@/models/producto'
 import http from '@/plugins/axios'
 import { Button, Dialog, InputNumber, InputText, Textarea, Dropdown } from 'primevue'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref, watch, onMounted, PropType } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
+import type { PropType } from 'vue'
 
 const toast = useToast()
 const ENDPOINT = 'recetas'

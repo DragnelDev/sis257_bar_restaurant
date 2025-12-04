@@ -13,7 +13,6 @@ const mostrarDialog = ref(false)
 const mostrarDetalles = ref(false)
 const empleadoSeleccionado = ref<Empleado | null>(null)
 const error = ref('')
-const busqueda = ref('')
 const EmpleadoListRef = ref<InstanceType<typeof EmpleadoList> | null>(null)
 
 // Computed
@@ -148,7 +147,7 @@ onMounted(() => {
 
     <EmpleadoSave
       :mostrar="mostrarDialog"
-      :empleado="empleadoSeleccionado"
+      :empleado="empleadoSeleccionado || undefined"
       :modoEdicion="!!empleadoSeleccionado"
       @guardar="handleGuardar"
       @close="handleCloseDialog"

@@ -47,21 +47,9 @@ const totalPaginas = computed(() => {
   return Math.ceil(categoriasFiltradas.value.length / itemsPorPagina.value)
 })
 
-// Rango de páginas para mostrar
-const rangosPaginas = computed(() => {
-  const paginas = []
-  const maxPaginas = 5
-  let inicio = Math.max(1, paginaActual.value - Math.floor(maxPaginas / 2))
-  let fin = Math.min(totalPaginas.value, inicio + maxPaginas - 1)
 
-  if (fin - inicio < maxPaginas - 1) {
-    inicio = Math.max(1, fin - maxPaginas + 1)
-  }
-
-  for (let i = inicio; i <= fin; i++) {
-    paginas.push(i)
-  }
-  return paginas
+const paginas = computed(() => {
+  return Array.from({ length: totalPaginas.value }, (_, i) => i + 1)
 })
 
 async function obtenerLista() {
@@ -204,62 +192,46 @@ defineExpose({ obtenerLista })
       </table>
     </div>
 
-    <!-- Paginación -->
+    <!-- Paginación estilo compras -->
     <div
-      v-if="!loading && !errorMessage && totalPaginas > 1"
-      class="d-flex justify-content-between align-items-center mt-3"
+      v-if="categoriasFiltradas.length > 0"
+      class="mt-4 p-paginator p-component border-round shadow-1"
     >
-      <div class="text-muted">
-        Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} a
-        {{ Math.min(paginaActual * itemsPorPagina, categoriasFiltradas.length) }} de
-        {{ categoriasFiltradas.length }} registros
+      <div class="flex justify-content-between align-items-center p-3">
+        <div class="p-paginator-summary text-sm">
+          Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} -
+          {{ Math.min(paginaActual * itemsPorPagina, categoriasFiltradas.length) }} de
+          {{ categoriasFiltradas.length }} registros
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <Button
+            icon="pi pi-angle-left"
+            @click="cambiarPagina(paginaActual - 1)"
+            :disabled="paginaActual <= 1"
+            aria-label="Anterior"
+            rounded
+            class="btn-pagina"
+          />
+          <span v-for="p in paginas" :key="p">
+            <Button
+              :label="p.toString()"
+              :severity="paginaActual === p ? 'primary' : 'secondary'"
+              rounded
+              @click="cambiarPagina(p)"
+              class="btn-pagina"
+            />
+          </span>
+          <Button
+            icon="pi pi-angle-right"
+            @click="cambiarPagina(paginaActual + 1)"
+            :disabled="paginaActual >= totalPaginas"
+            aria-label="Siguiente"
+            rounded
+            class="btn-pagina"
+          />
+        </div>
       </div>
-
-      <nav aria-label="Paginación">
-        <ul class="pagination mb-0">
-          <li class="page-item" :class="{ disabled: paginaActual === 1 }">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(paginaActual - 1)">
-              <i class="pi pi-angle-left"></i>
-            </a>
-          </li>
-
-          <li v-if="rangosPaginas[0] > 1" class="page-item">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(1)">1</a>
-          </li>
-          <li v-if="rangosPaginas[0] > 2" class="page-item disabled">
-            <span class="page-link">...</span>
-          </li>
-
-          <li
-            v-for="pagina in rangosPaginas"
-            :key="pagina"
-            class="page-item"
-            :class="{ active: pagina === paginaActual }"
-          >
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(pagina)">
-              {{ pagina }}
-            </a>
-          </li>
-
-          <li
-            v-if="rangosPaginas[rangosPaginas.length - 1] < totalPaginas - 1"
-            class="page-item disabled"
-          >
-            <span class="page-link">...</span>
-          </li>
-          <li v-if="rangosPaginas[rangosPaginas.length - 1] < totalPaginas" class="page-item">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(totalPaginas)">
-              {{ totalPaginas }}
-            </a>
-          </li>
-
-          <li class="page-item" :class="{ disabled: paginaActual === totalPaginas }">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(paginaActual + 1)">
-              <i class="pi pi-angle-right"></i>
-            </a>
-          </li>
-        </ul>
-      </nav>
     </div>
 
     <!-- Dialog de Confirmación de Eliminación -->

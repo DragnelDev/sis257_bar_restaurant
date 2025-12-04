@@ -7,10 +7,10 @@ import { ref } from 'vue'
 
 const mostrarDialog = ref(false)
 const categoriaListRef = ref<InstanceType<typeof CategoriaList> | null>(null)
-const categoriaEdit = ref<Categoria | null>(null)
+const categoriaEdit = ref<Categoria | undefined>(undefined)
 
 function handleCreate() {
-  categoriaEdit.value = null
+  categoriaEdit.value = undefined
   mostrarDialog.value = true
 }
 

@@ -5,6 +5,7 @@ import http from '@/plugins/axios'
 import { Button, Dialog, InputText, InputNumber, Dropdown, Checkbox } from 'primevue'
 import { computed, ref, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
+import type { UnidadMedida } from '@/models/UnidadMedida'
 
 const ENDPOINT = 'productos'
 const props = defineProps({
@@ -18,13 +19,7 @@ const props = defineProps({
 const emit = defineEmits(['guardar', 'close'])
 
 const categorias = ref<Categoria[]>([])
-const UNIDADES = [
-  { label: 'Litro', value: 'Litro' },
-  { label: 'Kilo', value: 'Kilo' },
-  { label: 'Unidad', value: 'Unidad' },
-  { label: 'Gramo (g)', value: 'g' },
-  { label: 'Mililitro (ml)', value: 'ml' }
-]
+const unidadesMedida = ref<UnidadMedida[]>([])
 const toast = useToast()
 const loading = ref(false)
 
@@ -39,20 +34,16 @@ const dialogVisible = computed({
 })
 
 const defaultProducto = (): Producto => ({
-  id: 0,
   idCategoria: 0,
+  idUnidadMedida: 0,
   nombre: '',
+  urlImagen: '',
   descripcion: '',
-  unidadMedida: '',
-  stockActual: 0,
   costoUnitarioPromedio: 0,
   perecedero: false,
-  categoria: {
-    id: 0,
-    nombre: '',
-    descripcion: '',
-  },
-})
+  esVendible: false,
+  precioVentaUnitario: undefined,
+} as Producto)
 
 const productoLocal = ref<Producto>(defaultProducto())
 const errors = ref<Record<string, string>>({})
@@ -65,7 +56,8 @@ watch(
       productoLocal.value = {
         ...defaultProducto(),
         ...(newVal as Producto),
-        idCategoria: newVal.categoria?.id || newVal.idCategoria || 0
+        idCategoria: newVal.categoria?.id || newVal.idCategoria || 0,
+        idUnidadMedida: newVal.unidadMedida?.id || newVal.idUnidadMedida || 0
       }
     } else {
       resetForm()
@@ -86,6 +78,7 @@ watch(
 // Cargar categorías al montar el componente
 onMounted(() => {
   obtenerCategorias()
+  obtenerUnidadesMedida()
 })
 
 async function obtenerCategorias() {
@@ -106,6 +99,24 @@ async function obtenerCategorias() {
   }
 }
 
+async function obtenerUnidadesMedida() {
+  try {
+    const response = await http.get('unidad-medidas')
+    unidadesMedida.value = Array.isArray(response.data)
+      ? response.data
+      : []
+  } catch (error) {
+    console.error('Error al cargar unidades de medida:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar las unidades de medida',
+      life: 3000,
+    })
+    unidadesMedida.value = []
+  }
+}
+
 function validateForm(): boolean {
   errors.value = {}
 
@@ -119,8 +130,8 @@ function validateForm(): boolean {
     errors.value.categoria = 'Debe seleccionar una categoría'
   }
 
-  if (!productoLocal.value.unidadMedida) {
-    errors.value.unidadMedida = 'Debe seleccionar una unidad de medida'
+  if (!productoLocal.value.idUnidadMedida || productoLocal.value.idUnidadMedida <= 0) {
+    errors.value.idUnidadMedida = 'Debe seleccionar una unidad de medida'
   }
 
   if (productoLocal.value.costoUnitarioPromedio < 0) {
@@ -149,12 +160,15 @@ async function handleSave() {
   loading.value = true
   try {
     const body = {
-      idCategoria: productoLocal.value.idCategoria,
+      idCategoria: Number(productoLocal.value.idCategoria),
       nombre: productoLocal.value.nombre.trim(),
+      urlImagen: productoLocal.value.urlImagen?.trim() || '',
       descripcion: productoLocal.value.descripcion?.trim() || '',
-      unidadMedida: productoLocal.value.unidadMedida,
-      costoUnitarioPromedio: productoLocal.value.costoUnitarioPromedio || 0,
-      perecedero: productoLocal.value.perecedero || false,
+      idUnidadMedida: Number(productoLocal.value.idUnidadMedida),
+      costoUnitarioPromedio: Number(productoLocal.value.costoUnitarioPromedio) || 0,
+      perecedero: Boolean(productoLocal.value.perecedero),
+      esVendible: Boolean(productoLocal.value.esVendible),
+      precioVentaUnitario: productoLocal.value.esVendible ? Number(productoLocal.value.precioVentaUnitario) || 0 : 0,
     }
 
     if (props.modoEdicion) {
@@ -258,7 +272,7 @@ async function handleSave() {
         >
           <template #value="slotProps">
             <div v-if="slotProps.value" class="flex align-items-center">
-              <span>{{ slotProps.value }}</span>
+              <span>{{ categorias.find(c => c.id === slotProps.value)?.nombre || slotProps.value }}</span>
             </div>
             <span v-else class="text-color-secondary">
               Seleccione categoría
@@ -268,6 +282,18 @@ async function handleSave() {
         <small v-if="errors.categoria" id="categoria-error" class="error-text">
           {{ errors.categoria }}
         </small>
+      </div>
+
+      <!-- URL Imagen -->
+      <div class="form-field">
+        <label for="urlImagen" class="form-label">URL de Imagen</label>
+        <InputText
+          id="urlImagen"
+          v-model="productoLocal.urlImagen"
+          class="w-full form-input"
+          autocomplete="off"
+          placeholder="https://ejemplo.com/imagen.jpg"
+        />
       </div>
 
       <!-- Descripción -->
@@ -280,6 +306,42 @@ async function handleSave() {
           autocomplete="off"
           placeholder="Descripción del producto"
         />
+      </div>
+
+      <!-- Unidad de Medida -->
+      <div class="form-field">
+        <label for="unidadMedida" class="form-label">
+          Unidad de Medida
+          <span class="required-asterisk" aria-hidden="true">*</span>
+        </label>
+        <Dropdown
+          id="unidadMedida"
+          v-model="productoLocal.idUnidadMedida"
+          :options="unidadesMedida"
+          optionLabel="nombre"
+          optionValue="id"
+          class="w-full"
+          :class="{ 'p-invalid': errors.idUnidadMedida }"
+          placeholder="Seleccione unidad"
+          :filter="true"
+          filterPlaceholder="Buscar unidad..."
+          showClear
+          :loading="unidadesMedida.length === 0"
+          aria-describedby="unidad-error"
+          :aria-invalid="!!errors.idUnidadMedida"
+        >
+          <template #value="slotProps">
+            <div v-if="slotProps.value" class="flex align-items-center">
+              <span>{{ unidadesMedida.find(u => u.id === slotProps.value)?.nombre || slotProps.value }}</span>
+            </div>
+            <span v-else class="text-color-secondary">
+              Seleccione unidad
+            </span>
+          </template>
+        </Dropdown>
+        <small v-if="errors.idUnidadMedida" id="unidad-error" class="error-text">
+          {{ errors.idUnidadMedida }}
+        </small>
       </div>
 
       <!-- Costo Promedio -->
@@ -306,28 +368,40 @@ async function handleSave() {
         </small>
       </div>
 
-      <!-- Unidad de Medida -->
+      <!-- Es Vendible -->
       <div class="form-field">
-        <label for="unidadMedida" class="form-label">
-          Unidad de Medida
-          <span class="required-asterisk" aria-hidden="true">*</span>
-        </label>
-        <Dropdown
-          id="unidadMedida"
-          v-model="productoLocal.unidadMedida"
-          :options="UNIDADES"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-          :class="{ 'p-invalid': errors.unidadMedida }"
-          placeholder="Seleccione unidad"
-          showClear
-          aria-describedby="unidad-error"
-          :aria-invalid="!!errors.unidadMedida"
-        />
-        <small v-if="errors.unidadMedida" id="unidad-error" class="error-text">
-          {{ errors.unidadMedida }}
+        <div class="checkbox-container">
+          <Checkbox
+            id="esVendible"
+            v-model="productoLocal.esVendible"
+            :binary="true"
+            class="checkbox-input"
+          />
+          <label for="esVendible" class="checkbox-label">
+            Es Vendible
+          </label>
+        </div>
+        <small class="helper-text">
+          Marque si el producto puede ser vendido
         </small>
+      </div>
+
+      <!-- Precio Venta Unitario -->
+      <div v-if="productoLocal.esVendible" class="form-field">
+        <label for="precioVenta" class="form-label">Precio de Venta Unitario</label>
+        <InputNumber
+          id="precioVenta"
+          v-model="productoLocal.precioVentaUnitario"
+          mode="currency"
+          currency="BOB"
+          locale="es-BO"
+          class="w-full"
+          :min="0"
+          :max="9999999"
+          :minFractionDigits="2"
+          :maxFractionDigits="2"
+          placeholder="0.00"
+        />
       </div>
 
       <!-- Perecedero -->

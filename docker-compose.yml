@@ -13,8 +13,8 @@ services:
     networks:
       - net-sis257
     environment:
-      POSTGRES_DB: music
-      POSTGRES_USER: usr_music
+      POSTGRES_DB: sis257_bar_restaurant
+      POSTGRES_USER: usr_bar_restaurant
       POSTGRES_PASSWORD: 123456
     volumes:
       - ./pgdata:/var/lib/postgresql/18/docker
@@ -26,7 +26,7 @@ services:
     container_name: api-sis257
     restart: unless-stopped
     build:
-      context: ./demo_nest_jwt
+      context: ./backend_bar_restaurant
     ports:
       - 3000:3000
     networks:
@@ -44,7 +44,7 @@ services:
     container_name: app-sis257
     restart: unless-stopped
     build:
-      context: ./demo_vue
+      context: ./frontend_bar_restaurant
       dockerfile: Dockerfile
     ports:
       - 85:85

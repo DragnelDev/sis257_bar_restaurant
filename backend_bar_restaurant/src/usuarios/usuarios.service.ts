@@ -42,6 +42,8 @@ export class UsuariosService {
           nombre: true,
           apellidoMaterno: true,
           apellidoPaterno: true,
+          celular: true,
+          cargo: true,
         },
       },
     });

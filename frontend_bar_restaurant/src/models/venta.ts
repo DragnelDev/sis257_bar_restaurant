@@ -1,3 +1,7 @@
+import type { Cliente } from "./Cliente"
+import type { Mesa } from "./Mesa"
+import type { Usuario } from "./Usuario"
+
 export interface Venta {
   id: number
   idMesa: number
@@ -16,6 +20,9 @@ export interface Venta {
   detalles: DetalleVentaItem[]
 
   fechaCreacion: string
+  mesa: Mesa | null
+  cliente: Cliente | null
+  usuario: Usuario | null
 }
 
 // Ítem individual del Detalle de Venta (Carrito)

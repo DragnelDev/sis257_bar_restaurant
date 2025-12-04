@@ -1,15 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsDateString,
+  IsArray,
   IsDefined,
   IsInt,
-  IsArray,
-  ValidateNested,
   IsNumber,
   Min,
+  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-
 // 1. DTO para CADA ÍTEM (basado en tu DetalleCompraDto)
 export class ItemCompraDto {
   @ApiProperty({ description: 'ID del producto comprado.' })
@@ -46,13 +44,13 @@ export class CreateCompraDto {
   @IsDefined({ message: 'El campo numeroFactura debe estar definido' })
   readonly numeroFactura: string;
 
-  @ApiProperty({ description: 'Fecha de recepción física de los productos.' })
+  /*@ApiProperty({ description: 'Fecha de recepción física de los productos.' })
   @IsDefined({ message: 'El campo fechaRecepcion debe estar definido' })
   @IsDateString(
     {},
     { message: 'El campo fecha de Recepción debe ser una fecha válida' },
   )
-  readonly fechaRecepcion: string; // Usar string para fechas ISO/DateString
+  readonly fechaRecepcion: string;*/
 
   // --- CAMPO DE LOS DETALLES (Maneja el array de ítems) ---
 

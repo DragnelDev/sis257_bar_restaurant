@@ -23,8 +23,8 @@ const dialogVisible = computed({
   },
 })
 
-const categoria = ref<Categoria>({
-  id: undefined,
+const formulario = ref<Categoria>({
+  id: 0,
   nombre: '',
   descripcion: '',
   tipoCategoria: '',
@@ -33,7 +33,7 @@ const categoria = ref<Categoria>({
 watch(
   () => props.categoria,
   (n) => {
-    if (n) categoria.value = { ...n }
+    if (n) formulario.value = { ...n }
   },
 )
 
@@ -43,11 +43,11 @@ const opcionesTipo = [
 ]
 
 function limpiarFormulario() {
-  categoria.value = { nombre: '', descripcion: '', tipoCategoria: '' }
+  formulario.value = { id: 0, nombre: '', descripcion: '', tipoCategoria: '' }
 }
 
 async function handleSave() {
-  if (!categoria.value.nombre.trim()) {
+  if (!formulario.value.nombre.trim()) {
     toast.add({
       severity: 'warn',
       summary: 'Nombre requerido',
@@ -56,7 +56,7 @@ async function handleSave() {
     })
     return
   }
-  if (!categoria.value.tipoCategoria) {
+  if (!formulario.value.tipoCategoria) {
     toast.add({
       severity: 'warn',
       summary: 'Tipo requerido',
@@ -67,18 +67,18 @@ async function handleSave() {
   }
 
   const body = {
-    nombre: categoria.value.nombre,
-    descripcion: categoria.value.descripcion,
-    tipoCategoria: categoria.value.tipoCategoria,
+    nombre: formulario.value.nombre,
+    descripcion: formulario.value.descripcion,
+    tipoCategoria: formulario.value.tipoCategoria,
   }
 
   try {
-    if (props.modoEdicion && categoria.value.id) {
-      await http.patch(`${ENDPOINT}/${categoria.value.id}`, body)
+    if (props.modoEdicion && formulario.value.id) {
+      await http.patch(`${ENDPOINT}/${formulario.value.id}`, body)
       toast.add({
         severity: 'success',
         summary: 'Categoría actualizada',
-        detail: `La categoría "${categoria.value.nombre}" se actualizó correctamente`,
+        detail: `La categoría "${formulario.value.nombre}" se actualizó correctamente`,
         life: 4000,
       })
     } else {
@@ -86,7 +86,7 @@ async function handleSave() {
       toast.add({
         severity: 'success',
         summary: 'Categoría creada',
-        detail: `La categoría "${categoria.value.nombre}" se creó correctamente`,
+        detail: `La categoría "${formulario.value.nombre}" se creó correctamente`,
         life: 4000,
       })
     }
@@ -94,8 +94,15 @@ async function handleSave() {
     emit('guardar')
     limpiarFormulario()
     dialogVisible.value = false
-  } catch (error: any) {
-    const msg = error?.response?.data?.message || error?.message || 'Error al guardar categoría'
+  } catch (error) {
+    let msg = 'Error al guardar categoría'
+    if (error && typeof error === 'object') {
+      if ('response' in error && typeof (error as { response?: any }).response === 'object') {
+        msg = (error as { response?: { data?: { message?: string } } }).response?.data?.message || msg
+      } else if ('message' in error && typeof (error as { message?: string }).message === 'string') {
+        msg = (error as { message?: string }).message || msg
+      }
+    }
     toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
   }
 }
@@ -116,7 +123,7 @@ async function handleSave() {
           <label for="nombre" class="form-label">Nombre</label>
           <InputText
             id="nombre"
-            v-model="categoria.nombre"
+            v-model="formulario.nombre"
             class="w-full form-input"
             placeholder="Ingrese el nombre"
             autocomplete="off"
@@ -126,7 +133,7 @@ async function handleSave() {
           <label for="tipo" class="form-label">Tipo</label>
           <Dropdown
             id="tipo"
-            v-model="categoria.tipoCategoria"
+            v-model="formulario.tipoCategoria"
             :options="opcionesTipo"
             optionLabel="label"
             optionValue="value"
@@ -141,7 +148,7 @@ async function handleSave() {
         <label for="descripcion" class="form-label">Descripción</label>
         <InputText
           id="descripcion"
-          v-model="categoria.descripcion"
+          v-model="formulario.descripcion"
           class="w-full form-input"
           placeholder="Ingrese la descripción"
           autocomplete="off"
@@ -157,12 +164,7 @@ async function handleSave() {
           class="btn-cancel"
           @click="dialogVisible = false"
         />
-        <Button
-          type="button"
-          label="Guardar"
-          class="btn-save"
-          @click="handleSave"
-        />
+        <Button type="button" label="Guardar" class="btn-save" @click="handleSave" />
       </div>
     </div>
   </Dialog>

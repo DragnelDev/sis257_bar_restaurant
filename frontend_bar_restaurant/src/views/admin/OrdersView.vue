@@ -82,7 +82,7 @@ const updateOrderStatus = async (id: number, newStatus: string) => {
 
     if (newStatus === STATUS.ARCHIVADA) {
       orders.value.splice(index, 1)
-      alert(`✅ Venta ${order.orderNumber} archivada y Mesa ${order.idMesa} liberada.`)
+      alert(`✅ Venta ${order?.orderNumber} archivada y Mesa ${order?.idMesa} liberada.`)
     } else {
       if (updatedRaw && updatedRaw.id) {
         const mapped = mapVentaToView(updatedRaw as Venta)

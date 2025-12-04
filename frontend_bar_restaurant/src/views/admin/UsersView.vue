@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Usuario } from '@/models/Usuario'
 import type { Empleado } from '@/models/Empleado'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import http from '@/plugins/axios'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -31,6 +31,8 @@ const defaultUsuario = (): Partial<Usuario> => ({
     nombre: '',
     apellidoPaterno: '',
     apellidoMaterno: '',
+    celular: '',
+    cargo: '',
   },
   usuario: '',
   clave: '',
@@ -61,25 +63,18 @@ const usuariosPaginados = computed(() => {
 
 // Total de páginas
 const totalPaginas = computed(() => {
-  return Math.ceil(filteredUsers.value.length / itemsPorPagina.value)
+  return Math.max(1, Math.ceil(filteredUsers.value.length / itemsPorPagina.value))
 })
 
-// Rango de páginas para mostrar
-const rangosPaginas = computed(() => {
-  const paginas = []
-  const maxPaginas = 5
-  let inicio = Math.max(1, paginaActual.value - Math.floor(maxPaginas / 2))
-  let fin = Math.min(totalPaginas.value, inicio + maxPaginas - 1)
-
-  if (fin - inicio < maxPaginas - 1) {
-    inicio = Math.max(1, fin - maxPaginas + 1)
-  }
-
-  for (let i = inicio; i <= fin; i++) {
-    paginas.push(i)
-  }
-  return paginas
+// Páginas para mostrar
+const paginas = computed(() => {
+  return Array.from({ length: totalPaginas.value }, (_, i) => i + 1)
 })
+
+// Reset page when search changes
+watch(searchQuery, () => (paginaActual.value = 1))
+watch(selectedRole, () => (paginaActual.value = 1))
+watch(itemsPorPagina, () => (paginaActual.value = 1))
 
 const rolesOptions = [
   { label: 'ADMINISTRADOR', value: 'ADMINISTRADOR' },
@@ -242,7 +237,14 @@ const editUser = (user: Usuario) => {
 }
 
 const mostrarDetalle = (user: Usuario) => {
-  usuarioDetalle.value = user
+  // Intentar recuperar el objeto Empleado desde la lista local si está disponible
+  const empleado = getEmpleadoById(user.idEmpleado)
+
+  usuarioDetalle.value = {
+    ...user,
+    empleado: empleado || user.empleado,
+  }
+
   mostrarDetalleDialog.value = true
 }
 
@@ -265,8 +267,16 @@ function cambiarPagina(pagina: number) {
   }
 }
 
-function onBusqueda() {
-  paginaActual.value = 1
+function prevPage() {
+  if (paginaActual.value > 1) paginaActual.value -= 1
+}
+
+function nextPage() {
+  if (paginaActual.value < totalPaginas.value) paginaActual.value += 1
+}
+
+function changePageSize(n: number) {
+  itemsPorPagina.value = n
 }
 
 onMounted(async () => {
@@ -291,7 +301,6 @@ onMounted(async () => {
             v-model="searchQuery"
             type="text"
             placeholder="Buscar por usuario..."
-            @input="onBusqueda"
           />
         </InputGroup>
       </div>
@@ -304,7 +313,6 @@ onMounted(async () => {
           optionValue="value"
           class="w-100"
           placeholder="Filtrar por rol"
-          @change="onBusqueda"
         />
       </div>
 
@@ -383,59 +391,57 @@ onMounted(async () => {
       </table>
     </div>
 
-    <!-- Paginación -->
-    <div v-if="totalPaginas > 1" class="d-flex justify-content-between align-items-center mt-3">
-      <div class="text-muted">
-        Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} a
-        {{ Math.min(paginaActual * itemsPorPagina, filteredUsers.length) }} de
-        {{ filteredUsers.length }} registros
+    <!-- Paginación Actualizada -->
+    <div
+      v-if="filteredUsers.length > 0"
+      class="mt-4 p-paginator p-component border-round shadow-1"
+    >
+      <div class="flex justify-content-between align-items-center p-3">
+        <div class="p-paginator-summary text-sm">
+          Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} -
+          {{ Math.min(paginaActual * itemsPorPagina, filteredUsers.length) }} de
+          {{ filteredUsers.length }} registros
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <select
+            v-model="itemsPorPagina"
+            class="p-dropdown p-inputtext p-component p-4"
+            @change="changePageSize(itemsPorPagina)"
+          >
+            <option :value="5">5 por pág.</option>
+            <option :value="10">10 por pág.</option>
+            <option :value="25">25 por pág.</option>
+            <option :value="50">50 por pág.</option>
+          </select>
+
+          <Button
+            icon="pi pi-angle-left"
+            @click="prevPage"
+            :disabled="paginaActual <= 1"
+            aria-label="Anterior"
+            rounded
+            class="btn-pagina"
+          />
+          <span v-for="p in paginas" :key="p">
+            <Button
+              :label="p.toString()"
+              :severity="paginaActual === p ? 'primary' : 'secondary'"
+              rounded
+              @click="cambiarPagina(p)"
+              class="btn-pagina"
+            />
+          </span>
+          <Button
+            icon="pi pi-angle-right"
+            @click="nextPage"
+            :disabled="paginaActual >= totalPaginas"
+            aria-label="Siguiente"
+            rounded
+            class="btn-pagina"
+          />
+        </div>
       </div>
-
-      <nav aria-label="Paginación">
-        <ul class="pagination mb-0">
-          <li class="page-item" :class="{ disabled: paginaActual === 1 }">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(paginaActual - 1)">
-              <i class="pi pi-angle-left"></i>
-            </a>
-          </li>
-
-          <li v-if="rangosPaginas[0] > 1" class="page-item">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(1)">1</a>
-          </li>
-          <li v-if="rangosPaginas[0] > 2" class="page-item disabled">
-            <span class="page-link">...</span>
-          </li>
-
-          <li
-            v-for="pagina in rangosPaginas"
-            :key="pagina"
-            class="page-item"
-            :class="{ active: pagina === paginaActual }"
-          >
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(pagina)">
-              {{ pagina }}
-            </a>
-          </li>
-
-          <li
-            v-if="rangosPaginas[rangosPaginas.length - 1] < totalPaginas - 1"
-            class="page-item disabled"
-          >
-            <span class="page-link">...</span>
-          </li>
-          <li v-if="rangosPaginas[rangosPaginas.length - 1] < totalPaginas" class="page-item">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(totalPaginas)">
-              {{ totalPaginas }}
-            </a>
-          </li>
-
-          <li class="page-item" :class="{ disabled: paginaActual === totalPaginas }">
-            <a class="page-link" href="#" @click.prevent="cambiarPagina(paginaActual + 1)">
-              <i class="pi pi-angle-right"></i>
-            </a>
-          </li>
-        </ul>
-      </nav>
     </div>
 
     <!-- Dialog de Detalle de Usuario -->
@@ -634,6 +640,17 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* === VARIABLES DE COLOR === */
+:root {
+  --rosa-principal: #ff4081;
+  --rosa-oscuro: #f50057;
+  --rosa-claro: rgba(255, 64, 129, 0.1);
+  --azul-vibrante: #2196F3;
+  --azul-oscuro: #1976D2;
+  --verde-success: #4CAF50;
+  --verde-oscuro: #388E3C;
+}
+
 .users-view {
   padding: 1rem;
 }
@@ -661,12 +678,109 @@ table td {
   border-bottom: 1px solid #dee2e6;
 }
 
-.pagination .page-link {
-  cursor: pointer;
+/* === PAGINADOR ACTUALIZADO === */
+.p-paginator {
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #333333 !important;
 }
 
-.pagination .page-item.disabled .page-link {
-  cursor: not-allowed;
+.p-paginator .p-paginator-summary {
+  color: #6c757d !important;
+}
+
+.p-paginator select {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 6px !important;
+  padding: 0.4rem 0.75rem !important;
+}
+
+/* Botones de PAGINACIÓN (Rosa) */
+.btn-pagina {
+  background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro)) !important;
+  color: black !important;
+  border: none !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 6px rgba(255, 64, 129, 0.25) !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+}
+
+.btn-pagina:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--rosa-oscuro), #e60065) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(255, 64, 129, 0.35) !important;
+}
+
+.btn-pagina:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Botón PÁGINA ACTIVA (Verde) */
+.btn-pagina[severity="primary"] {
+  background: linear-gradient(135deg, var(--verde-success), var(--verde-oscuro)) !important;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* Forzar estilos cuando PrimeVue aplica clases internas (p-button, p-button-text, etc.) */
+.p-button.btn-pagina,
+.p-button.btn-pagina.p-button-text,
+.btn-pagina.p-button,
+.btn-pagina.p-button-text {
+  background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro)) !important;
+  color: black !important;
+  border: none !important;
+}
+
+.p-button.btn-pagina[severity="primary"],
+.p-button.btn-pagina.p-button-text[severity="primary"],
+.btn-pagina[severity="primary"].p-button,
+.btn-pagina[severity="primary"].p-button-text {
+  background: linear-gradient(135deg, var(--verde-success), var(--verde-oscuro)) !important;
+  color: black !important;
+}
+
+.p-button.btn-pagina .pi,
+.btn-pagina .pi,
+.btn-pagina .p-button-icon {
+  color: black !important;
+  fill: black !important;
+}
+
+.p-button.btn-pagina .p-button-label,
+.btn-pagina .p-button-label {
+  color: black !important;
+}
+
+.btn-pagina[severity="primary"]:hover {
+  background: linear-gradient(135deg, var(--verde-oscuro), #2E7D32) !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4) !important;
+}
+
+/* === UTILIDADES === */
+.flex {
+  display: flex;
+}
+.justify-content-between {
+  justify-content: space-between;
+}
+.align-items-center {
+  align-items: center;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.shadow-1 {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.border-round {
+  border-radius: 6px;
 }
 
 /* Detalle de Usuario */
