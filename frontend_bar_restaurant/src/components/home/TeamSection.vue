@@ -13,7 +13,7 @@ const teamMembers = ref<TeamMember[]>([
     image: '/img/team-1.jpg',
     facebook: '#',
     twitter: '#',
-    instagram: '#',
+    instagram: '#'
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ const teamMembers = ref<TeamMember[]>([
     image: 'https://australianbartender.com.au/wp-content/uploads/2023/04/Kayla.jpg',
     facebook: '#',
     twitter: '#',
-    instagram: '#',
+    instagram: '#'
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ const teamMembers = ref<TeamMember[]>([
     image: '/img/team-3.jpg',
     facebook: '#',
     twitter: '#',
-    instagram: '#',
+    instagram: '#'
   },
   {
     id: 4,
@@ -40,8 +40,8 @@ const teamMembers = ref<TeamMember[]>([
     image: 'https://tse3.mm.bing.net/th/id/OIP.lgU5Bx8dSVYweolKzaUTZAHaJY?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3',
     facebook: '#',
     twitter: '#',
-    instagram: '#',
-  },
+    instagram: '#'
+  }
 ])
 </script>
 
@@ -51,7 +51,7 @@ const teamMembers = ref<TeamMember[]>([
       title="Nuestro Equipo"
       :breadcrumbs="[
         { text: 'Inicio', link: '/' },
-        { text: 'Equipo', link: '/team' },
+        { text: 'Equipo', link: '/team' }
       ]"
     />
 
