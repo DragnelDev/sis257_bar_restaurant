@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { TeamMember } from '../../types'
 import SectionTitle from '../shared/SectionTitle.vue'
 import TeamCard from '../shared/TeamCard.vue'
+import type { TeamMember } from '../../types'
+import PageHeader from '../shared/PageHeader.vue'
 
 const teamMembers = ref<TeamMember[]>([
   {
@@ -18,7 +19,7 @@ const teamMembers = ref<TeamMember[]>([
     id: 2,
     name: 'Lucía Ramírez',
     designation: 'Bartender Ejecutiva',
-    image: '/img/team-2.jpg',
+    image: 'https://australianbartender.com.au/wp-content/uploads/2023/04/Kayla.jpg',
     facebook: '#',
     twitter: '#',
     instagram: '#',
@@ -36,7 +37,7 @@ const teamMembers = ref<TeamMember[]>([
     id: 4,
     name: 'Ana Gómez',
     designation: 'Mixóloga & Bar Manager',
-    image: '/img/team-4.jpg',
+    image: 'https://tse3.mm.bing.net/th/id/OIP.lgU5Bx8dSVYweolKzaUTZAHaJY?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3',
     facebook: '#',
     twitter: '#',
     instagram: '#',
@@ -45,18 +46,28 @@ const teamMembers = ref<TeamMember[]>([
 </script>
 
 <template>
-  <div class="container-xxl pt-5 pb-3">
-    <div class="container">
-      <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs & Bartenders" />
+  <div>
+    <PageHeader
+      title="Nuestro Equipo"
+      :breadcrumbs="[
+        { text: 'Inicio', link: '/' },
+        { text: 'Equipo', link: '/team' },
+      ]"
+    />
 
-      <div class="row g-4">
-        <div
-          v-for="(member, index) in teamMembers"
-          :key="member.id"
-          class="col-lg-3 col-md-6 wow fadeInUp"
-          :data-wow-delay="`${0.1 + index * 0.2}s`"
-        >
-          <TeamCard :member="member" />
+    <div class="container-xxl pt-5 pb-3">
+      <div class="container">
+        <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs & Bartenders" />
+
+        <div class="row g-4">
+          <div
+            v-for="(member, index) in teamMembers"
+            :key="member.id"
+            class="col-lg-3 col-md-6 wow fadeInUp"
+            :data-wow-delay="`${0.1 + index * 0.2}s`"
+          >
+            <TeamCard :member="member" />
+          </div>
         </div>
       </div>
     </div>

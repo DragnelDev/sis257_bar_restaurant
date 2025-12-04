@@ -78,12 +78,19 @@ const resetForm = () => {
           <div class="col-md-6 wow fadeIn" data-wow-delay="0.1s">
             <iframe
               class="position-relative rounded w-100 h-100"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3001156.4288297426!2d-78.01371936852176!3d42.72876761954724!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4ccc4bf0f123a5a9%3A0xddcfc6c1de189567!2sNew%20York%2C%20USA!5e0!3m2!1sen!2sbd!4v1603794290143!5m2!1sen!2sbd"
-              frameborder="0"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3797.2461446431377!2d-65.25617322483824!3d-19.041140881124177!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93fbcf2ff7ec3181%3A0xea6a87d4260e8687!2sNicol%C3%A1s%20Ortiz%2070%2C%20Sucre%2C%20Bolivia!5e0!3m2!1ses!2sbo!4v1703885793937!5m2!1ses!2sbo"
+              :frameborder="0"
               style="min-height: 350px; border: 0"
+<<<<<<< Updated upstream
               allowfullscreen
+=======
+              :allowfullscreen="true"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+>>>>>>> Stashed changes
               aria-hidden="false"
               tabindex="0"
+              title="Ubicación de Nicolás Ortiz N° 70, Sucre, Bolivia"
             ></iframe>
           </div>
 
@@ -159,9 +166,3 @@ const resetForm = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.ff-secondary {
-  font-family: 'Pacifico', cursive;
-}
-</style>

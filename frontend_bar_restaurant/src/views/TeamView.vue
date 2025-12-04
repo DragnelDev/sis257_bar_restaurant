@@ -5,75 +5,42 @@ import TeamCard from '../components/shared/TeamCard.vue'
 import type { TeamMember } from '../types'
 import PageHeader from '@/components/shared/PageHeader.vue'
 
+// URLS ÚNICAS CON TIMESTAMP - Esto FORZARÁ nuevas imágenes
+const timestamp = Date.now()
+
 const teamMembers = ref<TeamMember[]>([
   {
     id: 1,
-    name: 'John Doe',
-    designation: 'Head Chef',
-    image: '/img/team-1.jpg',
+    name: 'Carlos Mendoza',
+    designation: 'Chef Principal & Parrillero',
+    image: `/img/team-1.jpg?t=${timestamp}&force=1`, // Parámetro único
     facebook: '#',
     twitter: '#',
     instagram: '#',
   },
   {
     id: 2,
-    name: 'Jane Smith',
-    designation: 'Sous Chef',
-    image: '/img/team-2.jpg',
+    name: 'Lucía Ramírez',
+    designation: 'Bartender Ejecutiva',
+    image: `/img/team-l2.jpg?t=${timestamp}&force=2`,
     facebook: '#',
     twitter: '#',
     instagram: '#',
   },
   {
     id: 3,
-    name: 'Mike Johnson',
-    designation: 'Pastry Chef',
-    image: '/img/team-3.jpg',
+    name: 'Roberto Silva',
+    designation: 'Chef Pastelero & Repostero',
+    image: `/img/team-3.jpg?t=${timestamp}&force=3`,
     facebook: '#',
     twitter: '#',
     instagram: '#',
   },
   {
     id: 4,
-    name: 'Sarah Williams',
-    designation: 'Executive Chef',
-    image: '/img/team-4.jpg',
-    facebook: '#',
-    twitter: '#',
-    instagram: '#',
-  },
-  {
-    id: 5,
-    name: 'Robert Brown',
-    designation: 'Master Chef',
-    image: '/img/team-2.jpg',
-    facebook: '#',
-    twitter: '#',
-    instagram: '#',
-  },
-  {
-    id: 6,
-    name: 'Emily Davis',
-    designation: 'Chef de Cuisine',
-    image: '/img/team-3.jpg',
-    facebook: '#',
-    twitter: '#',
-    instagram: '#',
-  },
-  {
-    id: 7,
-    name: 'David Wilson',
-    designation: 'Grill Chef',
-    image: '/img/team-4.jpg',
-    facebook: '#',
-    twitter: '#',
-    instagram: '#',
-  },
-  {
-    id: 8,
-    name: 'Lisa Anderson',
-    designation: 'Prep Chef',
-    image: '/img/team-1.jpg',
+    name: 'Ana Gómez',
+    designation: 'Mixóloga & Bar Manager',
+    image: `/img/team-l4.jpg?t=${timestamp}&force=4`,
     facebook: '#',
     twitter: '#',
     instagram: '#',
@@ -87,21 +54,20 @@ const teamMembers = ref<TeamMember[]>([
       title="Nuestro Equipo"
       :breadcrumbs="[
         { text: 'Inicio', link: '/' },
-        { text: 'Pagina', link: '#' },
         { text: 'Equipo', link: '/team' },
       ]"
     />
 
     <div class="container-xxl pt-5 pb-3">
       <div class="container">
-        <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs Maestros" />
+        <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs & Bartenders" />
 
         <div class="row g-4">
           <div
             v-for="(member, index) in teamMembers"
             :key="member.id"
             class="col-lg-3 col-md-6 wow fadeInUp"
-            :data-wow-delay="`${0.1 + (index % 4) * 0.2}s`"
+            :data-wow-delay="`${0.1 + index * 0.2}s`"
           >
             <TeamCard :member="member" />
           </div>
