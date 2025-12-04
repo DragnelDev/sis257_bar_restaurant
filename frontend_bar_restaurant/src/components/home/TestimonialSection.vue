@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { Testimonial } from '../../types'
 import TestimonialCard from '../shared/TestimonialCard.vue'
 
@@ -41,6 +41,11 @@ const testimonials = ref<Testimonial[]>([
   },
 ])
 
+// Usamos computed para garantizar que siempre haya un testimonial válido
+const currentTestimonial = computed(() => {
+  return testimonials.value[currentIndex.value]
+})
+
 const nextSlide = () => {
   currentIndex.value = (currentIndex.value + 1) % testimonials.value.length
 }
@@ -51,13 +56,18 @@ const prevSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  currentIndex.value = index
+  if (index >= 0 && index < testimonials.value.length) {
+    currentIndex.value = index
+  }
 }
 
 const startAutoplay = () => {
+  // Limpiar cualquier intervalo existente
+  stopAutoplay()
+
   autoplayInterval.value = window.setInterval(() => {
     nextSlide()
-  }, 5000)
+  }, 3500) // 3.5 segundos = 3500 milisegundos
 }
 
 const stopAutoplay = () => {
@@ -92,8 +102,13 @@ onUnmounted(() => {
       <div class="testimonial-carousel position-relative">
         <div class="carousel-inner">
           <Transition name="fade" mode="out-in">
-            <div :key="currentIndex" class="carousel-item active">
-              <TestimonialCard :testimonial="testimonials[currentIndex]" />
+            <div v-if="currentTestimonial" :key="currentIndex" class="carousel-item active">
+              <TestimonialCard :testimonial="currentTestimonial" />
+            </div>
+            <div v-else class="carousel-item active">
+              <div class="text-center py-5">
+                <p>No hay testimonios disponibles</p>
+              </div>
             </div>
           </Transition>
         </div>
@@ -104,16 +119,23 @@ onUnmounted(() => {
           @click="prevSlide"
           type="button"
           aria-label="Previous"
+          :disabled="testimonials.length <= 1"
         >
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
         </button>
 
-        <button class="carousel-control-next" @click="nextSlide" type="button" aria-label="Next">
+        <button
+          class="carousel-control-next"
+          @click="nextSlide"
+          type="button"
+          aria-label="Next"
+          :disabled="testimonials.length <= 1"
+        >
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
         </button>
 
         <!-- Indicadores -->
-        <div class="carousel-indicators">
+        <div v-if="testimonials.length > 0" class="carousel-indicators">
           <button
             v-for="(testimonial, index) in testimonials"
             :key="`indicator-${testimonial.id}`"
@@ -179,9 +201,15 @@ onUnmounted(() => {
   right: -60px;
 }
 
-.carousel-control-prev:hover,
-.carousel-control-next:hover {
+.carousel-control-prev:hover:not(:disabled),
+.carousel-control-next:hover:not(:disabled) {
   opacity: 1;
+}
+
+.carousel-control-prev:disabled,
+.carousel-control-next:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .carousel-indicators {

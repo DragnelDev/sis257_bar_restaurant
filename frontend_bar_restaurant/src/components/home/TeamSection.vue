@@ -7,8 +7,8 @@ import TeamCard from '../shared/TeamCard.vue'
 const teamMembers = ref<TeamMember[]>([
   {
     id: 1,
-    name: 'John Doe',
-    designation: 'Chef Principal',
+    name: 'Carlos Mendoza',
+    designation: 'Chef Principal & Parrillero',
     image: '/img/team-1.jpg',
     facebook: '#',
     twitter: '#',
@@ -16,8 +16,8 @@ const teamMembers = ref<TeamMember[]>([
   },
   {
     id: 2,
-    name: 'Jane Smith',
-    designation: 'Segundo Chef',
+    name: 'Lucía Ramírez',
+    designation: 'Bartender Ejecutiva',
     image: '/img/team-2.jpg',
     facebook: '#',
     twitter: '#',
@@ -25,8 +25,8 @@ const teamMembers = ref<TeamMember[]>([
   },
   {
     id: 3,
-    name: 'Mike Johnson',
-    designation: 'Chef Pastelero',
+    name: 'Roberto Silva',
+    designation: 'Chef Pastelero & Repostero',
     image: '/img/team-3.jpg',
     facebook: '#',
     twitter: '#',
@@ -34,8 +34,8 @@ const teamMembers = ref<TeamMember[]>([
   },
   {
     id: 4,
-    name: 'Sarah Williams',
-    designation: 'Chef Ejecutivo',
+    name: 'Ana Gómez',
+    designation: 'Mixóloga & Bar Manager',
     image: '/img/team-4.jpg',
     facebook: '#',
     twitter: '#',
@@ -47,7 +47,7 @@ const teamMembers = ref<TeamMember[]>([
 <template>
   <div class="container-xxl pt-5 pb-3">
     <div class="container">
-      <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs Maestros" />
+      <SectionTitle subtitle="Miembros del Equipo" title="Nuestros Chefs & Bartenders" />
 
       <div class="row g-4">
         <div

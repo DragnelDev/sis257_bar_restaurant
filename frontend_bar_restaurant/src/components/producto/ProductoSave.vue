@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import type { Categoria } from '@/models/Categoria'
 import type { Producto } from '@/models/producto'
-import type { UnidadMedida } from '@/models/UnidadMedida'
 import http from '@/plugins/axios'
-import { Button, Dialog, InputText, InputNumber, Dropdown } from 'primevue'
-import { computed, ref, watch } from 'vue'
+import { Button, Dialog, InputText, InputNumber, Dropdown, Checkbox } from 'primevue'
+import { computed, ref, watch, onMounted } from 'vue'
+import { useToast } from 'primevue/usetoast'
 
 const ENDPOINT = 'productos'
-
 const props = defineProps({
   mostrar: Boolean,
   producto: {
@@ -16,288 +15,371 @@ const props = defineProps({
   },
   modoEdicion: Boolean,
 })
-
 const emit = defineEmits(['guardar', 'close'])
 
 const categorias = ref<Categoria[]>([])
-const unidadesMedida = ref<UnidadMedida[]>([])
+const UNIDADES = [
+  { label: 'Litro', value: 'Litro' },
+  { label: 'Kilo', value: 'Kilo' },
+  { label: 'Unidad', value: 'Unidad' },
+  { label: 'Gramo (g)', value: 'g' },
+  { label: 'Mililitro (ml)', value: 'ml' }
+]
+const toast = useToast()
+const loading = ref(false)
 
 const dialogVisible = computed({
   get: () => props.mostrar,
   set: (value) => {
-    if (!value) emit('close')
+    if (!value) {
+      resetForm()
+      emit('close')
+    }
   },
 })
 
-/* -----------------------------------------------
-   Default producto ALINEADO con tu backend
--------------------------------------------------- */
 const defaultProducto = (): Producto => ({
   id: 0,
+  idCategoria: 0,
   nombre: '',
   descripcion: '',
-  urlImagen: '',
+  unidadMedida: '',
   stockActual: 0,
-  stockMinimo: 0,
   costoUnitarioPromedio: 0,
   perecedero: false,
-  esVendible: false,
-  precioVentaUnitario: 0,
-
-  categoria: { id: 0, nombre: '' },
-  unidadMedida: { id: 0, nombre: '', simbolo: '' },
-
-  // IDs para el form
-  idCategoria: 0 as number,
-  idUnidadMedida: 0 as number,
+  categoria: {
+    id: 0,
+    nombre: '',
+    descripcion: '',
+  },
 })
 
-const productos = ref<Producto>(defaultProducto())
+const productoLocal = ref<Producto>(defaultProducto())
+const errors = ref<Record<string, string>>({})
 
-/* -----------------------------------------------
-   CARGAR PRODUCTO EN MODO EDICIÓN
--------------------------------------------------- */
+// Watch para sincronizar props con estado local
 watch(
   () => props.producto,
-  (nuevo) => {
-    if (props.modoEdicion && nuevo) {
-      productos.value = {
+  (newVal) => {
+    if (newVal && Object.keys(newVal).length > 0) {
+      productoLocal.value = {
         ...defaultProducto(),
-        ...nuevo,
-        idCategoria: nuevo.categoria?.id ?? 0,
-        idUnidadMedida: nuevo.unidadMedida?.id ?? 0,
+        ...(newVal as Producto),
+        idCategoria: newVal.categoria?.id || newVal.idCategoria || 0
       }
     } else {
-      productos.value = defaultProducto()
+      resetForm()
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true }
 )
 
-/* -----------------------------------------------
-   CARGAR LISTAS DEL BACKEND
--------------------------------------------------- */
+// Watch para validación en tiempo real
+watch(
+  () => productoLocal.value,
+  () => {
+    validateForm()
+  },
+  { deep: true }
+)
+
+// Cargar categorías al montar el componente
+onMounted(() => {
+  obtenerCategorias()
+})
+
 async function obtenerCategorias() {
-  categorias.value = await http.get('categorias').then((res) => res.data)
-}
-
-async function obtenerUnidades() {
-  // AJUSTADO AL BACKEND ACTUAL
-  unidadesMedida.value = await http.get('unidad-medidas').then((res) => res.data)
-}
-
-/* -----------------------------------------------
-   GUARDAR PRODUCTO
--------------------------------------------------- */
-async function handleSave() {
   try {
-    const body = {
-      idCategoria: productos.value.idCategoria,
-      nombre: productos.value.nombre.trim(),
-      descripcion: productos.value.descripcion.trim(),
-      urlImagen: productos.value.urlImagen,
-      idUnidadMedida: productos.value.idUnidadMedida,
-      costoUnitarioPromedio: productos.value.costoUnitarioPromedio,
-      perecedero: productos.value.perecedero,
-      esVendible: productos.value.esVendible,
-      precioVentaUnitario: productos.value.precioVentaUnitario,
-    }
-
-    if (props.modoEdicion) {
-      await http.patch(`${ENDPOINT}/${productos.value.id}`, body)
-    } else {
-      await http.post(ENDPOINT, body)
-    }
-
-    emit('guardar')
-    productos.value = defaultProducto()
-    dialogVisible.value = false
-  } catch (err) {
-    console.error(err)
-    alert('Error al guardar producto')
+    const response = await http.get('categorias')
+    categorias.value = Array.isArray(response.data)
+      ? response.data
+      : []
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar las categorías',
+      life: 3000,
+    })
+    categorias.value = []
   }
 }
 
-/* -----------------------------------------------
-   CUANDO SE ABRE EL MODAL, CARGAR DATOS
--------------------------------------------------- */
-watch(
-  () => props.mostrar,
-  (nuevo) => {
-    if (nuevo) {
-      obtenerCategorias()
-      obtenerUnidades()
+function validateForm(): boolean {
+  errors.value = {}
+
+  if (!productoLocal.value.nombre?.trim()) {
+    errors.value.nombre = 'El nombre es obligatorio'
+  } else if (productoLocal.value.nombre.trim().length < 2) {
+    errors.value.nombre = 'El nombre debe tener al menos 2 caracteres'
+  }
+
+  if (!productoLocal.value.idCategoria || productoLocal.value.idCategoria <= 0) {
+    errors.value.categoria = 'Debe seleccionar una categoría'
+  }
+
+  if (!productoLocal.value.unidadMedida) {
+    errors.value.unidadMedida = 'Debe seleccionar una unidad de medida'
+  }
+
+  if (productoLocal.value.costoUnitarioPromedio < 0) {
+    errors.value.costoUnitarioPromedio = 'El costo no puede ser negativo'
+  }
+
+  return Object.keys(errors.value).length === 0
+}
+
+function resetForm() {
+  productoLocal.value = defaultProducto()
+  errors.value = {}
+}
+
+async function handleSave() {
+  if (!validateForm()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Validación',
+      detail: 'Por favor, corrija los errores en el formulario',
+      life: 3000,
+    })
+    return
+  }
+
+  loading.value = true
+  try {
+    const body = {
+      idCategoria: productoLocal.value.idCategoria,
+      nombre: productoLocal.value.nombre.trim(),
+      descripcion: productoLocal.value.descripcion?.trim() || '',
+      unidadMedida: productoLocal.value.unidadMedida,
+      costoUnitarioPromedio: productoLocal.value.costoUnitarioPromedio || 0,
+      perecedero: productoLocal.value.perecedero || false,
     }
-  },
-)
+
+    if (props.modoEdicion) {
+      await http.patch(`${ENDPOINT}/${productoLocal.value.id}`, body)
+      toast.add({
+        severity: 'success',
+        summary: 'Éxito',
+        detail: 'Producto actualizado correctamente',
+        life: 3000,
+      })
+    } else {
+      await http.post(ENDPOINT, body)
+      toast.add({
+        severity: 'success',
+        summary: 'Éxito',
+        detail: 'Producto creado correctamente',
+        life: 3000,
+      })
+    }
+
+    emit('guardar')
+    resetForm()
+    dialogVisible.value = false
+  } catch (error: any) {
+    console.error('Error al guardar:', error)
+
+    let errorMessage = 'Error al guardar el producto'
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: errorMessage,
+      life: 5000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
   <Dialog
     v-model:visible="dialogVisible"
-    :header="props.modoEdicion ? 'Editar Producto' : 'Crear Producto'"
-    style="width: 100%; max-width: 650px"
-    modal
-    :pt="{ header: { class: 'dialog-header-custom' }, content: { class: 'dialog-content-custom' } }"
+    :header="props.modoEdicion ? 'Editar Producto' : 'Nuevo Producto'"
+    :modal="true"
+    :style="{ width: '90vw', maxWidth: '500px' }"
+    :breakpoints="{ '960px': '75vw', '640px': '90vw', '480px': '95vw' }"
+    :closable="true"
+    :closeOnEscape="true"
+    class="producto-dialog"
   >
     <div class="form-container">
-      <!-- Row 1: Nombre y Categoría -->
-      <div class="form-row">
-        <div class="form-field">
-          <label for="nombre" class="form-label">Nombre</label>
-          <InputText
-            id="nombre"
-            v-model="productos.nombre"
-            class="w-full form-input"
-            placeholder="Ingrese nombre"
-            autocomplete="off"
-          />
-        </div>
-        <div class="form-field">
-          <label for="idCategoria" class="form-label">Categoría</label>
-          <Dropdown
-            id="idCategoria"
-            v-model="productos.idCategoria"
-            :options="categorias"
-            optionLabel="nombre"
-            optionValue="id"
-            placeholder="Seleccione categoría"
-            class="w-full"
-          />
-        </div>
+      <!-- Nombre -->
+      <div class="form-field">
+        <label for="nombre" class="form-label">
+          Nombre
+          <span class="required-asterisk" aria-hidden="true">*</span>
+        </label>
+        <InputText
+          id="nombre"
+          v-model="productoLocal.nombre"
+          class="w-full form-input"
+          :class="{ 'p-invalid': errors.nombre }"
+          autocomplete="off"
+          autofocus
+          placeholder="Nombre del producto"
+          aria-describedby="nombre-error"
+          :aria-invalid="!!errors.nombre"
+        />
+        <small v-if="errors.nombre" id="nombre-error" class="error-text">
+          {{ errors.nombre }}
+        </small>
       </div>
 
-      <!-- Row 2: Descripción completa -->
+      <!-- Categoría -->
+      <div class="form-field">
+        <label for="categoria" class="form-label">
+          Categoría
+          <span class="required-asterisk" aria-hidden="true">*</span>
+        </label>
+        <Dropdown
+          id="categoria"
+          v-model="productoLocal.idCategoria"
+          :options="categorias"
+          optionLabel="nombre"
+          optionValue="id"
+          class="w-full"
+          :class="{ 'p-invalid': errors.categoria }"
+          placeholder="Seleccione categoría"
+          :filter="true"
+          filterPlaceholder="Buscar categoría..."
+          showClear
+          :loading="categorias.length === 0"
+          aria-describedby="categoria-error"
+          :aria-invalid="!!errors.categoria"
+        >
+          <template #value="slotProps">
+            <div v-if="slotProps.value" class="flex align-items-center">
+              <span>{{ slotProps.value }}</span>
+            </div>
+            <span v-else class="text-color-secondary">
+              Seleccione categoría
+            </span>
+          </template>
+        </Dropdown>
+        <small v-if="errors.categoria" id="categoria-error" class="error-text">
+          {{ errors.categoria }}
+        </small>
+      </div>
+
+      <!-- Descripción -->
       <div class="form-field">
         <label for="descripcion" class="form-label">Descripción</label>
         <InputText
           id="descripcion"
-          v-model="productos.descripcion"
+          v-model="productoLocal.descripcion"
           class="w-full form-input"
-          placeholder="Ingrese descripción"
           autocomplete="off"
+          placeholder="Descripción del producto"
         />
       </div>
 
-      <!-- Row 3: URL Imagen y Unidad -->
-      <div class="form-row">
-        <div class="form-field">
-          <label for="urlImagen" class="form-label">URL Imagen</label>
-          <InputText
-            id="urlImagen"
-            v-model="productos.urlImagen"
-            class="w-full form-input"
-            placeholder="https://ejemplo.com/imagen.jpg"
-            autocomplete="off"
-          />
-        </div>
-        <div class="form-field">
-          <label for="idUnidadMedida" class="form-label">Unidad Medida</label>
-          <Dropdown
-            id="idUnidadMedida"
-            v-model="productos.idUnidadMedida"
-            :options="unidadesMedida"
-            optionLabel="nombre"
-            optionValue="id"
-            placeholder="Seleccione unidad"
-            class="w-full"
-          />
-        </div>
-      </div>
-
-      <!-- Preview de imagen -->
-      <div v-if="productos.urlImagen" class="form-field">
-        <img
-          :src="productos.urlImagen"
-          alt="preview"
-          style="max-width: 150px; border-radius: 8px; margin-top: 8px"
-        />
-      </div>
-
-      <!-- Row 4: Costo y Perecedero -->
-      <div class="form-row">
-        <div class="form-field">
-          <label for="costoUnitarioPromedio" class="form-label">Costo Promedio</label>
-          <InputNumber
-            id="costoUnitarioPromedio"
-            v-model="productos.costoUnitarioPromedio"
-            class="w-full"
-            mode="currency"
-            currency="BOB"
-            locale="es-BO"
-            placeholder="0.00"
-          />
-        </div>
-        <div class="form-field">
-          <label for="perecedero" class="form-label">Perecedero</label>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="perecedero" v-model="productos.perecedero" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 5: Es Vendible -->
+      <!-- Costo Promedio -->
       <div class="form-field">
-        <label for="esVendible" class="form-label">Es Vendible</label>
-        <div class="checkbox-wrapper">
-          <input type="checkbox" id="esVendible" v-model="productos.esVendible" />
-          <span class="checkbox-label">Sí, este producto es vendible</span>
-        </div>
-      </div>
-
-      <!-- Row 6: Precio Venta (condicional) -->
-      <div v-if="productos.esVendible" class="form-field">
-        <label for="precioVentaUnitario" class="form-label">Precio Venta Unitario</label>
+        <label for="costoPromedio" class="form-label">Costo Promedio</label>
         <InputNumber
-          id="precioVentaUnitario"
-          v-model="productos.precioVentaUnitario"
-          class="w-full"
+          id="costoPromedio"
+          v-model="productoLocal.costoUnitarioPromedio"
           mode="currency"
           currency="BOB"
           locale="es-BO"
+          class="w-full"
+          :class="{ 'p-invalid': errors.costoUnitarioPromedio }"
+          :min="0"
+          :max="9999999"
+          :minFractionDigits="2"
+          :maxFractionDigits="2"
           placeholder="0.00"
+          aria-describedby="costo-error"
+          :aria-invalid="!!errors.costoUnitarioPromedio"
         />
+        <small v-if="errors.costoUnitarioPromedio" id="costo-error" class="error-text">
+          {{ errors.costoUnitarioPromedio }}
+        </small>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Unidad de Medida -->
+      <div class="form-field">
+        <label for="unidadMedida" class="form-label">
+          Unidad de Medida
+          <span class="required-asterisk" aria-hidden="true">*</span>
+        </label>
+        <Dropdown
+          id="unidadMedida"
+          v-model="productoLocal.unidadMedida"
+          :options="UNIDADES"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          :class="{ 'p-invalid': errors.unidadMedida }"
+          placeholder="Seleccione unidad"
+          showClear
+          aria-describedby="unidad-error"
+          :aria-invalid="!!errors.unidadMedida"
+        />
+        <small v-if="errors.unidadMedida" id="unidad-error" class="error-text">
+          {{ errors.unidadMedida }}
+        </small>
+      </div>
+
+      <!-- Perecedero -->
+      <div class="form-field">
+        <div class="checkbox-container">
+          <Checkbox
+            id="perecedero"
+            v-model="productoLocal.perecedero"
+            :binary="true"
+            class="checkbox-input"
+          />
+          <label for="perecedero" class="checkbox-label">
+            Producto Perecedero
+          </label>
+        </div>
+        <small class="helper-text">
+          Marque si el producto tiene fecha de vencimiento
+        </small>
+      </div>
+    </div>
+
+    <template #footer>
       <div class="form-actions">
         <Button
           type="button"
           label="Cancelar"
+          icon="pi pi-times"
           severity="secondary"
           class="btn-cancel"
           @click="dialogVisible = false"
+          :disabled="loading"
         />
         <Button
           type="button"
-          label="Guardar"
+          :label="props.modoEdicion ? 'Actualizar' : 'Guardar'"
+          :icon="loading ? 'pi pi-spinner pi-spin' : 'pi pi-save'"
           class="btn-save"
           @click="handleSave"
+          :disabled="loading || Object.keys(errors).length > 0"
+          :loading="loading"
         />
       </div>
-    </div>
+    </template>
   </Dialog>
 </template>
-
 <style scoped>
 /* Form Container */
 .form-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-/* Form Row - Grid Layout for multiple fields */
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-@media (max-width: 600px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+  gap: 20px;
+  padding: 0.5rem 0;
 }
 
 /* Form Field */
@@ -313,9 +395,15 @@ watch(
   font-weight: 600;
   color: #333333;
   display: block;
+  margin-bottom: 2px;
 }
 
-/* Form Input - Light Mode */
+.required-asterisk {
+  color: #e74c3c;
+  margin-left: 2px;
+}
+
+/* Form Input */
 .form-input {
   background-color: #ffffff !important;
   border: 1.5px solid #d1d9df !important;
@@ -328,8 +416,8 @@ watch(
 }
 
 .form-input:focus {
-  border-color: #ff4081 !important;
-  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
+  border-color: #ff4081 !important; /* Cambiado a rosa */
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important; /* Cambiado a rosa */
   outline: none !important;
 }
 
@@ -337,80 +425,39 @@ watch(
   color: #9ca3af;
 }
 
-/* Checkbox wrapper */
-.checkbox-wrapper {
+/* Checkbox */
+.checkbox-container {
   display: flex;
   align-items: center;
-  padding: 0.65rem 0;
-  gap: 8px;
+  gap: 10px;
+  cursor: pointer;
 }
 
-.checkbox-wrapper input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #ff4081;
+.checkbox-input {
+  transform: scale(1.1);
 }
 
 .checkbox-label {
-  color: #555555;
-  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333333;
+  cursor: pointer;
+  user-select: none;
 }
 
-/* PrimeVue Dropdown Light Mode */
-:deep(.p-dropdown) {
-  background-color: #ffffff !important;
-  border: 1.5px solid #d1d9df !important;
-  border-radius: 6px !important;
-  width: 100%;
+.helper-text {
+  color: #666666;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  margin-left: 28px;
 }
 
-:deep(.p-dropdown .p-dropdown-label) {
-  color: #333333 !important;
-  padding: 0.65rem 0.875rem !important;
-}
-
-:deep(.p-dropdown:hover) {
-  border-color: #c1c7cd !important;
-}
-
-:deep(.p-dropdown.p-focus) {
-  border-color: #ff4081 !important;
-  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
-}
-
-:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item) {
-  color: #333333 !important;
-  padding: 0.75rem 1rem !important;
-}
-
-:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight) {
-  background: #ff4081 !important;
-  color: white !important;
-}
-
-/* PrimeVue InputNumber Light Mode */
-:deep(.p-inputnumber) {
-  width: 100%;
-}
-
-:deep(.p-inputnumber .p-inputnumber-input) {
-  background-color: #ffffff !important;
-  border: 1.5px solid #d1d9df !important;
-  color: #333333 !important;
-  padding: 0.65rem 0.875rem !important;
-  border-radius: 6px !important;
-  font-size: 0.95rem !important;
-}
-
-:deep(.p-inputnumber .p-inputnumber-input:focus) {
-  border-color: #ff4081 !important;
-  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important;
-}
-
-:deep(.p-inputnumber-button) {
-  background: #f8f9fa !important;
-  border: 1px solid #d1d9df !important;
+/* Error Text */
+.error-text {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: block;
+  margin-top: 4px;
 }
 
 /* Form Actions */
@@ -418,12 +465,22 @@ watch(
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 10px;
   padding-top: 16px;
   border-top: 1px solid #e1e8ed;
 }
 
-/* Save Button */
+@media (max-width: 640px) {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .p-button {
+    width: 100%;
+  }
+}
+
+/* Save Button - Cambiado a rosa */
 .btn-save {
   background: linear-gradient(135deg, #ff4081 0%, #f50057 100%) !important;
   color: white !important;
@@ -485,28 +542,85 @@ watch(
   transform: translateY(0) !important;
 }
 
-/* Dialog Customization */
-:deep(.dialog-header-custom) {
+/* PrimeVue Overrides */
+:deep(.p-dialog-content) {
+  padding: 1.5rem !important;
+}
+
+:deep(.p-dialog-header) {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
-  border-bottom: 2px solid rgba(255, 64, 129, 0.15) !important;
+  border-bottom: 2px solid rgba(255, 64, 129, 0.15) !important; /* Cambiado a rosa */
   padding: 20px !important;
 }
 
-:deep(.dialog-header-custom .p-dialog-title) {
+:deep(.p-dialog-header .p-dialog-title) {
   color: #333333 !important;
   font-weight: 700 !important;
   font-size: 1.1rem !important;
 }
 
-:deep(.dialog-content-custom) {
+:deep(.p-dropdown) {
+  width: 100%;
   background-color: #ffffff !important;
-  padding: 20px !important;
+  border: 1.5px solid #d1d9df !important;
+  border-radius: 6px !important;
+}
+
+:deep(.p-dropdown .p-dropdown-label) {
   color: #333333 !important;
+  padding: 0.65rem 0.875rem !important;
+}
+
+:deep(.p-dropdown:hover) {
+  border-color: #c1c7cd !important;
+}
+
+:deep(.p-dropdown.p-focus) {
+  border-color: #ff4081 !important; /* Cambiado a rosa */
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important; /* Cambiado a rosa */
+}
+
+:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item) {
+  color: #333333 !important;
+  padding: 0.75rem 1rem !important;
+}
+
+:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight) {
+  background: #ff4081 !important; /* Cambiado a rosa */
+  color: white !important;
+}
+
+:deep(.p-inputnumber) {
+  width: 100%;
+}
+
+:deep(.p-inputnumber .p-inputnumber-input) {
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d9df !important;
+  color: #333333 !important;
+  padding: 0.65rem 0.875rem !important;
+  border-radius: 6px !important;
+  font-size: 0.95rem !important;
+}
+
+:deep(.p-inputnumber .p-inputnumber-input:focus) {
+  border-color: #ff4081 !important; /* Cambiado a rosa */
+  box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1) !important; /* Cambiado a rosa */
+}
+
+:deep(.p-checkbox .p-checkbox-box) {
+  border: 2px solid #d1d9df !important;
+  border-radius: 4px !important;
+}
+
+:deep(.p-checkbox .p-checkbox-box.p-highlight) {
+  background: #ff4081 !important; /* Cambiado a rosa */
+  border-color: #ff4081 !important; /* Cambiado a rosa */
 }
 
 /* Focus states for accessibility */
 :deep(.p-button:focus) {
-  outline: 3px solid rgba(255, 64, 129, 0.25) !important;
+  outline: 3px solid rgba(255, 64, 129, 0.25) !important; /* Cambiado a rosa */
   outline-offset: 2px !important;
 }
 </style>

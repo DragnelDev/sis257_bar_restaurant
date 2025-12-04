@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 
 const yearsExperience = ref(0)
 const masterChefs = ref(0)
+const satisfiedCustomers = ref(0)
+const partyDays = ref(0)
 
 const animateCounter = (target: number, setter: (val: number) => void, duration: number = 2000) => {
   let start = 0
@@ -20,10 +22,11 @@ const animateCounter = (target: number, setter: (val: number) => void, duration:
 }
 
 onMounted(() => {
-  // Animar contadores cuando el componente se monta
   setTimeout(() => {
-    animateCounter(15, (val) => (yearsExperience.value = val))
-    animateCounter(50, (val) => (masterChefs.value = val))
+    animateCounter(4, (val) => (yearsExperience.value = val))
+    animateCounter(12, (val) => (masterChefs.value = val))
+    animateCounter(300, (val) => (satisfiedCustomers.value = val))
+    animateCounter(365, (val) => (partyDays.value = val))
   }, 300)
 })
 </script>
@@ -39,7 +42,7 @@ onMounted(() => {
                 class="img-fluid rounded w-100 wow zoomIn"
                 data-wow-delay="0.1s"
                 src="/img/about-1.jpg"
-                alt="About 1"
+                alt="Ambiente del bar restaurante"
               />
             </div>
             <div class="col-6 text-start">
@@ -48,7 +51,7 @@ onMounted(() => {
                 data-wow-delay="0.3s"
                 src="/img/about-2.jpg"
                 style="margin-top: 25%"
-                alt="About 2"
+                alt="Cócteles especiales"
               />
             </div>
             <div class="col-6 text-end">
@@ -56,7 +59,7 @@ onMounted(() => {
                 class="img-fluid rounded w-75 wow zoomIn"
                 data-wow-delay="0.5s"
                 src="/img/about-3.jpg"
-                alt="About 3"
+                alt="Platos gourmet"
               />
             </div>
             <div class="col-6 text-end">
@@ -64,7 +67,7 @@ onMounted(() => {
                 class="img-fluid rounded w-100 wow zoomIn"
                 data-wow-delay="0.7s"
                 src="/img/about-4.jpg"
-                alt="About 4"
+                alt="Noche de fiesta"
               />
             </div>
           </div>
@@ -75,16 +78,18 @@ onMounted(() => {
             Sobre nosotros
           </h5>
           <h1 class="mb-4">
-            Bienvenido a <i class="fa fa-utensils text-primary me-2"></i>Restaurante
+            Bienvenido a <i class="fa fa-utensils text-primary me-2"></i>
+            <i class="fas fa-glass-cheers text-primary me-2"></i>Reset Bar & Restaurante<i class="fas fa-music text-primary me-2"></i>
           </h1>
           <p class="mb-4">
-            ¡Bienvenidos! Relájense, llegaron al rincón donde la comida sabe a felicidad. Prepárense
-            para una aventura culinaria inolvidable. En nuestra mesa, la comida se sirve con amor.
-            Hoy nos encargaremos de deleitar sus sentidos y hacer de este momento algo especial.
+            ¡Bienvenidos! Relájense, llegaron al lugar donde la buena comida se combina con los mejores tragos.
+            Prepárense para una experiencia gastronómica y nocturna inolvidable. En nuestro espacio, cada plato
+            se sirve con pasión y cada cóctel se prepara con arte.
           </p>
           <p class="mb-4">
-            Más que una comida, les espera una experiencia. Aquí, la frescura y el sabor son
-            nuestros ingredientes principales. ¡Siéntanse como en casa!
+            Más que un restaurante o un bar, les espera una experiencia completa. Aquí, la frescura de
+            los ingredientes y la creatividad de nuestros mixólogos son nuestra esencia. ¡Siéntanse como
+            en casa mientras disfrutan de la mejor fiesta!
           </p>
 
           <div class="row g-4 mb-4">
@@ -106,14 +111,46 @@ onMounted(() => {
                   {{ masterChefs }}
                 </h1>
                 <div class="ps-4">
-                  <p class="mb-0">Popular</p>
-                  <h6 class="text-uppercase mb-0">Maestros chefs</h6>
+                  <p class="mb-0">Expertos en</p>
+                  <h6 class="text-uppercase mb-0">Cocina y barra</h6>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="d-flex align-items-center border-start border-5 border-primary px-3">
+                <h1 class="flex-shrink-0 display-5 text-primary mb-0">
+                  {{ satisfiedCustomers }}+
+                </h1>
+                <div class="ps-4">
+                  <p class="mb-0">Clientes</p>
+                  <h6 class="text-uppercase mb-0">Satisfechos</h6>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="d-flex align-items-center border-start border-5 border-primary px-3">
+                <h1 class="flex-shrink-0 display-5 text-primary mb-0">
+                  {{ partyDays }}
+                </h1>
+                <div class="ps-4">
+                  <p class="mb-0">Días para</p>
+                  <h6 class="text-uppercase mb-0">Celebrar</h6>
                 </div>
               </div>
             </div>
           </div>
 
-          <a class="btn btn-primary py-3 px-5 mt-2" href="#">Leer más</a>
+          <div class="mt-4">
+            <div class="d-flex align-items-center gap-3">
+              <i class="fa fa-utensils text-primary fs-4"></i>
+              <i class="fas fa-glass-cheers text-primary fs-4"></i>
+              <i class="fas fa-music text-primary fs-4"></i>
+              <i class="fas fa-birthday-cake text-primary fs-4"></i>
+              <span class="ms-2 text-muted">Tu lugar perfecto para comer, beber y celebrar</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

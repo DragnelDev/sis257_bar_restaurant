@@ -7,11 +7,11 @@ import TeamSection from '../components/home/TeamSection.vue'
 <template>
   <div>
     <PageHeader
-      title="About Us"
+      title="Acerca de Nosotros"
       :breadcrumbs="[
-        { text: 'Home', link: '/' },
-        { text: 'Pages', link: '#' },
-        { text: 'About', link: '/about' },
+        { text: 'Inicio', link: '/' },
+        { text: 'Paginas', link: '#' },
+        { text: 'Acerca de', link: '/about' },
       ]"
     />
     <AboutSection />

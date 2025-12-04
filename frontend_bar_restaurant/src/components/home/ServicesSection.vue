@@ -6,48 +6,51 @@ import ServiceCard from '../shared/ServiceCard.vue'
 const services = ref<Service[]>([
   {
     id: 1,
-    icon: 'fa-user-tie',
-    title: 'Maestros Chefs',
-    description:
-      'Nuestro equipo está formado por chefs galardonados con pasión por la gastronomía. Cada plato es una obra de arte creada con técnicas culinarias de vanguardia y el máximo cuidado en los detalles.',
+    icon: 'fa-glass-cheers',
+    title: 'Fiestas de Cumpleaños',
+    description: 'Celebra tu cumpleaños con nosotros. Ambiente perfecto, música y entretenimiento garantizado.'
   },
   {
     id: 2,
-    icon: 'fa-utensils',
-    title: 'Comida de Calidad',
-    description:
-      'Nos comprometemos a usar solo ingredientes frescos, locales y de la más alta calidad. Garantizamos que cada bocado que pruebes esté lleno de sabor, frescura y nutritivos beneficios.',
+    icon: 'fa-microphone',
+    title: 'Karaoke Nights',
+    description: 'Todos los jueves, vive la mejor experiencia de karaoke con amigos y buena música.'
   },
   {
     id: 3,
-    icon: 'fa-cart-plus',
-    title: 'Pedido en Línea',
-    description:
-      'Disfruta de tus platos favoritos desde la comodidad de tu hogar u oficina. Nuestro sistema de pedidos es rápido, intuitivo y seguro, con seguimiento en tiempo real hasta tu puerta.',
+    icon: 'fa-music',
+    title: 'Weekend Parties',
+    description: 'Viernes y sábados con DJs en vivo y las mejores pistas para bailar toda la noche.'
   },
   {
     id: 4,
-    icon: 'fa-headset',
-    title: 'Servicio 24/7',
-    description:
-      'Nuestra dedicación por el cliente no tiene horario. Estamos disponibles para atender tus pedidos y consultas a cualquier hora del día, los 7 días de la semana, garantizando una experiencia sin interrupciones.',
+    icon: 'fa-cocktail',
+    title: 'Bar & Food',
+    description: 'Bebidas premium y deliciosa comida para disfrutar en cualquier momento.'
   },
 ])
 </script>
 
 <template>
-  <div class="container-xxl py-5">
+  <section class="simple-services py-5">
     <div class="container">
       <div class="row g-4">
         <div
-          v-for="(service, index) in services"
+          v-for="service in services"
           :key="service.id"
-          class="col-lg-3 col-sm-6 wow fadeInUp"
-          :data-wow-delay="`${0.1 + index * 0.2}s`"
+          class="col-lg-3 col-md-6"
         >
           <ServiceCard :service="service" />
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
+
+<style scoped>
+.simple-services {
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+</style>
