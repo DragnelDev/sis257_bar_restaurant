@@ -81,7 +81,9 @@ const resetForm = () => {
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3797.2461446431377!2d-65.25617322483824!3d-19.041140881124177!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93fbcf2ff7ec3181%3A0xea6a87d4260e8687!2sNicol%C3%A1s%20Ortiz%2070%2C%20Sucre%2C%20Bolivia!5e0!3m2!1ses!2sbo!4v1703885793937!5m2!1ses!2sbo"
               :frameborder="0"
               style="min-height: 350px; border: 0"
-              allowfullscreen
+              :allowfullscreen="true"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
               aria-hidden="false"
               tabindex="0"
               title="Ubicación de Nicolás Ortiz N° 70, Sucre, Bolivia"
