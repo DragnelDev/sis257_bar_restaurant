@@ -1,3 +1,4 @@
+import { AsignacionReserva } from 'src/asignacion-reservas/entities/asignacion-reserva.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import {
   Column,
@@ -35,4 +36,10 @@ export class Mesa {
 
   @OneToMany(() => Venta, (venta) => venta.mesa)
   ventas: Venta[];
+
+  @OneToMany(
+    () => AsignacionReserva,
+    (asignacionReserva) => asignacionReserva.mesa,
+  )
+  asignacion: AsignacionReserva[];
 }

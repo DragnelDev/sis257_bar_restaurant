@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { DetalleVenta } from '@/models/DetalleVenta'
 import type { Venta } from '@/models/venta'
 import http from '@/plugins/axios'
 import { InputGroup, InputGroupAddon, InputText, Dropdown, Button, Dialog } from 'primevue'
@@ -7,7 +6,6 @@ import { computed, onMounted, ref } from 'vue'
 
 const ENDPOINT = 'ventas'
 const ventas = ref<Venta[]>([])
-const detalleVentas = ref<DetalleVenta[]>([])
 
 const busqueda = ref<string>('')
 
@@ -30,15 +28,16 @@ function calcularCostoTotal(venta: Venta): number {
   }
 
   const costo = venta.detalleVentas.reduce((sum, detalle) => {
-    const costoUnitario = parseFloat(detalle.costoUnitario ?? '0')
-    return sum + costoUnitario * detalle.cantidad
+    const costoUnitario = parseFloat(String(detalle.costoUnitario ?? '0'))
+    const cantidad = Number(detalle.cantidad ?? detalle.quantity ?? 0)
+    return sum + costoUnitario * cantidad
   }, 0)
 
   return parseFloat(costo.toFixed(2))
 }
 
 function calcularGananciaBruta(venta: Venta): number {
-  const total = parseFloat(venta.total ?? '0')
+  const total = parseFloat(String(venta.total ?? '0'))
   const costoTotal = calcularCostoTotal(venta)
   return parseFloat((total - costoTotal).toFixed(2))
 }
@@ -47,7 +46,10 @@ function calcularCantidadItems(venta: Venta): number {
   if (!venta.detalleVentas || venta.detalleVentas.length === 0) {
     return 0
   }
-  return venta.detalleVentas.reduce((sum, detalle) => sum + detalle.cantidad, 0)
+  return venta.detalleVentas.reduce(
+    (sum, detalle) => sum + Number(detalle.cantidad ?? detalle.quantity ?? 0),
+    0,
+  )
 }
 
 function formatFecha(fecha: string): string {
@@ -61,7 +63,7 @@ function formatFecha(fecha: string): string {
       minute: '2-digit',
       hour12: false,
     })
-  } catch (error) {
+  } catch (_error) {
     return fecha
   }
 }
@@ -88,7 +90,6 @@ const ventasPaginadas = computed(() => {
   return ventasFiltradas.value.slice(inicio, fin)
 })
 
-
 const totalPaginas = computed(() => {
   return Math.max(1, Math.ceil(ventasFiltradas.value.length / filasPorPagina.value))
 })
@@ -98,7 +99,10 @@ const paginas = computed(() => {
 })
 
 const resumenTotales = computed(() => {
-  const totalVentas = ventasFiltradas.value.reduce((sum, v) => sum + parseFloat(v.total ?? '0'), 0)
+  const totalVentas = ventasFiltradas.value.reduce(
+    (sum, v) => sum + parseFloat(String(v.total ?? '0')),
+    0,
+  )
   const costoTotal = ventasFiltradas.value.reduce((sum, v) => sum + calcularCostoTotal(v), 0)
   const gananciaTotal = totalVentas - costoTotal
 
@@ -139,9 +143,7 @@ defineExpose({ obtenerLista })
 <template>
   <div class="ventas-view">
     <div class="page-header mb-4">
-      <h2 class="mb-1">
-        <i class="pi pi-chart-line me-2"></i>Reporte Detallado de Ventas
-      </h2>
+      <h2 class="mb-1"><i class="pi pi-chart-line me-2"></i>Reporte Detallado de Ventas</h2>
       <p class="text-muted">Análisis completo de ventas, costos y rentabilidad</p>
     </div>
 
@@ -229,7 +231,7 @@ defineExpose({ obtenerLista })
         <tbody>
           <tr v-for="(venta, index) in ventasPaginadas" :key="venta.id">
             <td class="text-center">{{ (paginaActual - 1) * filasPorPagina + index + 1 }}</td>
-            <td>{{ formatFecha(venta.fecha) }}</td>
+            <td>{{ formatFecha(venta.fecha ?? '') }}</td>
             <td>
               <span
                 class="badge"
@@ -350,9 +352,7 @@ defineExpose({ obtenerLista })
 
         <!-- Información General -->
         <div class="section-container">
-          <h6 class="section-title">
-            <i class="pi pi-info-circle me-2"></i>Información General
-          </h6>
+          <h6 class="section-title"><i class="pi pi-info-circle me-2"></i>Información General</h6>
           <div class="row">
             <div class="col-md-6">
               <div class="info-card">
@@ -361,7 +361,7 @@ defineExpose({ obtenerLista })
                 </div>
                 <div class="info-text">
                   <label>Fecha y Hora</label>
-                  <span>{{ formatFecha(selectedVenta.fecha) }}</span>
+                  <span>{{ formatFecha(selectedVenta.fecha ?? '') }}</span>
                 </div>
               </div>
             </div>
@@ -392,9 +392,7 @@ defineExpose({ obtenerLista })
 
         <!-- Detalle de Productos -->
         <div class="section-container">
-          <h6 class="section-title">
-            <i class="pi pi-shopping-bag me-2"></i>Productos Vendidos
-          </h6>
+          <h6 class="section-title"><i class="pi pi-shopping-bag me-2"></i>Productos Vendidos</h6>
           <div class="table-responsive">
             <table class="table table-sm table-bordered">
               <thead class="table-light">
@@ -411,9 +409,11 @@ defineExpose({ obtenerLista })
                     <i class="pi pi-box me-2 text-muted"></i>
                     {{
                       (d.producto && d.producto.nombre) ||
+                      (d.receta && d.receta.nombreReceta) ||
                       d.nombreProducto ||
                       d.nombre ||
-                      d.idProducto
+                      d.name ||
+                      'Producto sin nombre'
                     }}
                   </td>
                   <td class="text-center">
@@ -423,7 +423,7 @@ defineExpose({ obtenerLista })
                     Bs.
                     {{
                       parseFloat(
-                        d.precioUnitarioVenta ?? d.precio_unitario ?? d.precio ?? 0,
+                        String(d.precioUnitarioVenta ?? d.precioUnitario ?? d.precio ?? 0),
                       ).toFixed(2)
                     }}
                   </td>
@@ -431,8 +431,7 @@ defineExpose({ obtenerLista })
                     Bs.
                     {{
                       (
-                        parseFloat(d.cantidad ?? d.cantidadVenta ?? 0) *
-                        parseFloat(d.precioUnitario ?? d.precio_unitario ?? d.precio ?? 0)
+                        Number(d.cantidad ?? d.cantidadVenta ?? d.quantity ?? 0) * parseFloat(String(d.precioUnitario ?? d.precio_unitario ?? d.precio ?? d.price ?? 0))
                       ).toFixed(2)
                     }}
                   </td>
@@ -447,9 +446,7 @@ defineExpose({ obtenerLista })
 
         <!-- Resumen Financiero -->
         <div class="section-container">
-          <h6 class="section-title">
-            <i class="pi pi-dollar me-2"></i>Resumen Financiero
-          </h6>
+          <h6 class="section-title"><i class="pi pi-dollar me-2"></i>Resumen Financiero</h6>
           <div class="row">
             <div class="col-md-4">
               <div class="info-card">
@@ -459,7 +456,7 @@ defineExpose({ obtenerLista })
                 <div class="info-text">
                   <label>Total Venta</label>
                   <span class="text-primary fw-bold fs-5"
-                    >Bs. {{ parseFloat(selectedVenta.total ?? '0').toFixed(2) }}</span
+                    >Bs. {{ parseFloat(String(selectedVenta.total ?? '0')).toFixed(2) }}</span
                   >
                 </div>
               </div>
@@ -536,7 +533,7 @@ defineExpose({ obtenerLista })
   right: -50px;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
   transition: all 0.3s ease;
 }
 

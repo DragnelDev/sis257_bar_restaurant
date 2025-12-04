@@ -51,11 +51,11 @@ const empleado = ref<Empleado>({ ...((props.empleado as Empleado) || defaultEmpl
 const fechaNacimientoDate = ref<Date | null>(null)
 const fechaIngresoDate = ref<Date | null>(null)
 
-// Restricciones de fecha para nacimiento (máximo 60 años, no futuro)
+// Restricciones de fecha para nacimiento (máximo 60 años, mínimo 18 años, no futuro)
 const maxFechaNacimiento = computed(() => {
   const hoy = new Date()
-  const hace60Anos = new Date(hoy.getFullYear() - 60, hoy.getMonth(), hoy.getDate())
-  return hoy > hace60Anos ? hoy : hace60Anos
+  const hace18Anos = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate())
+  return hace18Anos
 })
 
 // Restricciones de fecha para ingreso (desde hoy en adelante)
@@ -103,7 +103,7 @@ function validate(): boolean {
     if (f > today) {
       errors.value.fechaNacimiento = 'La fecha de nacimiento no puede ser futura'
     } else {
-      // Validar que no sea mayor a 60 años
+      // Calcular edad actual
       const edad = today.getFullYear() - f.getFullYear()
       const mes = today.getMonth() - f.getMonth()
       const dia = today.getDate() - f.getDate()
@@ -113,7 +113,11 @@ function validate(): boolean {
         edadReal = edad - 1
       }
 
-      if (edadReal > 60) {
+      // Validar edad mínima de 18 años
+      if (edadReal < 18) {
+        errors.value.fechaNacimiento = 'El empleado debe ser mayor a 18 años'
+      } else if (edadReal > 60) {
+        // Validar que no sea mayor a 60 años
         errors.value.fechaNacimiento = 'La edad no puede ser mayor a 60 años'
       }
     }

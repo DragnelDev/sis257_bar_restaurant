@@ -1,8 +1,12 @@
+import { Mesa } from 'src/mesas/entities/mesa.entity';
+import { Reserva } from 'src/reservas/entities/reserva.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,9 +15,6 @@ import {
 export class AsignacionReserva {
   @PrimaryGeneratedColumn('identity')
   id: number;
-
-  @Column('int')
-  idUsuario: number;
 
   @Column('integer', { name: 'id_reserva' })
   idReserva: number;
@@ -33,4 +34,14 @@ export class AsignacionReserva {
 
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
+
+  // RELACIÓN N:1 con RESERVAS
+  @ManyToOne(() => Reserva, (reserva) => reserva.reservas)
+  @JoinColumn({ name: 'id_reserva', referencedColumnName: 'id' })
+  reservas: Reserva;
+
+  // RELACIÓN N:1 con MESAS (Table)
+  @ManyToOne(() => Mesa, (mesa) => mesa.asignacion)
+  @JoinColumn({ name: 'id_mesa', referencedColumnName: 'id' })
+  mesa: Mesa;
 }

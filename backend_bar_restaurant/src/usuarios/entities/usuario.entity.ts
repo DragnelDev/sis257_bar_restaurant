@@ -1,6 +1,11 @@
 import { compare, genSalt, hash } from 'bcrypt';
+import { ClienteContacto } from 'src/cliente-contactos/entities/cliente-contacto.entity';
 import { Compra } from 'src/compras/entities/compra.entity';
 import { Empleado } from 'src/empleados/entities/empleado.entity';
+import { MiembroEquipo } from 'src/miembro-equipos/entities/miembro-equipo.entity';
+import { Reserva } from 'src/reservas/entities/reserva.entity';
+import { Suscripcion } from 'src/suscripciones/entities/suscripcion.entity';
+import { Testimonio } from 'src/testimonios/entities/testimonio.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import {
   BeforeInsert,
@@ -71,4 +76,24 @@ export class Usuario {
   async validatePassword(plainPassword: string): Promise<boolean> {
     return compare(plainPassword, this.clave);
   }
+
+  //Otros capos y relaciones
+  // RELACIÓN 1:N con SUSCRIPCIONES
+  @OneToMany(() => Suscripcion, (suscripcion) => suscripcion.usuario)
+  suscripciones: Suscripcion[];
+
+  // RELACIÓN 1:N con TESTIMONIOS
+  @OneToMany(() => Testimonio, (testimonio) => testimonio.usuario)
+  testimonios: Testimonio[];
+
+  // RELACIÓN 1:1 o 1:N con MIEMBRO_EQUIPOS
+  @OneToMany(() => MiembroEquipo, (miembro) => miembro.usuarios)
+  miembroEquipos: MiembroEquipo[];
+
+  //Opcional: Relación con Reservas si el 'idUsuario' en Reservas es el gestor
+  @OneToMany(() => Reserva, (reserva) => reserva.usuarios)
+  reservas: Reserva[];
+
+  @OneToMany(() => ClienteContacto, (contacto) => contacto.usuario)
+  clienteContactos: ClienteContacto[];
 }

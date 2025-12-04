@@ -1,11 +1,18 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Usuario } from 'src/usuarios/entities/usuario.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('cliente_contactos')
 export class ClienteContacto {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('int')
+  @Column('int', { name: 'id_usuario' })
   idUsuario: number;
 
   @Column('varchar', { length: 80 })
@@ -25,4 +32,8 @@ export class ClienteContacto {
 
   @Column('timestamp with time zone', { default: () => 'CURRENT_TIMESTAMP' })
   fechaRecepcion: Date;
+
+  @OneToMany(() => Usuario, (usuario) => usuario.clienteContactos)
+  @JoinColumn({ name: 'id_usuario', referencedColumnName: 'id' })
+  usuario: Usuario;
 }

@@ -76,7 +76,10 @@ watch(
       }
 
       if (!proveedorSeleccionado.value && proveedores.value.length > 0) {
-        proveedorSeleccionado.value = proveedores.value[0]
+        const proveedor = proveedores.value[0]
+        if (proveedor) {
+          proveedorSeleccionado.value = proveedor
+        }
       }
     }
   },
@@ -125,12 +128,19 @@ function agregarDetalle() {
     return
   }
 
+  if (!detallesCompra.value) {
+    detallesCompra.value = []
+  }
+
   const idx = detallesCompra.value.findIndex(
     (d) => d.idProducto === nuevoDetalle.value.idProducto,
   )
 
   if (idx !== -1) {
-    detallesCompra.value[idx].cantidad += nuevoDetalle.value.cantidad
+    const existing = detallesCompra.value[idx]!
+    if (existing) {
+      existing.cantidad = (existing.cantidad ?? 0) + (nuevoDetalle.value.cantidad ?? 0)
+    }
 
     toast.add({
       severity: 'info',

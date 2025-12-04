@@ -1,11 +1,18 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Usuario } from 'src/usuarios/entities/usuario.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('testimonios')
 export class Testimonio {
   @PrimaryGeneratedColumn('identity')
   id: number;
 
-  @Column('int')
+  @Column('int', { name: 'id_usuario' })
   idUsuario: number;
 
   @Column('varchar', { length: 80 })
@@ -39,4 +46,8 @@ export class Testimonio {
     name: 'fecha_aprobacion',
   })
   fechaAprobacion: Date;
+
+  @OneToMany(() => Usuario, (usuario) => usuario.testimonios)
+  @JoinColumn({ name: 'id_usuario', referencedColumnName: 'id' })
+  usuario: Usuario;
 }

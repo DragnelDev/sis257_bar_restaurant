@@ -9,14 +9,14 @@ import { ref } from 'vue'
 
 const mostrarDialog = ref(false)
 const productoListRef = ref<InstanceType<typeof ProductoList> | null>(null)
-const productoEdit = ref<Producto | null>(null)
+const productoEdit = ref<Producto | undefined>(undefined)
 
 //Categoria
 const mostrarDialogCategoria = ref(false)
-const categoriaEdit = ref<Categoria | null>(null)
+const categoriaEdit = ref<Categoria | undefined>(undefined)
 
 function handleCreateCategoria() {
-  categoriaEdit.value = null
+  categoriaEdit.value = undefined
   mostrarDialogCategoria.value = true
 }
 
@@ -25,7 +25,7 @@ function handleGuardarCategoria() {
 }
 
 function handleCreate() {
-  productoEdit.value = null
+  productoEdit.value = undefined
   mostrarDialog.value = true
 }
 

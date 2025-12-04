@@ -1,8 +1,13 @@
+import { AsignacionReserva } from 'src/asignacion-reservas/entities/asignacion-reserva.entity';
+import { Usuario } from 'src/usuarios/entities/usuario.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,6 +16,9 @@ import {
 export class Reserva {
   @PrimaryGeneratedColumn('identity')
   id: number;
+
+  @Column('int', { name: 'id_usuario' })
+  idUsuario: number;
 
   @Column('varchar', { length: 100 })
   nombre: string;
@@ -47,4 +55,16 @@ export class Reserva {
 
   @DeleteDateColumn({ name: 'fecha_eliminacion' })
   fechaEliminacion: Date;
+
+  // RELACIÓN 1:N con ASIGNACION_RESERVAS
+  @OneToMany(
+    () => AsignacionReserva,
+    (asignacionReserva) => asignacionReserva.reservas,
+  )
+  reservas: AsignacionReserva[];
+
+  // RELACIÓN N:M con USUARIOS
+  @ManyToMany(() => Usuario, (usuario) => usuario.reservas)
+  @JoinColumn({ name: 'id_usuario', referencedColumnName: 'id' })
+  usuarios: Usuario;
 }

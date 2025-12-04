@@ -27,12 +27,7 @@ interface VentaActiva {
   itemDetails: ItemDetalle[]
   total: number
   // Usamos 'estado' para coincidir con el backend
-  estado:
-    | typeof STATUS.PAGADA
-    | typeof STATUS.PREPARANDO
-    | typeof STATUS.LISTO
-    | typeof STATUS.ARCHIVADA
-    | typeof STATUS.CANCELADA
+  estado: string
   orderTime: string
   idMesa: number
 }
@@ -72,7 +67,7 @@ const updateOrderStatus = async (id: number, newStatus: string) => {
   const index = orders.value.findIndex((o) => o.id === id)
   if (index === -1) return
 
-  const order = orders.value[index]
+  const order = orders.value[index]!
 
   try {
     const res = await axios.patch(`${ENDPOINT}/${id}/status`, { status: newStatus })

@@ -197,14 +197,28 @@ export class VentasService {
 
   async findAll(): Promise<Venta[]> {
     return await this.ventaRepository.find({
-      relations: ['mesa', 'usuario', 'cliente', 'detalleVentas'],
+      relations: [
+        'mesa',
+        'usuario',
+        'cliente',
+        'detalleVentas',
+        'detalleVentas.producto',
+        'detalleVentas.receta',
+      ],
     });
   }
 
   async findOne(id: number): Promise<Venta> {
     const venta = await this.ventaRepository.findOne({
       where: { id },
-      relations: ['mesa', 'usuario', 'cliente', 'detalleVentas'],
+      relations: [
+        'mesa',
+        'usuario',
+        'cliente',
+        'detalleVentas',
+        'detalleVentas.producto',
+        'detalleVentas.receta',
+      ],
     });
 
     if (!venta) {

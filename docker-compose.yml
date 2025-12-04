@@ -34,7 +34,7 @@ services:
     environment:
       DB_HOST: db-sis257
     volumes:
-      - ./demo_nest_jwt:/usr/src/app
+      - ./backend_bar_restaurant:/usr/src/app
       - /usr/src/app/node_modules/
 
   frontend-sis257:

@@ -195,7 +195,7 @@ async function handleSave() {
     descripcion: descripcion.value.trim(),
     precioVentaActual: Number(precioVentaActual.value) || 0,
     urlImagen: urlImagen.value.trim(),
-    idCategoria: categoria.value.id,
+    idCategoria: categoria.value?.id || 0,
     detalles: detalles.value.map((d) => ({
       idProducto: Number(d.idProducto),
       cantidadConsumida: Number(d.cantidadConsumida),
